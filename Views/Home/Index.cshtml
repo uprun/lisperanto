@@ -23,9 +23,10 @@
             <span data-bind="if: lookup.customObjects[id].name !== ''">
                 <span data-bind="text: lookup.customObjects[id].name"></span>
             </span>
-            <div data-bind="template: { name: 'body-element', foreach: lookup.customObjects[id].body }" data-bind="foreach: " >
+            <div data-bind="template: { name: 'body-element', foreach: body }" data-bind="foreach: " >
                 
             </div>
+            <button data-bind="click: $root.addConstant1">constant 1</button>
         </div>
         
     </div>

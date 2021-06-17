@@ -1,8 +1,4 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-var lookup = {};
+﻿var lookup = {};
 lookup.customObjects = {};
 lookup.functionsArray = ko.observableArray([]);
 lookup.operations = [];
@@ -19,10 +15,10 @@ lookup.createFunction = function()
     {
         type: "function",
         name: "Fibbonachi",
-        body: ["123", 122]
+        body: []
 
     };
-    lookup.functionsArray.push({id: guid});
+    lookup.functionsArray.push({id: guid, body: ko.observableArray([])});
     console.log("createFunction");
 };
 
@@ -31,7 +27,7 @@ lookup.defineConstantInt = function(c)
     var guid = lookup.uuidv4();
     var operation = 
     {
-        operation: "define-constant",
+        operation: "define-constant-int",
         guid: guid,
         constantValue: c
     };
@@ -85,7 +81,16 @@ lookup.uuidv4 = function() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
-  }
+  };
+
+lookup.addConstant1 = function(obj)
+{
+    var guid = lookup.defineConstantInt(512);
+    lookup.customObjects[obj.id].body.push(guid);
+    obj.body(lookup.customObjects[obj.id].body);
+    console.log(obj.id);
+};
+
 
   function AstLispyViewModel()
   {
@@ -100,6 +105,8 @@ lookup.uuidv4 = function() {
     };
 
   };
+
+
 
 $(document).ready(function()
 {
