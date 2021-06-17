@@ -1,8 +1,0 @@
-{
-  "runtimeOptions": {
-    "additionalProbingPaths": [
-      "/Users/almostfox/.dotnet/store/|arch|/|tfm|",
-      "/Users/almostfox/.nuget/packages"
-    ]
-  }
-}

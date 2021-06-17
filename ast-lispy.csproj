@@ -5,4 +5,8 @@
     <RootNamespace>ast_lispy</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="knockoutjs" Version="3.5.1" />
+  </ItemGroup>
+
 </Project>
