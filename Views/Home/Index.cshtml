@@ -5,37 +5,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ast_lispy</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ast_lispy</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            <div class="text-center">
-                <h1 class="display-4">Welcome</h1>
-                <button onclick="lookup.createFunction()">create function </button>
-            </div>
-        </main>
-    </div>
+    <div class="text-center">
+        <button onclick="lookup.createFunction()">create function </button>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2021 - ast_lispy</a>
-        </div>
-    </footer>
+    </div>
+    <div class="text-left" data-bind="foreach: functionsArray">
+        <div style="font-size: 2rem;" class="my-function">function</h1>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 </body>

@@ -3,7 +3,7 @@
 
 // Write your JavaScript code.
 var lookup = {};
-lookup.functionsArray = ko.observableArray();
+lookup.functionsArray = ko.observableArray([]);
 lookup.createFunction = function()
 {
     var guid = lookup.uuidv4();
@@ -11,6 +11,7 @@ lookup.createFunction = function()
     {
         operation: "define-function"
     };
+    lookup.functionsArray.push({id: guid});
     console.log("createFunction");
 };
 
@@ -19,4 +20,25 @@ lookup.uuidv4 = function() {
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
   }
+
+  function AstLispyViewModel()
+  {
+    var self = this;
+
+    self.ApplyLookupToSelf = function()
+    {
+        for(var x in lookup)
+        {
+            self[x] = lookup[x];
+        }
+    };
+
+  };
+
+$(document).ready(function()
+{
+    var viewModel = new AstLispyViewModel();
+    viewModel.ApplyLookupToSelf();
+    ko.applyBindings(viewModel);
+});
   
