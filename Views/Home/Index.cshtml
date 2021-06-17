@@ -8,9 +8,15 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
+    <script type="text/html" id="constant-int-template">
+        <span data-bind="text: type"></span>
+        <strong data-bind="text: value"></strong>
+    </script>
     <script type="text/html" id="body-element">
         <div>
-            <strong data-bind="text: $data"></strong>
+            <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
+                <div data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></div>
+            </span>
         </div>
     </script>
     <div class="text-center">
