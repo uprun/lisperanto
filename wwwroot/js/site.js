@@ -102,12 +102,28 @@ lookup.uuidv4 = function() {
     );
   };
 
-lookup.addConstant1 = function(obj)
+lookup.activeOperation = ko.observable("");
+
+
+lookup.focusedObj = ko.observable({});
+
+lookup.focusOnBody = function(obj)
 {
-    var guid = lookup.defineConstantInt(512);
-    lookup.customObjects[obj.id].body.push(guid);
-    obj.body(lookup.customObjects[obj.id].body);
-    console.log(obj.id);
+    lookup.focusedObj(obj);
+    lookup.activeOperation("focusOnBody");
+
+};
+
+lookup.constantIntValue = ko.observable(0);
+lookup.addConstant = function()
+{
+    if(lookup.activeOperation() === "focusOnBody" )
+    {
+        var obj = lookup.focusedObj();
+        var guid = lookup.defineConstantInt(lookup.constantIntValue());
+        lookup.customObjects[obj.id].body.push(guid);
+        obj.body(lookup.customObjects[obj.id].body);
+    }
 };
 
 
