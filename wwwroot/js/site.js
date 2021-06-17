@@ -2,6 +2,25 @@
 lookup.customObjects = {};
 lookup.functionsArray = ko.observableArray([]);
 lookup.operations = [];
+
+lookup.defineBuiltInFunction = function (name, parameters_list) 
+{
+    lookup.customObjects[name] = 
+    {
+        type: "built-in-function",
+        name: name,
+        parameters: parameters_list
+    };
+    lookup.functionsArray.push({id: name, body: ko.observableArray([])});
+};
+
+lookup.defineListOfPredefinedFunctions = function()
+{
+    lookup.defineBuiltInFunction("if", ["check", "if-true-run", "else-run"]);
+    lookup.defineBuiltInFunction("+", ["a", "b"]);
+    lookup.defineBuiltInFunction("<=", ["a", "b"]);
+}
+
 lookup.createFunction = function()
 {
     var guid = lookup.uuidv4();
@@ -112,6 +131,7 @@ $(document).ready(function()
 {
     var viewModel = new AstLispyViewModel();
     viewModel.ApplyLookupToSelf();
+    lookup.defineListOfPredefinedFunctions();
     ko.applyBindings(viewModel);
 });
   

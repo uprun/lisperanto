@@ -25,14 +25,15 @@
     </div>
     <div class="text-left" data-bind="foreach: functionsArray">
         <div>
-            <span style="font-size: 2rem;" class="my-function">function</span>
+            <span style="font-size: 1rem;" class="my-function" data-bind="text: lookup.customObjects[id].type"></span>
             <span data-bind="if: lookup.customObjects[id].name !== ''">
-                <span data-bind="text: lookup.customObjects[id].name"></span>
+                <span style="font-size: 1.5rem;" data-bind="text: lookup.customObjects[id].name"></span>
             </span>
-            <div data-bind="template: { name: 'body-element', foreach: body }" data-bind="foreach: " >
-                
-            </div>
-            <button data-bind="click: $root.addConstant1">constant 1</button>
+            <span data-bind="if: lookup.customObjects[id].type !== 'built-in-function'">
+                <div data-bind="template: { name: 'body-element', foreach: body }" data-bind="foreach: " >
+                </div>
+                <button data-bind="click: $root.addConstant1">constant 1</button>
+            </span>
         </div>
         
     </div>
