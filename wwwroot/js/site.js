@@ -3,6 +3,7 @@
 
 // Write your JavaScript code.
 var lookup = {};
+lookup.functionsArray = ko.observableArray();
 lookup.createFunction = function()
 {
     var guid = lookup.uuidv4();
