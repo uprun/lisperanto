@@ -8,12 +8,26 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
+    <script type="text/html" id="body-element">
+        <div>
+            <strong data-bind="text: $data"></strong>
+        </div>
+    </script>
     <div class="text-center">
         <button onclick="lookup.createFunction()">create function </button>
 
     </div>
     <div class="text-left" data-bind="foreach: functionsArray">
-        <div style="font-size: 2rem;" class="my-function">function</h1>
+        <div>
+            <span style="font-size: 2rem;" class="my-function">function</span>
+            <span data-bind="if: lookup.customObjects[id].name !== ''">
+                <span data-bind="text: lookup.customObjects[id].name"></span>
+            </span>
+            <div data-bind="template: { name: 'body-element', foreach: lookup.customObjects[id].body }" data-bind="foreach: " >
+                
+            </div>
+        </div>
+        
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
