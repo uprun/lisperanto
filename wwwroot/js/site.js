@@ -1,6 +1,15 @@
 ﻿var lookup = {};
 lookup.customObjects = {};
 lookup.functionsArray = ko.observableArray([]);
+lookup.functionsLookup = ko.computed(function()
+{
+    return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
+        return { id: item.id, 
+            text: lookup.customObjects[item.id].name 
+        };
+    });
+    
+});
 lookup.operations = [];
 
 lookup.defineBuiltInFunction = function (name, parameters_list) 
@@ -77,6 +86,28 @@ lookup.defineSymbolUsage = function(symbol)
     return guid;
 }
 
+lookup.defineFunctionCall = function( functionGuid)
+{
+    var functionToCallName = lookup.customObjects[functionGuid].name
+    var guid = lookup.uuidv4();
+    var operation = 
+    {
+        operation: "define-function-call",
+        guid: guid,
+        functionName: functionToCallName,
+        functionGuid: functionGuid
+    };
+    lookup.operations.push(operation);
+    lookup.customObjects[guid] = 
+    {
+        type: "function-usage",
+        functionName: functionToCallName,
+        functionGuid: functionGuid,
+        parameters: {}
+    };
+    return guid;
+}
+
 lookup.defineParameter = function(parameter)
 {
     var guid = lookup.uuidv4();
@@ -124,6 +155,20 @@ lookup.addConstant = function()
         lookup.customObjects[obj.id].body.push(guid);
         obj.body(lookup.customObjects[obj.id].body);
     }
+};
+
+lookup.functionToAdd = ko.observable();
+lookup.addFunction = function()
+{
+    if(lookup.activeOperation() === "focusOnBody" )
+    {
+        var obj = lookup.focusedObj();
+        var guid = lookup.defineFunctionCall(lookup.functionToAdd().id)
+        lookup.customObjects[obj.id].body.push(guid);
+        obj.body(lookup.customObjects[obj.id].body);
+    }
+    
+
 };
 
 
