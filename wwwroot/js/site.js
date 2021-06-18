@@ -89,7 +89,8 @@ lookup.defineSymbolUsage = function(symbol)
 
 lookup.defineFunctionCall = function( functionGuid)
 {
-    var functionToCallName = lookup.customObjects[functionGuid].name
+    var toWorkWith = lookup.customObjects[functionGuid];
+    var functionToCallName = toWorkWith.name
     var guid = lookup.uuidv4();
     var operation = 
     {
@@ -99,13 +100,22 @@ lookup.defineFunctionCall = function( functionGuid)
         functionGuid: functionGuid
     };
     lookup.operations.push(operation);
-    lookup.customObjects[guid] = 
-    {
+    var toAdd = {
         type: "function-usage",
         functionName: functionToCallName,
         functionGuid: functionGuid,
-        parameters: {}
+        parameters: []
     };
+    for(var k = 0; k < toWorkWith.parameters.length; k++)
+    {
+        toAdd.parameters.push({ name: toWorkWith.parameters[k], guidToUse: ko.observable(undefined), functionCallGuid: guid});
+    }
+
+    
+    lookup.customObjects[guid] = toAdd;
+
+    
+
     return guid;
 }
 
@@ -146,16 +156,39 @@ lookup.focusOnBody = function(obj)
 
 };
 
+lookup.focusOnParameter = function(obj)
+{
+    lookup.focusedObj(obj);
+    lookup.activeOperation("focusOnParameter");
+
+};
+
 lookup.constantIntValue = ko.observable(0);
 lookup.addConstant = function()
 {
+    var guid = lookup.defineConstantInt(lookup.constantIntValue());
+    var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
-        var obj = lookup.focusedObj();
-        var guid = lookup.defineConstantInt(lookup.constantIntValue());
+        
+        
         lookup.customObjects[obj.id].body.push(guid);
         obj.body(lookup.customObjects[obj.id].body);
     }
+    if(lookup.activeOperation() === "focusOnParameter" )
+    {
+        var functionCall = lookup.customObjects[obj.functionCallGuid];
+        for( var k = 0; k < functionCall.parameters.length; k++)
+        {
+            var some = functionCall.parameters[k];
+            if(some.name === obj.name)
+            {
+                some.guidToUse(guid);
+            }
+
+        }
+    }
+
 };
 
 lookup.functionToAdd = ko.observable();

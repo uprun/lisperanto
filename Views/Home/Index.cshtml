@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
+    <script type="text/html" id="parameter-value-template">
+        <div>
+            <span data-bind="text: name + ':' "></span>
+            <span data-bind='if: typeof(guidToUse()) === "undefined" '>
+                <button data-bind="click: $root.focusOnParameter">focus</button>
+            <span>
+            <span data-bind='if: typeof(guidToUse()) !== "undefined" '>
+                hello value
+            <span>
+        </div>
+    </script>
     <script type="text/html" id="constant-int-template">
         <span data-bind="text: type"></span>
         <strong data-bind="text: value"></strong>
@@ -15,8 +26,10 @@
     <script type="text/html" id="function-usage-template">
         <span data-bind="text: type"></span>
         <strong data-bind="text: functionName"></strong>
+        <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
+        </div>
     </script>
-    <script type="text/html" id="body-element">
+    <script type="text/html" id="body-element-template">
         <div>
             <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
                 <div data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></div>
@@ -37,7 +50,7 @@
                 <span style="font-size: 1.5rem;" data-bind="text: lookup.customObjects[id].name"></span>
             </span>
             <span data-bind="if: lookup.customObjects[id].type !== 'built-in-function'">
-                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element', foreach: body }" data-bind="foreach: " >
+                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
                 </div>
                 <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody">focus</button>
             </span>
