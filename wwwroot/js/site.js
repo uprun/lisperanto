@@ -5,7 +5,7 @@ lookup.functionsLookup = ko.computed(function()
 {
     return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
         return { id: item.id, 
-            text: lookup.customObjects[item.id].name 
+            text: lookup.customObjects[item.id].name + '(' + lookup.customObjects[item.id].parameters.join(", ") +')'
         };
     });
     
@@ -43,7 +43,8 @@ lookup.createFunction = function()
     {
         type: "function",
         name: "Fibonacci",
-        body: []
+        body: [],
+        parameters: []
 
     };
     lookup.functionsArray.push({id: guid, body: ko.observableArray([])});
