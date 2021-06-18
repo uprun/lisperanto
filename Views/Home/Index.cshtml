@@ -11,6 +11,7 @@
     <script type="text/html" id="parameter-value-template">
         <div>
             <span data-bind="text: name + ':' "></span>
+            <span data-bind="text: guidToUse "></span>
             <span data-bind='if: typeof(guidToUse()) === "undefined" '>
                 <button data-bind="click: $root.focusOnParameter">focus</button>
             <span>
