@@ -42,7 +42,7 @@ lookup.createFunction = function()
     lookup.customObjects[guid] = 
     {
         type: "function",
-        name: "Fibbonachi",
+        name: "Fibonacci",
         body: []
 
     };
