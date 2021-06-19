@@ -42,7 +42,8 @@ lookup.defaultNamesForFunctions =
     "Edsger Dijkstra",
     "Alan Turing",
     "Alan Kay",
-    "Dines Bjørner"
+    "Dines Bjørner",
+    "John McCarthy"
 ];
 lookup.getRandomInt = function(max) {
     return Math.floor(Math.random() * max);
