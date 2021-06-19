@@ -219,6 +219,33 @@ lookup.addFunction = function()
 
 };
 
+lookup.symbolToAdd = ko.observable("");
+
+lookup.addSymbol = function()
+{
+    var obj = lookup.focusedObj();
+    var guid = lookup.defineSymbolUsage(lookup.symbolToAdd());
+    if(lookup.activeOperation() === "focusOnBody" )
+    {
+        
+        lookup.customObjects[obj.id].body.push(guid);
+        obj.body(lookup.customObjects[obj.id].body);
+    }
+    if(lookup.activeOperation() === "focusOnParameter" )
+    {
+        var functionCall = lookup.customObjects[obj.functionCallGuid];
+        for( var k = 0; k < functionCall.parameters.length; k++)
+        {
+            var some = functionCall.parameters[k];
+            if(some.name === obj.name)
+            {
+                some.guidToUse(guid);
+            }
+
+        }
+    }
+};
+
 
   function AstLispyViewModel()
   {

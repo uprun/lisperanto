@@ -22,6 +22,10 @@
         <span data-bind="text: type"></span>
         <strong data-bind="text: value"></strong>
     </script>
+    <script type="text/html" id="symbol-usage-template">
+        <span data-bind="text: type"></span>
+        <strong data-bind="text: symbolName"></strong>
+    </script>
     <script type="text/html" id="function-usage-template">
         <span data-bind="text: type"></span>
         <strong data-bind="text: functionName"></strong>
@@ -37,6 +41,10 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
                     <div data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
+                <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
+                    <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
+                </span>
+                
             </span>
             
         </div>
@@ -59,10 +67,16 @@
         </div>
         
     </div>
+    <br>
 
     <div class="text-center">
         <input data-bind="value: $root.constantIntValue" /></p>
         <button data-bind="click: $root.addConstant">add constant</button>
+    </div>
+
+    <div class="text-center">
+        <input data-bind="value: $root.symbolToAdd" /></p>
+        <button data-bind="click: $root.addSymbol">add symbol</button>
     </div>
     <div class="text-center">
         <select data-bind="options: functionsLookup,
