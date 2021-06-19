@@ -11,7 +11,6 @@
     <script type="text/html" id="parameter-value-template">
         <div>
             <span data-bind="text: name + ':' "></span>
-            <span data-bind="text: guidToUse "></span>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: guidToUse() }" >
             </div>
             <span data-bind='if: typeof(guidToUse()) === "undefined" '>

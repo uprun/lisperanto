@@ -194,12 +194,26 @@ lookup.addConstant = function()
 lookup.functionToAdd = ko.observable();
 lookup.addFunction = function()
 {
+    var obj = lookup.focusedObj();
+    var guid = lookup.defineFunctionCall(lookup.functionToAdd().id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
-        var obj = lookup.focusedObj();
-        var guid = lookup.defineFunctionCall(lookup.functionToAdd().id)
+        
         lookup.customObjects[obj.id].body.push(guid);
         obj.body(lookup.customObjects[obj.id].body);
+    }
+    if(lookup.activeOperation() === "focusOnParameter" )
+    {
+        var functionCall = lookup.customObjects[obj.functionCallGuid];
+        for( var k = 0; k < functionCall.parameters.length; k++)
+        {
+            var some = functionCall.parameters[k];
+            if(some.name === obj.name)
+            {
+                some.guidToUse(guid);
+            }
+
+        }
     }
     
 
