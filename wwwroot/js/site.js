@@ -5,7 +5,7 @@ lookup.functionsLookup = ko.computed(function()
 {
     return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
         return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + lookup.customObjects[item.id].parameters.join(", ") +')'
+            text: lookup.customObjects[item.id].name() + '(' + lookup.customObjects[item.id].parameters().join(", ") +')'
         };
     });
     
@@ -18,7 +18,7 @@ lookup.defineBuiltInFunction = function (name, parameters_list)
         id: name,
         type: "built-in-function",
         name: ko.observable(name),
-        parameters: parameters_list,
+        parameters: ko.observableArray(parameters_list),
         body: ko.observableArray([])
     };
     lookup.customObjects[name] = toAdd;
@@ -36,6 +36,18 @@ lookup.defineListOfPredefinedFunctions = function()
     lookup.defineBuiltInFunction("<=", ["a", "b"]);
 }
 
+//TODO: need to parse https://en.wikipedia.org/wiki/List_of_computer_scientists
+lookup.defaultNamesForFunctions =
+[
+    "Edsger Dijkstra",
+    "Alan Turing",
+    "Alan Kay",
+    "Dines Bjørner"
+];
+lookup.getRandomInt = function(max) {
+    return Math.floor(Math.random() * max);
+  };  
+
 lookup.createFunction = function()
 {
     var guid = lookup.uuidv4();
@@ -48,9 +60,9 @@ lookup.createFunction = function()
     var toAdd = {
         id: guid,
         type: "function",
-        name: ko.observable("Fibonacci"),
+        name: ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]),
         body: ko.observableArray([]),
-        parameters: []
+        parameters: ko.observableArray([])
 
     };
 
@@ -252,6 +264,7 @@ lookup.activateRenameFunctionTool = function(obj)
 {
     lookup.focusedObj(obj);
     lookup.activeOperation("activateRenameFunctionTool");
+    lookup.newFunctionName(obj.name())
 };
 
 lookup.renameFunction = function()
