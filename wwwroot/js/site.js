@@ -27,6 +27,9 @@ lookup.defineListOfPredefinedFunctions = function()
 {
     lookup.defineBuiltInFunction("if", ["check", "if-true-run", "else-run"]);
     lookup.defineBuiltInFunction("+", ["a", "b"]);
+    lookup.defineBuiltInFunction("-", ["a", "b"]);
+    lookup.defineBuiltInFunction("*", ["a", "b"]);
+    lookup.defineBuiltInFunction("/", ["a", "b"]);
     lookup.defineBuiltInFunction("<=", ["a", "b"]);
 }
 
