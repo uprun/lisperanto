@@ -5,7 +5,7 @@ lookup.functionsLookup = ko.computed(function()
 {
     return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
         return { id: item.id, 
-            text: lookup.customObjects[item.id].name + '(' + lookup.customObjects[item.id].parameters.join(", ") +')'
+            text: lookup.customObjects[item.id].name() + '(' + lookup.customObjects[item.id].parameters.join(", ") +')'
         };
     });
     
@@ -14,13 +14,16 @@ lookup.operations = [];
 
 lookup.defineBuiltInFunction = function (name, parameters_list) 
 {
-    lookup.customObjects[name] = 
-    {
+    var toAdd ={
+        id: name,
         type: "built-in-function",
-        name: name,
-        parameters: parameters_list
+        name: ko.observable(name),
+        parameters: parameters_list,
+        body: ko.observableArray([])
     };
-    lookup.functionsArray.push({id: name, body: ko.observableArray([])});
+    lookup.customObjects[name] = toAdd;
+    
+    lookup.functionsArray.push(toAdd);
 };
 
 lookup.defineListOfPredefinedFunctions = function()
@@ -42,16 +45,17 @@ lookup.createFunction = function()
         guid: guid
     };
     lookup.operations.push(operation);
-    lookup.customObjects[guid] = 
-    {
+    var toAdd = {
+        id: guid,
         type: "function",
-        name: "Fibonacci",
-        body: [],
+        name: ko.observable("Fibonacci"),
+        body: ko.observableArray([]),
         parameters: []
 
     };
-    lookup.functionsArray.push({id: guid, body: ko.observableArray([])});
-    console.log("createFunction");
+
+    lookup.customObjects[guid] = toAdd;
+    lookup.functionsArray.push(toAdd);
 };
 
 lookup.defineConstantInt = function(c)
@@ -173,10 +177,7 @@ lookup.addConstant = function()
     var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
-        
-        
         lookup.customObjects[obj.id].body.push(guid);
-        obj.body(lookup.customObjects[obj.id].body);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
@@ -191,6 +192,7 @@ lookup.addConstant = function()
 
         }
     }
+    lookup.activeOperation("");
 
 };
 
@@ -201,9 +203,7 @@ lookup.addFunction = function()
     var guid = lookup.defineFunctionCall(lookup.functionToAdd().id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
-        
         lookup.customObjects[obj.id].body.push(guid);
-        obj.body(lookup.customObjects[obj.id].body);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
@@ -218,7 +218,7 @@ lookup.addFunction = function()
 
         }
     }
-    
+    lookup.activeOperation("");
 
 };
 
@@ -230,9 +230,7 @@ lookup.addSymbol = function()
     var guid = lookup.defineSymbolUsage(lookup.symbolToAdd());
     if(lookup.activeOperation() === "focusOnBody" )
     {
-        
         lookup.customObjects[obj.id].body.push(guid);
-        obj.body(lookup.customObjects[obj.id].body);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
@@ -247,7 +245,26 @@ lookup.addSymbol = function()
 
         }
     }
+    lookup.activeOperation("");
 };
+
+lookup.activateRenameFunctionTool = function(obj)
+{
+    lookup.focusedObj(obj);
+    lookup.activeOperation("activateRenameFunctionTool");
+};
+
+lookup.renameFunction = function()
+{
+    var obj = lookup.focusedObj();
+    if(lookup.activeOperation() === "activateRenameFunctionTool" )
+    {
+        lookup.customObjects[obj.id].name(lookup.newFunctionName());
+    }
+    lookup.activeOperation("");
+};
+
+lookup.newFunctionName = ko.observable("");
 
 
   function AstLispyViewModel()

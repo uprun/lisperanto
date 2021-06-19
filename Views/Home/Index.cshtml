@@ -55,11 +55,12 @@
     </div>
     <div class="text-left" data-bind="foreach: functionsArray">
         <div>
-            <span style="font-size: 1rem;" class="my-function" data-bind="text: lookup.customObjects[id].type"></span>
-            <span data-bind="if: lookup.customObjects[id].name !== ''">
-                <span style="font-size: 1.5rem;" data-bind="text: lookup.customObjects[id].name"></span>
+            <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+            <span data-bind="if: name !== ''">
+                <span style="font-size: 1.5rem;" data-bind="text: name"></span>
             </span>
-            <span data-bind="if: lookup.customObjects[id].type !== 'built-in-function'">
+            <button style="margin-left: 2rem;" data-bind="click: $root.activateRenameFunctionTool">rename</button>
+            <span data-bind="if: type !== 'built-in-function'">
                 <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
                 </div>
                 <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody">focus</button>
@@ -69,21 +70,28 @@
     </div>
     <br>
 
-    <div class="text-center">
+    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
         <input data-bind="value: $root.constantIntValue" /></p>
         <button data-bind="click: $root.addConstant">add constant</button>
     </div>
+    <br>
 
-    <div class="text-center">
+    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
         <input data-bind="value: $root.symbolToAdd" /></p>
         <button data-bind="click: $root.addSymbol">add symbol</button>
     </div>
-    <div class="text-center">
+    <br>
+    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
         <select data-bind="options: functionsLookup,
                        optionsText: 'text',
                        value: functionToAdd,
                        optionsCaption: 'Choose function'"></select>
         <button data-bind="click: $root.addFunction">call</button>
+    </div>
+    <br>
+    <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
+        <input data-bind="value: $root.newFunctionName" /></p>
+        <button data-bind="click: $root.renameFunction">rename function</button>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
