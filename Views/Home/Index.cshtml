@@ -12,11 +12,10 @@
         <div>
             <span data-bind="text: name + ':' "></span>
             <span data-bind="text: guidToUse "></span>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: guidToUse() }" >
+            </div>
             <span data-bind='if: typeof(guidToUse()) === "undefined" '>
                 <button data-bind="click: $root.focusOnParameter">focus</button>
-            <span>
-            <span data-bind='if: typeof(guidToUse()) !== "undefined" '>
-                hello value
             <span>
         </div>
     </script>
@@ -32,12 +31,15 @@
     </script>
     <script type="text/html" id="body-element-template">
         <div>
-            <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
-                <div data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></div>
+            <span data-bind="if:typeof($data) !== 'undefined' ">
+                <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
+                    <div data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></div>
+                </span>
+                <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
+                    <div data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></div>
+                </span>
             </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
-                <div data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></div>
-            </span>
+            
         </div>
     </script>
     <div class="text-center">
