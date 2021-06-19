@@ -18,6 +18,11 @@
             <span>
         </div>
     </script>
+    <script type="text/html" id="parameter-symbol-template">
+        <div>
+            <strong data-bind="text: $data"></strong>
+        </div>
+    </script>
     <script type="text/html" id="constant-int-template">
         <span data-bind="text: type"></span>
         <strong data-bind="text: value"></strong>
@@ -60,7 +65,16 @@
                 <span style="font-size: 1.5rem;" data-bind="text: name"></span>
             </span>
             <button style="margin-left: 2rem;" data-bind="click: $root.activateRenameFunctionTool">rename</button>
+            <div>
+                parameters:
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
+            </div>
             <span data-bind="if: type !== 'built-in-function'">
+                <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
+                <div>
+                    body:
+                </div>
                 <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
                 </div>
                 <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody">focus</button>
@@ -92,6 +106,11 @@
     <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
         <input data-bind="value: $root.newFunctionName" /></p>
         <button data-bind="click: $root.renameFunction">rename function</button>
+    </div>
+    <br>
+    <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
+        <input data-bind="value: $root.newParameterName" /></p>
+        <button data-bind="click: $root.addParameter">add parameter</button>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>

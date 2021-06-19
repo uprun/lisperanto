@@ -126,9 +126,9 @@ lookup.defineFunctionCall = function( functionGuid)
         functionGuid: functionGuid,
         parameters: []
     };
-    for(var k = 0; k < toWorkWith.parameters.length; k++)
+    for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
-        toAdd.parameters.push({ name: toWorkWith.parameters[k], guidToUse: ko.observable(undefined), functionCallGuid: guid});
+        toAdd.parameters.push({ name: toWorkWith.parameters()[k], guidToUse: ko.observable(undefined), functionCallGuid: guid});
     }
 
     
@@ -265,21 +265,35 @@ lookup.activateRenameFunctionTool = function(obj)
 {
     lookup.focusedObj(obj);
     lookup.activeOperation("activateRenameFunctionTool");
-    lookup.newFunctionName(obj.name())
+    lookup.newFunctionName(obj.name());
 };
 
 lookup.renameFunction = function()
 {
     var obj = lookup.focusedObj();
-    if(lookup.activeOperation() === "activateRenameFunctionTool" )
-    {
-        lookup.customObjects[obj.id].name(lookup.newFunctionName());
-    }
+    obj.name(lookup.newFunctionName());
     lookup.activeOperation("");
 };
 
 lookup.newFunctionName = ko.observable("");
 
+lookup.activateAddingParameterTool = function(obj)
+{
+    lookup.focusedObj(obj);
+    lookup.activeOperation("activateAddingParameterTool");
+    lookup.newParameterName("");
+    //TODO: find undefined symbols in a function to suggest them
+    //TODO: find undefined symbols in a subtree when adding (let x someting)
+};
+
+lookup.addParameter = function()
+{
+    var obj = lookup.focusedObj();
+    obj.parameters.push(lookup.newParameterName());
+    lookup.newParameterName("");
+};
+
+lookup.newParameterName = ko.observable("");
 
   function AstLispyViewModel()
   {
