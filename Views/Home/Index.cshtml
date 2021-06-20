@@ -10,7 +10,7 @@
 <body>
     <script type="text/html" id="parameter-value-template">
         <div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
+            <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
             </div>
             <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined" '>
                 <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
@@ -24,11 +24,9 @@
         </div>
     </script>
     <script type="text/html" id="constant-int-template">
-        <span data-bind="text: type"></span>
         <strong data-bind="text: value"></strong>
     </script>
     <script type="text/html" id="symbol-usage-template">
-        <span data-bind="text: type"></span>
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
