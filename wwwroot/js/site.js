@@ -117,20 +117,22 @@ lookup.tryRestoreBuiltInFunction = function(value)
 
 lookup.defineBuiltInFunction = function (name, parameters_list) 
 {
-    var toAdd ={
-        id: name,
-        type: "built-in-function",
-        name: ko.observable(name),
-        parameters: ko.observableArray([]),
-        body: ko.observableArray([])
-    };
-    for(var k = 0; k < parameters_list.length; k++)
+    if(typeof(this.customObjects[name]) === 'undefined')
     {
-        toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(name, parameters_list[k]))
+        var toAdd ={
+            id: name,
+            type: "built-in-function",
+            name: ko.observable(name),
+            parameters: ko.observableArray([]),
+            body: ko.observableArray([])
+        };
+        for(var k = 0; k < parameters_list.length; k++)
+        {
+            toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(name, parameters_list[k]))
+        }
+        lookup.customObjects[name] = toAdd;
     }
-    lookup.customObjects[name] = toAdd;
     
-    lookup.functionsArray.push(toAdd);
 };
 
 lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
@@ -155,6 +157,8 @@ lookup.defineListOfPredefinedFunctions = function()
     lookup.defineBuiltInFunction("*", ["a", "b"]);
     lookup.defineBuiltInFunction("/", ["a", "b"]);
     lookup.defineBuiltInFunction("<=", ["a", "b"]);
+    lookup.defineBuiltInFunction("run", ["something to run"]);
+    lookup.defineBuiltInFunction("print", ["something to print"]);
 }
 
 //TODO: need to parse https://en.wikipedia.org/wiki/List_of_computer_scientists
@@ -534,14 +538,8 @@ $(document).ready(function()
     var viewModel = new AstLispyViewModel();
     lookup.loadFromStorage();
     viewModel.ApplyLookupToSelf();
-    if(typeof(lookup.customObjects["if"]) === 'undefined' )
-    {
-        lookup.defineListOfPredefinedFunctions();
-    }
-    else
-    {
-        lookup.restoreFunctionsArray();
-    }
+    lookup.defineListOfPredefinedFunctions();
+    lookup.restoreFunctionsArray();
     
     ko.applyBindings(viewModel);
 });
