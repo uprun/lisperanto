@@ -12,6 +12,28 @@ lookup.functionsLookup = ko.computed(function()
 });
 lookup.operations = [];
 
+lookup.operationsPush = function(some)
+{
+    lookup.operations.push(some);
+    var toSerialize = {};
+    for (const [key, value] of Object.entries(lookup.customObjects)) {
+        var toAdd = {};
+        for (const [keyInner, valueInner] of Object.entries(value)) {
+            if(typeof(valueInner) === 'function')
+            {
+                toAdd[keyInner] = valueInner();
+            }else
+            {
+                toAdd[keyInner] = valueInner;
+            }
+        }
+        toSerialize[key] = toAdd;
+    }
+    console.log(toSerialize);
+    var data = JSON.stringify(toSerialize);
+    localStorage.setItem('customObjects', data);
+};
+
 lookup.defineBuiltInFunction = function (name, parameters_list) 
 {
     var toAdd ={
@@ -52,12 +74,7 @@ lookup.getRandomInt = function(max) {
 lookup.createFunction = function()
 {
     var guid = lookup.uuidv4();
-    var operation = 
-    {
-        operation: "define-function",
-        guid: guid
-    };
-    lookup.operations.push(operation);
+    
     var toAdd = {
         id: guid,
         type: "function",
@@ -68,6 +85,12 @@ lookup.createFunction = function()
     };
 
     lookup.customObjects[guid] = toAdd;
+    var operation = 
+    {
+        operation: "define-function",
+        guid: guid
+    };
+    lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
 };
 
@@ -80,7 +103,7 @@ lookup.defineConstantInt = function(c)
         guid: guid,
         constantValue: c
     };
-    lookup.operations.push(operation);
+    lookup.operationsPush(operation);
     lookup.customObjects[guid] = 
     {
         type: "constant-int",
@@ -98,7 +121,7 @@ lookup.defineSymbolUsage = function(symbol)
         guid: guid,
         symbolName: symbol
     };
-    lookup.operations.push(operation);
+    lookup.operationsPush(operation);
     lookup.customObjects[guid] = 
     {
         type: "symbol-usage",
@@ -119,7 +142,7 @@ lookup.defineFunctionCall = function( functionGuid)
         functionName: functionToCallName,
         functionGuid: functionGuid
     };
-    lookup.operations.push(operation);
+    lookup.operationsPush(operation);
     var toAdd = {
         type: "function-usage",
         functionName: functionToCallName,
@@ -148,7 +171,7 @@ lookup.defineParameter = function(parameter)
         guid: guid,
         parameterName: parameter
     };
-    lookup.operations.push(operation);
+    lookup.operationsPush(operation);
     lookup.customObjects[guid] = 
     {
         type: "parameter",
@@ -217,6 +240,13 @@ lookup.addFunction = function()
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
+        var operation = 
+        {
+            operation: "push-to-function-body",
+            guidToPush: guid,
+            functionGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
