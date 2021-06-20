@@ -4,8 +4,12 @@ lookup.functionsArray = ko.observableArray([]);
 lookup.functionsLookup = ko.computed(function()
 {
     return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
+        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+        {
+            return lookup.customObjects[item].parameterName;
+        });
         return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + lookup.customObjects[item.id].parameters().join(", ") +')'
+            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
         };
     });
     
@@ -29,9 +33,86 @@ lookup.operationsPush = function(some)
         }
         toSerialize[key] = toAdd;
     }
-    console.log(toSerialize);
     var data = JSON.stringify(toSerialize);
     localStorage.setItem('customObjects', data);
+    // TODO: refresh functionsArray
+    // on load refresh functions array
+    // on load first  load data because there might not be any saved data then set default functions then if there are not present
+};
+
+lookup.loadFromStorage = function()
+{
+    var stored = localStorage.getItem('customObjects');
+    if(typeof(stored) !== 'undefined' && stored != null)
+    {
+        var parsed = JSON.parse(stored);
+        for (const [key, value] of Object.entries(parsed)) 
+        {
+            if(typeof(value.type) !== 'undefined')
+            {
+                if(value.type === "built-in-function")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreBuiltInFunction(value);
+                }
+                if(value.type === "built-in-function-parameter")
+                {
+                    lookup.customObjects[key] = value;
+                }
+                if(value.type === "function")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreFunction(value);
+                }
+                if(value.type === "function-usage")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreFunctionUsage(value);
+                }
+                if(value.type === "constant-int")
+                {
+                    lookup.customObjects[key] = value;
+                }
+                if(value.type === "parameter")
+                {
+                    lookup.customObjects[key] = value;
+                }
+                if(value.type === "symbol-usage")
+                {
+                    lookup.customObjects[key] = value;
+                }
+                if(value.type === "parameter-value")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
+                }
+                
+            }
+        }
+    }
+    
+};
+
+lookup.restoreFunctionsArray = function()
+{
+    for (const [key, value] of Object.entries(lookup.customObjects)) 
+    {
+        if(typeof(value.type) !== 'undefined')
+        {
+            if(value.type === "built-in-function" )
+            {
+                lookup.functionsArray.push(value);
+            }
+            if(value.type === "function" )
+            {
+                lookup.functionsArray.push(value);
+            }
+        }
+    }
+};
+
+lookup.tryRestoreBuiltInFunction = function(value)
+{
+    value.name = ko.observable(value.name);
+    value.parameters = ko.observableArray(value.parameters);
+    value.body = ko.observableArray(value.body);
+    return value;
 };
 
 lookup.defineBuiltInFunction = function (name, parameters_list) 
@@ -40,13 +121,31 @@ lookup.defineBuiltInFunction = function (name, parameters_list)
         id: name,
         type: "built-in-function",
         name: ko.observable(name),
-        parameters: ko.observableArray(parameters_list),
+        parameters: ko.observableArray([]),
         body: ko.observableArray([])
     };
+    for(var k = 0; k < parameters_list.length; k++)
+    {
+        toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(name, parameters_list[k]))
+    }
     lookup.customObjects[name] = toAdd;
     
     lookup.functionsArray.push(toAdd);
 };
+
+lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
+{
+    var id = functionName + "#" +  parameter;
+    var toAdd = 
+    {
+        id: id ,
+        type: "built-in-function-parameter",
+        parameterName: parameter
+    };
+    lookup.customObjects[id] = toAdd;
+    return id;
+};
+
 
 lookup.defineListOfPredefinedFunctions = function()
 {
@@ -94,9 +193,25 @@ lookup.createFunction = function()
     lookup.functionsArray.push(toAdd);
 };
 
+lookup.tryRestoreFunction = function(value)
+{
+    value.name = ko.observable(value.name);
+    value.parameters = ko.observableArray(value.parameters);
+    value.body = ko.observableArray(value.body);
+    return value;
+};
+
 lookup.defineConstantInt = function(c)
 {
     var guid = lookup.uuidv4();
+    
+    lookup.customObjects[guid] = 
+    {
+        id: guid,
+        type: "constant-int",
+        value: c
+    };
+
     var operation = 
     {
         operation: "define-constant-int",
@@ -104,17 +219,19 @@ lookup.defineConstantInt = function(c)
         constantValue: c
     };
     lookup.operationsPush(operation);
-    lookup.customObjects[guid] = 
-    {
-        type: "constant-int",
-        value: c
-    };
     return guid;
-}
+};
 
 lookup.defineSymbolUsage = function(symbol)
 {
     var guid = lookup.uuidv4();
+    
+    lookup.customObjects[guid] = 
+    {
+        id: guid,
+        type: "symbol-usage",
+        symbolName: symbol
+    };
     var operation = 
     {
         operation: "define-symbol-usage",
@@ -122,19 +239,60 @@ lookup.defineSymbolUsage = function(symbol)
         symbolName: symbol
     };
     lookup.operationsPush(operation);
+    return guid;
+};
+
+lookup.defineParameterValue = function(name, guidToUse, functionCallGuid)
+{
+    var guid = lookup.uuidv4();
+    
     lookup.customObjects[guid] = 
     {
-        type: "symbol-usage",
-        symbolName: symbol
+        id: guid,
+        type: "parameter-value",
+        name: name, 
+        guidToUse: ko.observable(guidToUse),
+        functionCallGuid: functionCallGuid
     };
+    var operation = 
+    {
+        operation: "parameter-value",
+        guid: guid,
+        name: name, 
+        functionCallGuid: functionCallGuid
+    };
+    lookup.operationsPush(operation);
     return guid;
-}
+};
+
+lookup.tryRestoreParameterValue = function(value)
+{
+    value.guidToUse = ko.observable(value.guidToUse);
+    return value;
+};
 
 lookup.defineFunctionCall = function( functionGuid)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
     var functionToCallName = toWorkWith.name
     var guid = lookup.uuidv4();
+    
+    var toAdd = {
+        id: guid,
+        type: "function-usage",
+        functionName: functionToCallName,
+        functionGuid: functionGuid,
+        parameters: []
+    };
+    for(var k = 0; k < toWorkWith.parameters().length; k++)
+    {
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, guid);
+        toAdd.parameters.push(parameterValue);
+    }
+
+    
+    lookup.customObjects[guid] = toAdd;
+
     var operation = 
     {
         operation: "define-function-call",
@@ -143,28 +301,31 @@ lookup.defineFunctionCall = function( functionGuid)
         functionGuid: functionGuid
     };
     lookup.operationsPush(operation);
-    var toAdd = {
-        type: "function-usage",
-        functionName: functionToCallName,
-        functionGuid: functionGuid,
-        parameters: []
-    };
-    for(var k = 0; k < toWorkWith.parameters().length; k++)
-    {
-        toAdd.parameters.push({ name: toWorkWith.parameters()[k], guidToUse: ko.observable(undefined), functionCallGuid: guid});
-    }
-
-    
-    lookup.customObjects[guid] = toAdd;
-
-    
 
     return guid;
-}
+};
+
+
+lookup.tryRestoreFunctionUsage = function(value)
+{
+    for (const [key, parameterValue] of Object.entries(value.parameters)) 
+    {
+        parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
+    }
+    return value;
+};
+
 
 lookup.defineParameter = function(parameter)
 {
     var guid = lookup.uuidv4();
+    
+    lookup.customObjects[guid] = 
+    {
+        id: guid,
+        type: "parameter",
+        parameterName: parameter
+    };
     var operation = 
     {
         operation: "define-parameter",
@@ -172,11 +333,6 @@ lookup.defineParameter = function(parameter)
         parameterName: parameter
     };
     lookup.operationsPush(operation);
-    lookup.customObjects[guid] = 
-    {
-        type: "parameter",
-        parameterName: parameter
-    };
     return guid;
 }
 
@@ -201,7 +357,7 @@ lookup.focusOnBody = function(obj)
 
 lookup.focusOnParameter = function(obj)
 {
-    lookup.focusedObj(obj);
+    lookup.focusedObj(lookup.customObjects[obj]);
     lookup.activeOperation("focusOnParameter");
 
 };
@@ -214,19 +370,24 @@ lookup.addConstant = function()
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
+        var operation = 
+        {
+            operation: "push-to-function-body",
+            guidToPush: guid,
+            functionGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
-        var functionCall = lookup.customObjects[obj.functionCallGuid];
-        for( var k = 0; k < functionCall.parameters.length; k++)
+        obj.guidToUse(guid);
+        var operation = 
         {
-            var some = functionCall.parameters[k];
-            if(some.name === obj.name)
-            {
-                some.guidToUse(guid);
-            }
-
-        }
+            operation: "set-parameter-value",
+            guidToUse: guid,
+            parameterValueGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     lookup.activeOperation("");
 
@@ -250,16 +411,14 @@ lookup.addFunction = function()
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
-        var functionCall = lookup.customObjects[obj.functionCallGuid];
-        for( var k = 0; k < functionCall.parameters.length; k++)
+        obj.guidToUse(guid);
+        var operation = 
         {
-            var some = functionCall.parameters[k];
-            if(some.name === obj.name)
-            {
-                some.guidToUse(guid);
-            }
-
-        }
+            operation: "set-parameter-value",
+            guidToUse: guid,
+            parameterValueGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     lookup.activeOperation("");
 
@@ -274,19 +433,24 @@ lookup.addSymbol = function()
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
+        var operation = 
+        {
+            operation: "push-to-function-body",
+            guidToPush: guid,
+            functionGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
-        var functionCall = lookup.customObjects[obj.functionCallGuid];
-        for( var k = 0; k < functionCall.parameters.length; k++)
+        obj.guidToUse(guid);
+        var operation = 
         {
-            var some = functionCall.parameters[k];
-            if(some.name === obj.name)
-            {
-                some.guidToUse(guid);
-            }
-
-        }
+            operation: "set-parameter-value",
+            guidToUse: guid,
+            parameterValueGuid: obj.id
+        };
+        lookup.operationsPush(operation);
     }
     lookup.activeOperation("");
 };
@@ -301,8 +465,21 @@ lookup.activateRenameFunctionTool = function(obj)
 lookup.renameFunction = function()
 {
     var obj = lookup.focusedObj();
+    
+    var operation = 
+    {
+        operation: "rename-function",
+        functionGuid: obj.id,
+        newName: lookup.newFunctionName(),
+        oldName: obj.name()
+    };
+
     obj.name(lookup.newFunctionName());
+
+    lookup.operationsPush(operation);
     lookup.activeOperation("");
+
+
 };
 
 lookup.newFunctionName = ko.observable("");
@@ -319,8 +496,18 @@ lookup.activateAddingParameterTool = function(obj)
 lookup.addParameter = function()
 {
     var obj = lookup.focusedObj();
-    obj.parameters.push(lookup.newParameterName());
+    var toAdd = lookup.defineParameter(lookup.newParameterName());
+    obj.parameters.push(toAdd);
+    
+    var operation = 
+    {
+        operation: "added-parameter-to-function",
+        functionGuid: obj.id,
+        parameterGuid: toAdd.id
+    };
+    lookup.operationsPush(operation);
     lookup.newParameterName("");
+    lookup.activeOperation("");
 };
 
 lookup.newParameterName = ko.observable("");
@@ -344,8 +531,17 @@ lookup.newParameterName = ko.observable("");
 $(document).ready(function()
 {
     var viewModel = new AstLispyViewModel();
+    lookup.loadFromStorage();
     viewModel.ApplyLookupToSelf();
-    lookup.defineListOfPredefinedFunctions();
+    if(typeof(lookup.customObjects["if"]) === 'undefined' )
+    {
+        lookup.defineListOfPredefinedFunctions();
+    }
+    else
+    {
+        lookup.restoreFunctionsArray();
+    }
+    
     ko.applyBindings(viewModel);
 });
   
