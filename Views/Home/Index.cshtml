@@ -10,7 +10,7 @@
 <body>
     <script type="text/html" id="parameter-value-template">
         <div>
-            <span data-bind="text: lookup.customObjects[$data].name + ':' "></span>
+            <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
             </div>
             <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined" '>

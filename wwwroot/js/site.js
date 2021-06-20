@@ -242,15 +242,16 @@ lookup.defineSymbolUsage = function(symbol)
     return guid;
 };
 
-lookup.defineParameterValue = function(name, guidToUse, functionCallGuid)
+lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
 {
     var guid = lookup.uuidv4();
+    
     
     lookup.customObjects[guid] = 
     {
         id: guid,
         type: "parameter-value",
-        name: name, 
+        parameterGuid: parameterGuid,
         guidToUse: ko.observable(guidToUse),
         functionCallGuid: functionCallGuid
     };
@@ -258,7 +259,7 @@ lookup.defineParameterValue = function(name, guidToUse, functionCallGuid)
     {
         operation: "parameter-value",
         guid: guid,
-        name: name, 
+        parameterGuid: parameterGuid,
         functionCallGuid: functionCallGuid
     };
     lookup.operationsPush(operation);
