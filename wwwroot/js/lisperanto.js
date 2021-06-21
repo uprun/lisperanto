@@ -517,8 +517,11 @@ lookup.addParameter = function()
 
 lookup.newParameterName = ko.observable("");
 
-  function AstLispyViewModel()
-  {
+
+
+
+function Lisperanto()
+{
     var self = this;
 
     self.ApplyLookupToSelf = function()
@@ -529,13 +532,13 @@ lookup.newParameterName = ko.observable("");
         }
     };
 
-  };
+};
 
 
 
 $(document).ready(function()
 {
-    var viewModel = new AstLispyViewModel();
+    var viewModel = new Lisperanto();
     lookup.loadFromStorage();
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
