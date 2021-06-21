@@ -19,7 +19,7 @@ namespace lisperanto.Controllers
 
         public IActionResult Index()
         {
-            Response.Redirect("/Index.html");
+            Response.Redirect("/index.html");
             return View();
         }
     }
