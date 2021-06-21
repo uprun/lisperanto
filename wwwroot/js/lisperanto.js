@@ -257,7 +257,7 @@ lookup.defineSymbolUsage = function(symbol)
     return guid;
 };
 
-lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
+lookup.defineParameterValue = function(parameterGuid, guidToUse)
 {
     var guid = lookup.uuidv4();
     
@@ -267,15 +267,13 @@ lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGui
         id: guid,
         type: "parameter-value",
         parameterGuid: parameterGuid,
-        guidToUse: ko.observable(guidToUse),
-        functionCallGuid: functionCallGuid
+        guidToUse: ko.observable(guidToUse)
     };
     var operation = 
     {
         operation: "parameter-value",
         guid: guid,
-        parameterGuid: parameterGuid,
-        functionCallGuid: functionCallGuid
+        parameterGuid: parameterGuid
     };
     lookup.operationsPush(operation);
     return guid;
@@ -302,7 +300,7 @@ lookup.defineFunctionCall = function( functionGuid)
     };
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, guid);
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined);
         toAdd.parameters.push(parameterValue);
     }
 
@@ -590,8 +588,16 @@ lookup.evaluate = function(guid, context)
                     {
                         return lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
                     }
+                }
+                if(functionDefinition.type === "function")
+                {
+                    return lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
 
                 }
+            }
+            if(toWork.type === 'symbol-usage')
+            {
+                return context[toWork.symbolName];
             }
             if(toWork.type === 'constant-int')
             {
@@ -600,6 +606,26 @@ lookup.evaluate = function(guid, context)
         }
     }
 
+};
+
+lookup.evaluateUserFunctionCall = function(toWork, functionDefinition, context)
+{
+    var localContext = lookup.makeCopyOfContext(context);
+    for(var k = 0; k < toWork.parameters.length; k++)
+    {
+        var parameterUsage = lookup.customObjects[toWork.parameters[k]];
+        if(parameterUsage.type === 'parameter-value')
+        {
+            var parameterDefinition = lookup.customObjects[parameterUsage.parameterGuid];
+            localContext[parameterDefinition.parameterName] = lookup.evaluate(parameterUsage.guidToUse(), context);
+        }
+    }
+    var result = "";
+    for(var k = 0; k < functionDefinition.body().length; k++)
+    {
+        result = lookup.evaluate(functionDefinition.body()[k], localContext);
+    }
+    return result;
 };
 
 lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
