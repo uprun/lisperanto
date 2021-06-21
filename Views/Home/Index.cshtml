@@ -71,8 +71,11 @@
             </div>
             <span data-bind="if: type !== 'built-in-function'">
                 <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
-                <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
-                <span data-bind="text: evaluationResult"></span>
+                <span data-bind="if: parameters().length == 0">
+                    <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
+                    <span data-bind="text: evaluationResult"></span>
+                </span>
+                
                 <div>
                     body:
                 </div>
