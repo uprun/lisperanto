@@ -157,8 +157,6 @@ lookup.defineListOfPredefinedFunctions = function()
     lookup.defineBuiltInFunction("*", ["a", "b"]);
     lookup.defineBuiltInFunction("/", ["a", "b"]);
     lookup.defineBuiltInFunction("<=", ["a", "b"]);
-    lookup.defineBuiltInFunction("run", ["something to run"]);
-    lookup.defineBuiltInFunction("print", ["something to print"]);
 }
 
 //TODO: need to parse https://en.wikipedia.org/wiki/List_of_computer_scientists
@@ -588,6 +586,18 @@ lookup.evaluate = function(guid, context)
                     {
                         return lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
                     }
+                    if(functionDefinition.id === "<=")
+                    {
+                        return lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
+                    }
+                    if(functionDefinition.id === "*")
+                    {
+                        return lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
+                    }
+                    if(functionDefinition.id === "/")
+                    {
+                        return lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
+                    }
                 }
                 if(functionDefinition.type === "function")
                 {
@@ -654,12 +664,36 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     return a + b;
 }
 
+lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    return a <= b;
+}
+
 lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a - b;
+}
+
+lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    return a * b;
+}
+
+lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    return a / b;
 }
 
 function Lisperanto()
