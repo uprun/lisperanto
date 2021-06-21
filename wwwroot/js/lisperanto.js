@@ -531,7 +531,7 @@ lookup.makeCopyOfContext = function( context)
 
 lookup.findBuiltInParameterById = function (parameters, name, functionDefinition)
 {
-    var toCheck = functionDefinition.id + name;
+    var toCheck = functionDefinition.id + '#' + name;
     for(var k = 0; k < parameters.length; k++)
     {
         var parameterUsage = lookup.customObjects[parameters[k]];
@@ -545,13 +545,19 @@ lookup.findBuiltInParameterById = function (parameters, name, functionDefinition
 lookup.startEvaluation = function(obj)
 {
     var rootContext = {};
-    obj.evaluationResult(lookup.evaluate(obj.body()[0], rootContext));
+    var result = "";
+
+    for(var k = 0; k < obj.body().length; k++)
+    {
+        result = lookup.evaluate(obj.body()[k], rootContext);
+    }
+    obj.evaluationResult(result);
 };
 
 
 lookup.evaluate = function(guid, context)
 {
-    var localContext = lookup.makeCopyOfContext(context);
+    
     var toWork = lookup.customObjects[guid];
     if(toWork != null )
     {
@@ -562,6 +568,7 @@ lookup.evaluate = function(guid, context)
                 var functionDefinition = lookup.customObjects[toWork.functionGuid];
                 if(functionDefinition.type === "built-in-function")
                 {
+                    var localContext = lookup.makeCopyOfContext(context);
                     if(functionDefinition.id === "if")
                     {
                         return lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
@@ -604,7 +611,7 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
 };
 
 
-lookup.evaluateBuiltInPlus = function(toWork, functionDefinition) {
+lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
     var a = lookup.evaluate(aParameter.guidToUse, localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
@@ -612,7 +619,7 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition) {
     return a + b;
 }
 
-lookup.evaluateBuiltInMinus = function(toWork, functionDefinition) {
+lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
     var a = lookup.evaluate(aParameter.guidToUse, localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
