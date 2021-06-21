@@ -5,9 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using ast_lispy.Models;
 
-namespace ast_lispy.Controllers
+namespace lisperanto.Controllers
 {
     public class HomeController : Controller
     {
