@@ -517,7 +517,80 @@ lookup.addParameter = function()
 
 lookup.newParameterName = ko.observable("");
 
+lookup.makeCopyOfContext = function( context)
+{
+    if(typeof(context) === 'undefined')
+    {
+        context = {};
+    }
+    var toParse = JSON.stringify(context);
+    return JSON.parse(toParse);
+};
 
+lookup.findBuiltInParameterById = function (parameters, name, functionDefinition)
+{
+    var toCheck = functionDefinition.id + name;
+    for(var k = 0; k < parameters.length; k++)
+    {
+        var parameterUsage = lookup.customObjects[parameters[k]];
+        if(lookup.customObjects[parameterUsage.parameterGuid].id === toCheck)
+        {
+            return parameterUsage;
+        }
+    }
+};
+
+lookup.evaluate = function(guid, context)
+{
+    var localContext = lookup.makeCopyOfContext(context);
+    var toWork = lookup.customObjects[guid];
+    if(toWork != null )
+    {
+        if(typeof(toWork.type) != undefined)
+        {
+            if(toWork.type === 'function-usage')
+            {
+                var functionDefinition = lookup.customObjects[toWork.functionGuid];
+                if(functionDefinition.type === "built-in-function")
+                {
+                    if(functionDefinition.id === "if")
+                    {
+                        return lookup.evaluateBuiltInIf(toWork, functionDefinition);
+                    }
+                    if(functionDefinition.id === "+")
+                    {
+                        var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+                        var a = lookup.evaluate(aParameter.guidToUse);
+                        var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+                        var b = lookup.evaluate(bParameter.guidToUse);
+                        return a + b;
+                    }
+
+                }
+                
+
+            }
+        }
+    }
+
+};
+
+lookup.evaluateBuiltInIf = function(toWork, functionDefinition)
+{
+    var checkParameter = lookup.findBuiltInParameterById(toWork.parameters, "check", functionDefinition);
+    var check = lookup.evaluate(checkParameter.guidToUse);
+
+    if(check)
+    {
+        var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
+        return lookup.evaluate(ifTrueRunParameter.guidToUse);
+    }
+    else
+    {
+        var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
+        return lookup.evaluate(elseRunParameter.guidToUse);
+    }
+};
 
 
 function Lisperanto()
