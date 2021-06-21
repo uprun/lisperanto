@@ -30,7 +30,12 @@ namespace lisperanto
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDefaultFiles();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(
+                                    Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot-3")),
+                                    RequestPath = new PathString("/")
+            });
 
             app.UseRouting();
 
