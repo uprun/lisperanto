@@ -68,7 +68,7 @@ lookup.loadFromStorage = function()
                 }
                 if(value.type === "constant-int")
                 {
-                    lookup.customObjects[key] = value;
+                    lookup.customObjects[key] = lookup.tryRestoreConstantInt(value);
                 }
                 if(value.type === "parameter")
                 {
@@ -215,7 +215,7 @@ lookup.defineConstantInt = function(c)
     {
         id: guid,
         type: "constant-int",
-        value: c
+        value: parseInt(c.trim())
     };
 
     var operation = 
@@ -226,6 +226,15 @@ lookup.defineConstantInt = function(c)
     };
     lookup.operationsPush(operation);
     return guid;
+};
+
+lookup.tryRestoreConstantInt = function(value)
+{
+    if(typeof(value.value) !== 'number')
+    {
+        value.value = parseInt(value.value.trim())
+    }
+    return value;
 };
 
 lookup.defineSymbolUsage = function(symbol)
@@ -596,34 +605,34 @@ lookup.evaluate = function(guid, context)
 lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
 {
     var checkParameter = lookup.findBuiltInParameterById(toWork.parameters, "check", functionDefinition);
-    var check = lookup.evaluate(checkParameter.guidToUse, localContext);
+    var check = lookup.evaluate(checkParameter.guidToUse(), localContext);
 
     if(check)
     {
         var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
-        return lookup.evaluate(ifTrueRunParameter.guidToUse, localContext);
+        return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
     }
     else
     {
         var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
-        return lookup.evaluate(elseRunParameter.guidToUse, localContext);
+        return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
     }
 };
 
 
 lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse, localContext);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse, localContext);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a + b;
 }
 
 lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse, localContext);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse, localContext);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a - b;
 }
 
