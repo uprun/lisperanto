@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace lisperanto
 {
@@ -34,7 +36,7 @@ namespace lisperanto
             {
                 FileProvider = new PhysicalFileProvider(
                                     Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot-3")),
-                                    RequestPath = new PathString("/")
+                                    RequestPath = ""
             });
 
             app.UseRouting();
