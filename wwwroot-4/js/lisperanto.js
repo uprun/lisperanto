@@ -152,6 +152,26 @@ lookup.builtInFunctionsArray = [
     {
         name: "if",
         parameters: ["check", "if-true-run", "else-run"]
+    },
+    {
+        name: "+",
+        parameters: ["a", "b"]
+    },
+    {
+        name: "-",
+        parameters: ["a", "b"]
+    },
+    {
+        name: "*",
+        parameters: ["a", "b"]
+    },
+    {
+        name: "/",
+        parameters: ["a", "b"]
+    },
+    {
+        name: "<=",
+        parameters: ["a", "b"]
     }
 ];
 
@@ -162,11 +182,6 @@ lookup.defineListOfPredefinedFunctions = function()
         var obj = lookup.builtInFunctionsArray[k];
         lookup.defineBuiltInFunction(obj.name, obj.parameters);
     }
-    lookup.defineBuiltInFunction("+", ["a", "b"]);
-    lookup.defineBuiltInFunction("-", ["a", "b"]);
-    lookup.defineBuiltInFunction("*", ["a", "b"]);
-    lookup.defineBuiltInFunction("/", ["a", "b"]);
-    lookup.defineBuiltInFunction("<=", ["a", "b"]);
 }
 
 //TODO: need to parse https://en.wikipedia.org/wiki/List_of_computer_scientists
