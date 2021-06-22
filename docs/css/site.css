@@ -15,4 +15,9 @@ body {
   color: inherit;
   background-color: inherit;
 }
+.my-function-result
+{
+  color:rgb(45, 148, 41);
+  margin-left: 2rem;
+}
 
