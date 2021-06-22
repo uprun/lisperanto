@@ -35,7 +35,7 @@ namespace lisperanto
             app.UseStaticFiles(new StaticFileOptions()
             {
                 FileProvider = new PhysicalFileProvider(
-                                    Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot-4")),
+                                    Path.Combine(Directory.GetCurrentDirectory(), @"docs")),
                                     RequestPath = ""
             });
 
