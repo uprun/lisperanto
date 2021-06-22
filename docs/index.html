@@ -33,6 +33,7 @@
     <script type="text/html" id="function-usage-template">
         <span data-bind="text: '('"></span>
         <strong data-bind="text: functionName"></strong>
+        <span class="my-function-result" data-bind="text: '// result: ' + evaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
         <span data-bind="text: ')'"></span>

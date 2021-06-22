@@ -324,7 +324,8 @@ lookup.defineFunctionCall = function( functionGuid)
         type: "function-usage",
         functionName: functionToCallName,
         functionGuid: functionGuid,
-        parameters: []
+        parameters: [],
+        evaluationResult: ko.observable("")
     };
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
@@ -354,6 +355,7 @@ lookup.tryRestoreFunctionUsage = function(value)
     {
         parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
     }
+    value.evaluationResult = ko.observable("");
     return value;
 };
 
@@ -601,39 +603,42 @@ lookup.evaluate = function(guid, context)
             if(toWork.type === 'function-usage')
             {
                 var functionDefinition = lookup.customObjects[toWork.functionGuid];
+                var result = "";
                 if(functionDefinition.type === "built-in-function")
                 {
                     var localContext = lookup.makeCopyOfContext(context);
                     if(functionDefinition.id === "if")
                     {
-                        return lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
                     }
                     if(functionDefinition.id === "+")
                     {
-                        return lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
                     }
                     if(functionDefinition.id === "-")
                     {
-                        return lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
                     }
                     if(functionDefinition.id === "<=")
                     {
-                        return lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
                     }
                     if(functionDefinition.id === "*")
                     {
-                        return lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
                     }
                     if(functionDefinition.id === "/")
                     {
-                        return lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
                     }
                 }
                 if(functionDefinition.type === "function")
                 {
-                    return lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
+                    result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
 
                 }
+                toWork.evaluationResult(result);
+                return result;
             }
             if(toWork.type === 'symbol-usage')
             {
