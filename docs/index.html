@@ -9,6 +9,66 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body>
+    <script type="text/html" id="function-definition-template">
+        <div>
+            <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+            <span data-bind="if: name !== ''">
+                <span style="font-size: 1.5rem;" data-bind="text: name"></span>
+            </span>
+            <button style="margin-left: 2rem;" data-bind="click: $root.activateRenameFunctionTool">rename</button>
+            <div>
+                parameters:
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
+            </div>
+            <span data-bind="if: type !== 'built-in-function'">
+                <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
+                <span data-bind="if: parameters().length == 0">
+                    <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
+                    <span data-bind="text: evaluationResult"></span>
+                </span>
+                <span data-bind="ifnot: parameters().length == 0">
+                    <span>to evaluate this function create another function with zero arguments and call this one from there</span>
+                </span>
+                
+                <div>
+                    body:
+                </div>
+                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
+                </div>
+                <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody">focus</button>
+            </span>
+        </div>
+        <br>
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+            <input data-bind="value: $root.constantIntValue" /></p>
+            <button data-bind="click: $root.addConstant">add constant</button>
+        </div>
+        <br>
+
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+            <input data-bind="value: $root.symbolToAdd" /></p>
+            <button data-bind="click: $root.addSymbol">add symbol</button>
+        </div>
+        <br>
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+            <select data-bind="options: $root.functionsLookup,
+                        optionsText: 'text',
+                        value: $root.functionToAdd,
+                        optionsCaption: 'Choose function'"></select>
+            <button data-bind="click: $root.addFunction">call</button>
+        </div>
+        <br>
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
+            <input data-bind="value: $root.newFunctionName" /></p>
+            <button data-bind="click: $root.renameFunction">rename function</button>
+        </div>
+        <br>
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
+            <input data-bind="value: $root.newParameterName" /></p>
+            <button data-bind="click: $root.addParameter">add parameter</button>
+        </div>
+    </script>
     <script type="text/html" id="parameter-value-template">
         <div>
             <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
@@ -56,71 +116,28 @@
         </div>
     </script>
     <div class="text-center">
-        <button onclick="lookup.createFunction()">create function </button>
+        <button data-bind="click: $root.createFunction">create function </button>
+        <button data-bind="click: $root.openListOfFunctions">open list of functions </button>
 
     </div>
-    <div class="text-left" data-bind="foreach: functionsArray">
-        <div>
-            <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            <span data-bind="if: name !== ''">
-                <span style="font-size: 1.5rem;" data-bind="text: name"></span>
-            </span>
-            <button style="margin-left: 2rem;" data-bind="click: $root.activateRenameFunctionTool">rename</button>
-            <div>
-                parameters:
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
-            </div>
-            <span data-bind="if: type !== 'built-in-function'">
-                <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
-                <span data-bind="if: parameters().length == 0">
-                    <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
-                    <span data-bind="text: evaluationResult"></span>
+    <div data-bind="if: $root.listOfFunctionsIsActive()">
+        <div class="text-left" data-bind="foreach: functionsArray">
+            <div  >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span data-bind="if: name !== ''">
+                    <span style="font-size: 1.5rem;" data-bind="text: name() + ' ('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                 </span>
-                <span data-bind="ifnot: parameters().length == 0">
-                    <span>to evaluate this function create another function with zero arguments and call this one from there</span>
-                </span>
-                
-                <div>
-                    body:
-                </div>
-                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
-                </div>
-                <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody">focus</button>
-            </span>
+                <button data-bind="click: $root.openFunction ">open</button>
+            </div>
         </div>
-        
     </div>
-    <br>
+    
+    <div data-bind="if: $root.functionDefinitionIsActive() ">
+        <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
 
-    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-        <input data-bind="value: $root.constantIntValue" /></p>
-        <button data-bind="click: $root.addConstant">add constant</button>
-    </div>
-    <br>
 
-    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-        <input data-bind="value: $root.symbolToAdd" /></p>
-        <button data-bind="click: $root.addSymbol">add symbol</button>
     </div>
-    <br>
-    <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-        <select data-bind="options: functionsLookup,
-                       optionsText: 'text',
-                       value: functionToAdd,
-                       optionsCaption: 'Choose function'"></select>
-        <button data-bind="click: $root.addFunction">call</button>
-    </div>
-    <br>
-    <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
-        <input data-bind="value: $root.newFunctionName" /></p>
-        <button data-bind="click: $root.renameFunction">rename function</button>
-    </div>
-    <br>
-    <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
-        <input data-bind="value: $root.newParameterName" /></p>
-        <button data-bind="click: $root.addParameter">add parameter</button>
-    </div>
+    
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
     <script src="js/lisperanto.js" asp-append-version="true"></script>
