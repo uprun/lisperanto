@@ -219,6 +219,7 @@ lookup.createFunction = function()
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
+    lookup.openFunction(toAdd);
 };
 
 lookup.tryRestoreFunction = function(value)
@@ -697,7 +698,7 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a + b;
-}
+};
 
 lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
@@ -705,7 +706,7 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a <= b;
-}
+};
 
 lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
@@ -713,7 +714,7 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a - b;
-}
+};
 
 lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
@@ -721,7 +722,7 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a * b;
-}
+};
 
 lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext) {
     var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
@@ -729,7 +730,42 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a / b;
-}
+};
+
+
+
+lookup.activeFunction = ko.observable(undefined);
+lookup.functionDefinitionIsActive = ko.observable(false);
+lookup.openFunction = function(obj)
+{
+    lookup.activeFunction(obj);
+    lookup.hideEverythingExcept(lookup.functionDefinitionIsActive);
+};
+
+lookup.listOfFunctionsIsActive = ko.observable(true);
+
+lookup.openListOfFunctions = function()
+{
+    lookup.hideEverythingExcept(lookup.listOfFunctionsIsActive);
+};
+
+lookup.listOfMenus = [
+    lookup.functionDefinitionIsActive,
+    lookup.listOfFunctionsIsActive
+];
+
+lookup.hideEverythingExcept = function(toShow)
+{
+    for(var k = 0; k < lookup.listOfMenus.length; k++)
+    {
+        var some = lookup.listOfMenus[k];
+        if(some !== toShow)
+        {
+            some(false);
+        }
+    }
+    toShow(true);
+};
 
 function Lisperanto()
 {
