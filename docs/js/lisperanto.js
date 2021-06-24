@@ -219,6 +219,7 @@ lookup.createFunction = function()
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
+    lookup.openFunction(toAdd);
 };
 
 lookup.tryRestoreFunction = function(value)
