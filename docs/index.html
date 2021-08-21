@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/site.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
-<body>
+<body data-bind="click: $root.hideOmniBox">
     <script type="text/html" id="function-definition-template">
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
@@ -124,10 +124,9 @@
         <div class="text-left" data-bind="foreach: functionsArray">
             <div  >
                 <span data-bind="if: name !== ''">
-                    <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name()"></span>
+                    <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
                     <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                 </span>
-                <button data-bind="click: $root.openFunction ">open</button>
             </div>
         </div>
     </div>
@@ -136,6 +135,14 @@
         <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
 
 
+    </div>
+
+    <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible">
+        <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
+            <span data-bind="click: $root.omniBoxOpenFunctionAction">
+                Go to definition
+            </span>
+        </div>
     </div>
     
     <script src="lib/jquery/dist/jquery.min.js"></script>

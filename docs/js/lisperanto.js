@@ -115,12 +115,14 @@ lookup.tryRestoreBuiltInFunction = function(value)
     return value;
 };
 
-lookup.defineBuiltInFunction = function (name, parameters_list) 
+lookup.defineBuiltInFunction = function (obj) 
 {
+    var name = obj.name;
+    var parameters_list = obj.parameters
     if(typeof(this.customObjects[name]) === 'undefined')
     {
         var toAdd ={
-            id: name,
+            id: obj.id,
             type: "built-in-function",
             name: ko.observable(name),
             parameters: ko.observableArray([]),
@@ -128,9 +130,9 @@ lookup.defineBuiltInFunction = function (name, parameters_list)
         };
         for(var k = 0; k < parameters_list.length; k++)
         {
-            toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(name, parameters_list[k]))
+            toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(obj.id, parameters_list[k]))
         }
-        lookup.customObjects[name] = toAdd;
+        lookup.customObjects[obj.id] = toAdd;
     }
     
 };
@@ -150,26 +152,32 @@ lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
 
 lookup.builtInFunctionsArray = [
     {
+        id: "if",
         name: "if",
         parameters: ["check", "if-true-run", "else-run"]
     },
     {
+        id: "plus",
         name: "+",
         parameters: ["a", "b"]
     },
     {
+        id: "minus",
         name: "-",
         parameters: ["a", "b"]
     },
     {
+        id: "multiply",
         name: "*",
         parameters: ["a", "b"]
     },
     {
+        id: "divide",
         name: "/",
         parameters: ["a", "b"]
     },
     {
+        id: "less-or-equal",
         name: "<=",
         parameters: ["a", "b"]
     }
@@ -180,7 +188,7 @@ lookup.defineListOfPredefinedFunctions = function()
     for( var k = 0; k < lookup.builtInFunctionsArray.length; k++)
     {
         var obj = lookup.builtInFunctionsArray[k];
-        lookup.defineBuiltInFunction(obj.name, obj.parameters);
+        lookup.defineBuiltInFunction(obj);
     }
 }
 
@@ -612,23 +620,23 @@ lookup.evaluate = function(guid, context)
                     {
                         result = lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
                     }
-                    if(functionDefinition.id === "+")
+                    if(functionDefinition.id === "plus")
                     {
                         result = lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
                     }
-                    if(functionDefinition.id === "-")
+                    if(functionDefinition.id === "minus")
                     {
                         result = lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
                     }
-                    if(functionDefinition.id === "<=")
+                    if(functionDefinition.id === "less-or-equal")
                     {
                         result = lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
                     }
-                    if(functionDefinition.id === "*")
+                    if(functionDefinition.id === "multiply")
                     {
                         result = lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
                     }
-                    if(functionDefinition.id === "/")
+                    if(functionDefinition.id === "divide")
                     {
                         result = lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
                     }
@@ -765,6 +773,34 @@ lookup.hideEverythingExcept = function(toShow)
         }
     }
     toShow(true);
+};
+
+lookup.omniBoxVisible = ko.observable(false);
+lookup.omniBoxSelectedFunction = ko.observable(undefined);
+
+lookup.openOmniBoxForFunction = function(caller)
+{
+    lookup.omniBoxSelectedFunction(caller);
+    var foundUI = $("#" + caller.id)[0];
+    var omnibox = $(".contextual-omni-box");
+    omnibox.css({
+        top: foundUI.offsetTop + foundUI.offsetHeight, 
+        left: foundUI.offsetLeft
+    });
+    lookup.omniBoxVisible(true);
+    event.stopPropagation();
+};
+
+lookup.hideOmniBox = function()
+{
+    lookup.omniBoxVisible(false);
+};
+
+lookup.omniBoxOpenFunctionAction = function()
+{
+    lookup.hideOmniBox();
+    event.stopPropagation();
+    lookup.openFunction(lookup.omniBoxSelectedFunction());
 };
 
 function Lisperanto()
