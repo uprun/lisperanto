@@ -7,7 +7,8 @@ for details on configuring this project to bundle and minify static web assets. 
 html {
   position: relative;
   min-height: 100%;
-  background-color: gray;
+  background-color: #333;
+  color: lightblue;
 }
 
 body {
