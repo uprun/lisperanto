@@ -11,3 +11,6 @@ inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve
 also i was inspired by "The future of programming" talk by Bret Victor
 and talks by Alan Kay
 and talks by Chris Granger (creator of Eve programming environment)
+
+# license
+MIT
