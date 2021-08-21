@@ -123,7 +123,6 @@
     <div data-bind="if: $root.listOfFunctionsIsActive()">
         <div class="text-left" data-bind="foreach: functionsArray">
             <div  >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
                 <span data-bind="if: name !== ''">
                     <span style="font-size: 1.5rem;" data-bind="text: name() + ' ('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                 </span>
