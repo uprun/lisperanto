@@ -13,7 +13,7 @@
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
             <span data-bind="if: name !== ''">
-                <span style="font-size: 1.5rem;" data-bind="text: name"></span>
+                <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
             </span>
             <button style="margin-left: 2rem;" data-bind="click: $root.activateRenameFunctionTool">rename</button>
             <div>
@@ -92,7 +92,7 @@
     </script>
     <script type="text/html" id="function-usage-template">
         <span data-bind="text: '('"></span>
-        <strong data-bind="text: functionName"></strong>
+        <strong class="my-function-name" data-bind="text: functionName"></strong>
         <span class="my-function-result" data-bind="text: '// result: ' + evaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
@@ -123,9 +123,9 @@
     <div data-bind="if: $root.listOfFunctionsIsActive()">
         <div class="text-left" data-bind="foreach: functionsArray">
             <div  >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
                 <span data-bind="if: name !== ''">
-                    <span style="font-size: 1.5rem;" data-bind="text: name() + ' ('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
+                    <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name()"></span>
+                    <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                 </span>
                 <button data-bind="click: $root.openFunction ">open</button>
             </div>

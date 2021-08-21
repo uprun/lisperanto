@@ -7,17 +7,24 @@ for details on configuring this project to bundle and minify static web assets. 
 html {
   position: relative;
   min-height: 100%;
-  background-color: gray;
+  background-color: #333;
+  color: lightblue;
 }
 
 body {
   /* Margin bottom by footer height */
   color: inherit;
   background-color: inherit;
+  font-family: 'Input Mono', monospace;
 }
 .my-function-result
 {
-  color:rgb(9, 66, 7);
+  color:rgb(138, 71, 8);
   margin-left: 2rem;
 }
+.my-function-name
+{
+  color: rgb(206, 206, 98);
+}
+
 
