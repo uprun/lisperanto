@@ -92,7 +92,14 @@
     </script>
     <script type="text/html" id="function-usage-template">
         <span data-bind="text: '('"></span>
-        <strong class="my-function-name" data-bind="text: lookup.customObjects[$data.functionGuid].name()"></strong>
+        <strong 
+            class="my-function-name" 
+            data-bind="
+                text: lookup.customObjects[$data.functionGuid].name(), 
+                click: $root.openOmniBoxForFunctionUsage, 
+                attr: {id: $data.id}"
+            >
+        </strong>
         <span class="my-function-result" data-bind="text: '// result: ' + evaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>

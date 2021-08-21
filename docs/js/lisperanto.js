@@ -778,17 +778,30 @@ lookup.hideEverythingExcept = function(toShow)
 lookup.omniBoxVisible = ko.observable(false);
 lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
-lookup.openOmniBoxForFunction = function(caller)
+lookup.filloutOmniBoxDataForFunction = function(caller) 
 {
-    lookup.omniBoxSelectedFunction(caller);
     var foundUI = $("#" + caller.id)[0];
     var omnibox = $(".contextual-omni-box");
     omnibox.css({
-        top: foundUI.offsetTop + foundUI.offsetHeight, 
+        top: foundUI.offsetTop + foundUI.offsetHeight,
         left: foundUI.offsetLeft
     });
     lookup.omniBoxVisible(true);
     event.stopPropagation();
+};
+
+lookup.openOmniBoxForFunction = function(caller)
+{
+    lookup.omniBoxSelectedFunction(caller);
+    lookup.filloutOmniBoxDataForFunction(caller);
+};
+
+
+
+lookup.openOmniBoxForFunctionUsage = function(caller)
+{
+    lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
+    lookup.filloutOmniBoxDataForFunction(caller);
 };
 
 lookup.hideOmniBox = function()
@@ -802,6 +815,8 @@ lookup.omniBoxOpenFunctionAction = function()
     event.stopPropagation();
     lookup.openFunction(lookup.omniBoxSelectedFunction());
 };
+
+
 
 function Lisperanto()
 {
