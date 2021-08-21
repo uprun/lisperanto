@@ -14,6 +14,7 @@ body {
   /* Margin bottom by footer height */
   color: inherit;
   background-color: inherit;
+  font-family: 'Input Mono', monospace;
 }
 .my-function-result
 {
