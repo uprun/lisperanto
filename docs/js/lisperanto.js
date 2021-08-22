@@ -816,7 +816,11 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.openFunction(lookup.omniBoxSelectedFunction());
 };
 
-
+lookup.removeEverything = function()
+{
+    localStorage.clear();
+    location.reload();
+};
 
 function Lisperanto()
 {
