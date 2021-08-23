@@ -800,7 +800,7 @@ lookup.openOmniBoxForFunction = function(caller)
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
-    lookup.filloutOmniBoxDataForFunction(callerId);
+    lookup.filloutOmniBoxDataForFunction(caller.id);
 };
 
 lookup.hideOmniBox = function()
