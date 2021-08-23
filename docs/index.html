@@ -21,7 +21,7 @@
             </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
             </div>
-            <span data-bind="if: type !== 'built-in-function'">
+            <span data-bind="if: type !== 'built-in-function', attr: {id: 'body--' + $data.id}">
                 <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
                 <span data-bind="if: parameters().length == 0">
                     <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
@@ -41,13 +41,13 @@
         </div>
         <br>
         <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-            <input data-bind="value: $root.constantIntValue" /></p>
+            <input data-bind="value: $root.constantIntValue" />
             <button data-bind="click: $root.addConstant">add constant</button>
         </div>
         <br>
 
         <div class="text-center" data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-            <input data-bind="value: $root.symbolToAdd" /></p>
+            <input data-bind="value: $root.symbolToAdd" />
             <button data-bind="click: $root.addSymbol">add symbol</button>
         </div>
         <br>
@@ -145,7 +145,15 @@
 
     </div>
 
-    <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible">
+    <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
+        <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+            <input data-bind="value: $root.omniBoxTextInput" />
+            
+        </div>
+        <div data-bind="foreach: $root.functionsLookup">
+            <div data-bind="text: $data.text"></div>
+
+        </div>
         <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
             <span data-bind="click: $root.omniBoxOpenFunctionAction">
                 Go to definition
