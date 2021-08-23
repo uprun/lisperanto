@@ -409,18 +409,17 @@ lookup.focusOnBody = function(obj)
 
 };
 
-lookup.focusOnParameter = function(obj)
+lookup.focusOnParameter = function(objId)
 {
-    lookup.focusedObj(lookup.customObjects[obj]);
+    lookup.focusedObj(lookup.customObjects[objId]);
     lookup.activeOperation("focusOnParameter");
-    lookup.filloutOmniBoxDataForFunction(obj.id);
+    lookup.filloutOmniBoxDataForFunction(objId);
 
 };
 
-lookup.constantIntValue = ko.observable(0);
 lookup.addConstant = function()
 {
-    var guid = lookup.defineConstantInt(lookup.constantIntValue());
+    var guid = lookup.defineConstantInt(lookup.omniBoxTextInput().trim());
     var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -448,11 +447,11 @@ lookup.addConstant = function()
 
 };
 
-lookup.functionToAdd = ko.observable();
-lookup.addFunction = function()
+
+lookup.addFunction = function(funcObj)
 {
     var obj = lookup.focusedObj();
-    var guid = lookup.defineFunctionCall(lookup.functionToAdd().id);
+    var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -478,13 +477,11 @@ lookup.addFunction = function()
     lookup.activeOperation("");
 
 };
-
-lookup.symbolToAdd = ko.observable("");
 
 lookup.addSymbol = function()
 {
     var obj = lookup.focusedObj();
-    var guid = lookup.defineSymbolUsage(lookup.symbolToAdd());
+    var guid = lookup.defineSymbolUsage(lookup.omniBoxTextInput().trim());
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -814,9 +811,10 @@ lookup.hideOmniBox = function()
 
 lookup.omniBoxOpenFunctionAction = function()
 {
+    var functionToOpen = lookup.omniBoxSelectedFunction();
     lookup.hideOmniBox();
     event.stopPropagation();
-    lookup.openFunction(lookup.omniBoxSelectedFunction());
+    lookup.openFunction(functionToOpen);
     lookup.omniBoxSelectedFunction(undefined);
 };
 
