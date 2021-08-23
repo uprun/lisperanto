@@ -405,7 +405,7 @@ lookup.focusOnBody = function(obj)
 {
     lookup.focusedObj(obj);
     lookup.activeOperation("focusOnBody");
-    lookup.filloutOmniBoxDataForFunction( 'body--' + obj.id);
+    lookup.filloutOmniBoxDataForFunction( 'body-last-item--' + obj.id);
 
 };
 
@@ -809,6 +809,7 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 lookup.hideOmniBox = function()
 {
     lookup.omniBoxVisible(false);
+    lookup.omniBoxSelectedFunction(undefined);
 };
 
 lookup.omniBoxOpenFunctionAction = function()
@@ -816,6 +817,7 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideOmniBox();
     event.stopPropagation();
     lookup.openFunction(lookup.omniBoxSelectedFunction());
+    lookup.omniBoxSelectedFunction(undefined);
 };
 
 lookup.omniBoxClick = function()
