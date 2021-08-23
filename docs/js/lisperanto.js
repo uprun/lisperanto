@@ -405,20 +405,21 @@ lookup.focusOnBody = function(obj)
 {
     lookup.focusedObj(obj);
     lookup.activeOperation("focusOnBody");
+    lookup.filloutOmniBoxDataForFunction( 'body-last-item--' + obj.id);
 
 };
 
-lookup.focusOnParameter = function(obj)
+lookup.focusOnParameter = function(objId)
 {
-    lookup.focusedObj(lookup.customObjects[obj]);
+    lookup.focusedObj(lookup.customObjects[objId]);
     lookup.activeOperation("focusOnParameter");
+    lookup.filloutOmniBoxDataForFunction(objId);
 
 };
 
-lookup.constantIntValue = ko.observable(0);
 lookup.addConstant = function()
 {
-    var guid = lookup.defineConstantInt(lookup.constantIntValue());
+    var guid = lookup.defineConstantInt(lookup.omniBoxTextInput().trim());
     var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -446,11 +447,11 @@ lookup.addConstant = function()
 
 };
 
-lookup.functionToAdd = ko.observable();
-lookup.addFunction = function()
+
+lookup.addFunction = function(funcObj)
 {
     var obj = lookup.focusedObj();
-    var guid = lookup.defineFunctionCall(lookup.functionToAdd().id);
+    var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -476,13 +477,11 @@ lookup.addFunction = function()
     lookup.activeOperation("");
 
 };
-
-lookup.symbolToAdd = ko.observable("");
 
 lookup.addSymbol = function()
 {
     var obj = lookup.focusedObj();
-    var guid = lookup.defineSymbolUsage(lookup.symbolToAdd());
+    var guid = lookup.defineSymbolUsage(lookup.omniBoxTextInput().trim());
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -778,9 +777,9 @@ lookup.hideEverythingExcept = function(toShow)
 lookup.omniBoxVisible = ko.observable(false);
 lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
-lookup.filloutOmniBoxDataForFunction = function(caller) 
+lookup.filloutOmniBoxDataForFunction = function(callerId) 
 {
-    var foundUI = $("#" + caller.id)[0];
+    var foundUI = $("#" + callerId)[0];
     var omnibox = $(".contextual-omni-box");
     omnibox.css({
         top: foundUI.offsetTop + foundUI.offsetHeight,
@@ -793,7 +792,7 @@ lookup.filloutOmniBoxDataForFunction = function(caller)
 lookup.openOmniBoxForFunction = function(caller)
 {
     lookup.omniBoxSelectedFunction(caller);
-    lookup.filloutOmniBoxDataForFunction(caller);
+    lookup.filloutOmniBoxDataForFunction(caller.id);
 };
 
 
@@ -801,22 +800,30 @@ lookup.openOmniBoxForFunction = function(caller)
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
-    lookup.filloutOmniBoxDataForFunction(caller);
+    lookup.filloutOmniBoxDataForFunction(caller.id);
 };
 
 lookup.hideOmniBox = function()
 {
     lookup.omniBoxVisible(false);
+    lookup.omniBoxSelectedFunction(undefined);
 };
 
 lookup.omniBoxOpenFunctionAction = function()
 {
+    var functionToOpen = lookup.omniBoxSelectedFunction();
     lookup.hideOmniBox();
     event.stopPropagation();
-    lookup.openFunction(lookup.omniBoxSelectedFunction());
+    lookup.openFunction(functionToOpen);
+    lookup.omniBoxSelectedFunction(undefined);
 };
 
+lookup.omniBoxClick = function()
+{
+    event.stopPropagation();
+};
 
+lookup.omniBoxTextInput = ko.observable("");
 
 function Lisperanto()
 {
