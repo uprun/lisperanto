@@ -106,8 +106,23 @@ a
 
 .webpad-button-paddings
 {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.lisperanto-div-button
+{
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    display: inline-block;
+    border-style: solid; 
+    border-width: 0.2rem;
+    border-color: #f8e755;
+    border-radius: 0.7rem;
 }
 
 .webpad-brightness-dimmed

@@ -25,9 +25,15 @@
             <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
             </div>
             <span data-bind="if: type !== 'built-in-function', attr: {id: 'body--' + $data.id}">
-                <button style="margin-left: 2rem;" data-bind="click: $root.activateAddingParameterTool">add</button>
+                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.activateAddingParameterTool">
+                        add
+                </div>
                 <span data-bind="if: parameters().length == 0">
-                    <button style="margin-left: 2rem;" data-bind="click: $root.startEvaluation">evaluate</button>
+                    <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.startEvaluation">
+                        evaluate
+                    </div>
                     <span data-bind="text: evaluationResult"></span>
                 </span>
                 <span data-bind="ifnot: parameters().length == 0">
@@ -39,22 +45,21 @@
                 </div>
                 <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
                 </div>
-                <div style="margin-left: 2rem; font-size: 1.2rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                <div style="margin-left: 2rem; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
                     data-bind="click: $root.focusOnBody, attr: {id: 'body-last-item--' + $data.id}">
                     focus
                 </div>
-                <!-- <button style="margin-left: 2rem;" data-bind="click: $root.focusOnBody, attr: {id: 'body-last-item--' + $data.id}">focus</button> -->
             </span>
         </div>
         <br>
         <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
-            <input data-bind="value: $root.newFunctionName" /></p>
-            <button data-bind="click: $root.renameFunction">rename function</button>
+            <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type new function name" data-bind="value: $root.newFunctionName" /></p>
+            <div class="lisperanto-div-button webpad-color-blue" data-bind="click: $root.renameFunction">rename function</div>
         </div>
         <br>
         <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
-            <input data-bind="value: $root.newParameterName" /></p>
-            <button data-bind="click: $root.addParameter">add parameter</button>
+            <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type parameter name" data-bind="value: $root.newParameterName" /></p>
+            <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>
     </script>
     <script type="text/html" id="parameter-value-template">
@@ -63,7 +68,10 @@
             </div>
             <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined", attr: {id: $data} '>
                 <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
-                <button data-bind="click: $root.focusOnParameter">focus</button>
+                <div style="margin-left: 2rem; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    data-bind="click: $root.focusOnParameter">
+                    focus
+                </div>
             <span>
         </div>
     </script>
@@ -111,10 +119,18 @@
         </div>
     </script>
     <div class="text-center">
-        <button data-bind="click: $root.createFunction">create function </button>
-        <button data-bind="click: $root.openListOfFunctions">open list of functions </button>
-        <button onclick="lookup.removeEverything()">Reset</button>
-
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.createFunction">
+            create function
+        </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.openListOfFunctions">
+            open list of functions
+        </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            onclick="lookup.removeEverything()">
+            Reset
+        </div>
     </div>
     <div data-bind="if: $root.listOfFunctionsIsActive()">
         <div class="text-left" data-bind="foreach: functionsArray">
@@ -136,7 +152,7 @@
     <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
         <div class="webpad-sky-frame diagonal-stripes-background">
             <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-                <input style="font-size: 1.2rem;" class="omni-box-input" placeholder="type something here" data-bind="value: $root.omniBoxTextInput" />
+                <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type something here" data-bind="value: $root.omniBoxTextInput" />
                 <div data-bind="click: $root.addConstant">add constant</div>
                 <div data-bind="click: $root.addSymbol">add symbol</div>
                 <div data-bind="foreach: $root.functionsLookup">
@@ -145,7 +161,7 @@
             </div>
             
             <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                <span data-bind="click: $root.omniBoxOpenFunctionAction">
+                <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                     Go to definition
                 </span>
             </div>
