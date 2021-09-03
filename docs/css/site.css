@@ -35,7 +35,121 @@ body {
   z-index: 10;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+.diagonal-stripes-background
+{
   background: repeating-linear-gradient( 45deg, #3d4574, #3d4574 2rem, #283058 2rem, #283058 4rem );
 }
+
+
+
+
+.webpad-color-orange{ 
+  color: #ffa26b;
+}
+
+.webpad-color-blue{ 
+  color: #84bfff;
+}
+
+.weboad-color-pink{ 
+  color: #ff94eb;
+}
+
+.webpad-color-green{ 
+  color: #64e05e;
+}
+
+.webpad-color-yellow{ 
+  color: #f8e755;
+}
+
+.webpad-color-light-pink{ 
+  color: #ffbbdc;
+}
+
+.webpad-color-purple{ 
+  color: #d190ff;
+}
+
+.webpad-color-coral{ 
+  color: #ff8f95;
+}
+
+
+
+button
+{
+    background: inherit;
+    color: inherit;
+}
+input
+{
+    background:inherit;
+    color: inherit;
+}
+
+
+a 
+{
+    color: inherit;
+    background: inherit;
+    text-decoration: underline;
+}
+
+.webpad-button-no-border
+{
+    /* border-style: none; */
+    display: inline-block;
+}
+
+.webpad-button-paddings
+{
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.webpad-brightness-dimmed
+{
+    filter: brightness(70%);
+}
+
+.webpad-golden-frame
+{
+  border-style: solid; 
+  border-width: 0.2rem;
+  border-color: #f8e755;
+  border-radius: 0.7rem;
+}
+
+.webpad-sky-frame
+{
+  border-style: solid; 
+  border-width: 0.2rem;
+  border-color: #84bfff;
+  border-radius: 0.7rem;
+}
+
+.omni-box-input
+{
+    min-width: 20em;
+    color: #64e05e;
+    border-radius: .3em;
+    border-style: solid;
+    border-color: aliceblue;
+    padding-left: .3em;
+    padding-right: .3em;
+    padding-bottom: .3em;
+    padding-top: .3em;
+}
+
+.omni-box-input::placeholder
+{
+    color: inherit;
+    filter: brightness(70%);
+}
+
+
 
 
