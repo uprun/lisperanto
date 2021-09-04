@@ -82,6 +82,11 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
                 }
+
+                if(value.type === "thought-idea-placeholder")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreThoughtIdeaPlaceholder(value);
+                }
                 
             }
         }
@@ -387,7 +392,34 @@ lookup.defineParameter = function(parameter)
     };
     lookup.operationsPush(operation);
     return guid;
-}
+};
+
+lookup.defineThoughtIdeaPlaceholder = function(text)
+{
+    var guid = lookup.uuidv4();
+    
+    
+    lookup.customObjects[guid] = 
+    {
+        id: guid,
+        type: "thought-idea-placeholder",
+        idea: text
+    };
+    var operation = 
+    {
+        operation: "define-thought-idea-placeholder",
+        guid: guid,
+        idea: text
+    };
+    lookup.operationsPush(operation);
+    return guid;
+};
+
+lookup.tryRestoreThoughtIdeaPlaceholder = function(value)
+{
+    value.idea = ko.observable(value.idea);
+    return value;
+};
 
 
 lookup.uuidv4 = function() {
@@ -824,6 +856,33 @@ lookup.omniBoxClick = function()
 };
 
 lookup.omniBoxTextInput = ko.observable("");
+
+lookup.tryParseOmniBox = function()
+{
+    var toTest = lookup.omniBoxTextInput().trim();
+    var intRegExp = new RegExp('^\\d+$');
+    if(intRegExp.test(toTest))
+    {
+        lookup.addConstant();
+    }
+
+
+};
+
+lookup.omniBoxInputKeyPress = function(data, event) 
+{
+    if(event.shiftKey)
+    {
+    }
+    else
+    {
+        if(event.keyCode == 13)
+        {
+            lookup.tryParseOmniBox();
+        }
+    }
+    return true;
+};
 
 function Lisperanto()
 {
