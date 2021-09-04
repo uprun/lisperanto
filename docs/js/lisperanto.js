@@ -45,6 +45,21 @@ lookup.operations = [];
 
 lookup.operationsPush = function(some)
 {
+    if(some.operation === "set-parameter-value")
+    {
+        var parameterValueObj = lookup.customObjects[some.parameterValueGuid];
+        var functionCallObj = lookup.customObjects[parameterValueObj.functionCallGuid];
+        if(functionCallObj.functionGuid === "code-block")
+        {
+            const lastParameterId = functionCallObj.parameters().length - 1;
+            var lastParameterGuid = functionCallObj.parameters()[lastParameterId];
+            var lastParameterObj = lookup.customObjects[lastParameterGuid];
+            if( typeof(lastParameterObj.guidToUse()) !== "undefined" )
+            {
+                lookup.addParameterValueByNumber(functionCallObj, functionCallObj.functionGuid, 0);
+            }
+        }
+    }
     lookup.operations.push(some);
     var toSerialize = {};
     for (const [key, value] of Object.entries(lookup.customObjects)) {
@@ -207,6 +222,11 @@ lookup.builtInFunctionsArray = [
         id: "less-or-equal",
         name: "<=",
         parameters: ["a", "b"]
+    },
+    {
+        id: "code-block",
+        name: "code-block",
+        parameters: ["next"]
     }
 ];
 
@@ -219,15 +239,32 @@ lookup.defineListOfPredefinedFunctions = function()
     }
 }
 
-//TODO: need to parse https://en.wikipedia.org/wiki/List_of_computer_scientists
+//this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
 [
-    "Edsger Dijkstra",
-    "Alan Turing",
-    "Alan Kay",
-    "Dines Bjørner",
-    "John McCarthy"
+    "Edsger Dijkstra (Dijkstra graph algorithm)",
+    "Alan Turing (Turing machine)",
+    "Alan Kay (Smalltalk)",
+    "Dan Ingalls (Smalltalk)", 
+    "Adele Goldberg (Smalltalk)", 
+    "Ted Kaehler (Smalltalk)", 
+    "Diana Merry (Smalltalk)", 
+    "Scott Wallace (Smalltalk)", 
+    "Peter Deutsch (Smalltalk)",
+    "Xerox PARC (Smalltalk)",
+    "John McCarthy (Lisp)",
+    "Steve Russell (Lisp)", 
+    "Timothy P. Hart (Lisp)",
+    "Mike Levin (Lisp)",
+    "Joe Armstrong (Erlang)",
+    "Robert Virding (Erlang)",
+    "Mike Williams (Erlang)",
+    "Bret Victor (The Future of Programming talk)",
+    "Carl Hewitt (Actor model, Planner)",
+    "Alain Colmerauer (Prolog)", 
+    "Robert Kowalski (Prolog)",
 ];
+
 lookup.getRandomInt = function(max) {
     return Math.floor(Math.random() * max);
   };  
@@ -240,7 +277,7 @@ lookup.createFunction = function()
         id: guid,
         type: "function",
         name: ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]),
-        body: ko.observableArray([]),
+        body: ko.observable(lookup.defineFunctionCall("code-block")),
         parameters: ko.observableArray([]),
         evaluationResult: ko.observable("")
 
@@ -261,7 +298,7 @@ lookup.tryRestoreFunction = function(value)
 {
     value.name = ko.observable(value.name);
     value.parameters = ko.observableArray(value.parameters);
-    value.body = ko.observableArray(value.body);
+    value.body = ko.observable(value.body);
     value.evaluationResult = ko.observable("");
     return value;
 };
@@ -321,7 +358,7 @@ lookup.defineSymbolUsage = function(symbol)
     return guid;
 };
 
-lookup.defineParameterValue = function(parameterGuid, guidToUse)
+lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
 {
     var guid = lookup.uuidv4();
     
@@ -331,13 +368,15 @@ lookup.defineParameterValue = function(parameterGuid, guidToUse)
         id: guid,
         type: "parameter-value",
         parameterGuid: parameterGuid,
-        guidToUse: ko.observable(guidToUse)
+        guidToUse: ko.observable(guidToUse),
+        functionCallGuid: functionCallGuid
     };
     var operation = 
     {
         operation: "parameter-value",
         guid: guid,
-        parameterGuid: parameterGuid
+        parameterGuid: parameterGuid,
+        functionCallGuid: functionCallGuid
     };
     lookup.operationsPush(operation);
     return guid;
@@ -355,22 +394,22 @@ lookup.defineFunctionCall = function( functionGuid)
     var functionToCallName = toWorkWith.name
     var guid = lookup.uuidv4();
     
-    var toAdd = {
+    var functionUsageToAdd = {
         id: guid,
         type: "function-usage",
         functionName: functionToCallName,
         functionGuid: functionGuid,
-        parameters: [],
+        parameters: ko.observableArray([]),
         evaluationResult: ko.observable("")
     };
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined);
-        toAdd.parameters.push(parameterValue);
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, functionUsageToAdd.id);
+        functionUsageToAdd.parameters.push(parameterValue);
     }
 
     
-    lookup.customObjects[guid] = toAdd;
+    lookup.customObjects[guid] = functionUsageToAdd;
 
     var operation = 
     {
@@ -384,10 +423,21 @@ lookup.defineFunctionCall = function( functionGuid)
     return guid;
 };
 
+lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
+{
+    var toWorkWith = lookup.customObjects[functionGuid];
+    if( parameterNumber< toWorkWith.parameters().length)
+    {
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[parameterNumber], undefined, functionUsageToAdd.id);
+        functionUsageToAdd.parameters.push(parameterValue);
+    }
+};
+
 
 lookup.tryRestoreFunctionUsage = function(value)
 {
-    for (const [key, parameterValue] of Object.entries(value.parameters)) 
+    value.parameters = ko.observableArray(value.parameters);
+    for (const [key, parameterValue] of Object.entries(value.parameters())) 
     {
         parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
     }
@@ -428,14 +478,6 @@ lookup.activeOperation = ko.observable("");
 
 lookup.focusedObj = ko.observable({});
 
-lookup.focusOnBody = function(obj)
-{
-    lookup.focusedObj(obj);
-    lookup.activeOperation("focusOnBody");
-    lookup.filloutOmniBoxDataForFunction( 'body-last-item--' + obj.id);
-
-};
-
 lookup.focusOnParameter = function(objId)
 {
     lookup.focusedObj(lookup.customObjects[objId]);
@@ -447,17 +489,6 @@ lookup.focusOnParameter = function(objId)
 lookup.addConstant = function(text, obj)
 {
     var guid = lookup.defineConstantInt(text);
-    if(lookup.activeOperation() === "focusOnBody" )
-    {
-        lookup.customObjects[obj.id].body.push(guid);
-        var operation = 
-        {
-            operation: "push-to-function-body",
-            guidToPush: guid,
-            functionGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -477,17 +508,6 @@ lookup.addConstant = function(text, obj)
 lookup.addFunction = function(funcObj, obj)
 {
     var guid = lookup.defineFunctionCall(funcObj.id);
-    if(lookup.activeOperation() === "focusOnBody" )
-    {
-        lookup.customObjects[obj.id].body.push(guid);
-        var operation = 
-        {
-            operation: "push-to-function-body",
-            guidToPush: guid,
-            functionGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -513,17 +533,6 @@ lookup.addFunctionByClick = function(funcObj)
 lookup.addSymbol = function(text, obj)
 {
     var guid = lookup.defineSymbolUsage(text);
-    if(lookup.activeOperation() === "focusOnBody" )
-    {
-        lookup.customObjects[obj.id].body.push(guid);
-        var operation = 
-        {
-            operation: "push-to-function-body",
-            guidToPush: guid,
-            functionGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -543,6 +552,7 @@ lookup.activateRenameFunctionTool = function(obj)
     lookup.focusedObj(obj);
     lookup.activeOperation("activateRenameFunctionTool");
     lookup.newFunctionName(obj.name());
+    event.stopPropagation();
 };
 
 lookup.renameFunction = function()
@@ -572,6 +582,7 @@ lookup.activateAddingParameterTool = function(obj)
     lookup.focusedObj(obj);
     lookup.activeOperation("activateAddingParameterTool");
     lookup.newParameterName("");
+    event.stopPropagation();
     //TODO: find undefined symbols in a function to suggest them
     //TODO: find undefined symbols in a subtree when adding (let x someting)
 };
@@ -608,9 +619,9 @@ lookup.makeCopyOfContext = function( context)
 lookup.findBuiltInParameterById = function (parameters, name, functionDefinition)
 {
     var toCheck = functionDefinition.id + '#' + name;
-    for(var k = 0; k < parameters.length; k++)
+    for(var k = 0; k < parameters().length; k++)
     {
-        var parameterUsage = lookup.customObjects[parameters[k]];
+        var parameterUsage = lookup.customObjects[parameters()[k]];
         if(lookup.customObjects[parameterUsage.parameterGuid].id === toCheck)
         {
             return parameterUsage;
@@ -622,10 +633,9 @@ lookup.startEvaluation = function(obj)
 {
     var rootContext = {};
     var result = "";
-
-    for(var k = 0; k < obj.body().length; k++)
+    if(typeof(obj.body()) !== "undefined")
     {
-        result = lookup.evaluate(obj.body()[k], rootContext);
+        result = lookup.evaluate(obj.body(), rootContext);
     }
     obj.evaluationResult(result);
 };
@@ -670,6 +680,10 @@ lookup.evaluate = function(guid, context)
                     {
                         result = lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
                     }
+                    if(functionDefinition.id === "code-block")
+                    {
+                        result = lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+                    }
                 }
                 if(functionDefinition.type === "function")
                 {
@@ -695,9 +709,9 @@ lookup.evaluate = function(guid, context)
 lookup.evaluateUserFunctionCall = function(toWork, functionDefinition, context)
 {
     var localContext = lookup.makeCopyOfContext(context);
-    for(var k = 0; k < toWork.parameters.length; k++)
+    for(var k = 0; k < toWork.parameters().length; k++)
     {
-        var parameterUsage = lookup.customObjects[toWork.parameters[k]];
+        var parameterUsage = lookup.customObjects[toWork.parameters()[k]];
         if(parameterUsage.type === 'parameter-value')
         {
             var parameterDefinition = lookup.customObjects[parameterUsage.parameterGuid];
@@ -705,10 +719,11 @@ lookup.evaluateUserFunctionCall = function(toWork, functionDefinition, context)
         }
     }
     var result = "";
-    for(var k = 0; k < functionDefinition.body().length; k++)
+    if(typeof(functionDefinition.body()) !== "undefined")
     {
-        result = lookup.evaluate(functionDefinition.body()[k], localContext);
+        result = lookup.evaluate(functionDefinition.body(), localContext);
     }
+
     return result;
 };
 
@@ -768,6 +783,19 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     return a / b;
+};
+
+lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext) {
+    var result = undefined;
+    for(var k = 0; k < toWork.parameters().length; k++)
+    {
+        var parameterUsage = lookup.customObjects[toWork.parameters()[k]];
+        if(typeof(parameterUsage.guidToUse()) !== "undefined")
+        {
+            result = lookup.evaluate(parameterUsage.guidToUse(), localContext);
+        }
+    }
+    return result;
 };
 
 
@@ -857,6 +885,11 @@ lookup.omniBoxClick = function()
     event.stopPropagation();
 };
 
+lookup.stopPropagation = function()
+{
+    event.stopPropagation();
+};
+
 lookup.preParsedOmniBoxValueInformation = ko.observable("");
 
 lookup.preParseOmniBox = function()
@@ -893,7 +926,7 @@ lookup.preParseOmniBox = function()
             }
             else
             {
-                let words = lowerCasedToTest.split(' ');
+                let words = toTest.split(' ').filter(x => x.length > 0);
                 if(words.length === 2 )
                 {
                     result = "1 word from binary";
@@ -942,7 +975,7 @@ lookup.tryParseOmniBox = function(toTest, obj)
             }
             else
             {
-                let words = lowerCasedToTest.split(' ');
+                let words = toTest.split(' ').filter(x => x.length > 0);
                 if(words.length === 3)
                 {
                     var foundFunctionsTriple = lookup.findFunctionsWithSameName(words[1]);
@@ -950,8 +983,8 @@ lookup.tryParseOmniBox = function(toTest, obj)
                     {
                         var guidOfFunction = lookup.addFunction(foundFunctionsTriple[0], obj);
                         
-                        var firstParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[0]];
-                        var secondParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[1]];
+                        var firstParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters()[0]];
+                        var secondParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters()[1]];
                         lookup.activeOperation("focusOnParameter");
                         lookup.tryParseOmniBox(words[0], firstParameterUsageObj);
                         lookup.activeOperation("focusOnParameter");
@@ -988,7 +1021,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
         }
         else
         {
-            console.log(event.keyCode);
+            //console.log(event.keyCode);
         }
     }
     return true;
@@ -1001,7 +1034,7 @@ lookup.tryParseOmniBoxByClick = function()
 
 lookup.omniBoxInputKeyUp = function( data, event)
 {
-    console.log(event.code);
+    //console.log(event.code);
     if(event.code === "Escape")
     {
         lookup.hideOmniBox();

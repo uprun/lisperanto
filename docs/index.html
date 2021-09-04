@@ -43,21 +43,17 @@
                 <div>
                     body:
                 </div>
-                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', foreach: body }">
-                </div>
-                <div style="margin-left: 2rem; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.focusOnBody, attr: {id: 'body-last-item--' + $data.id}">
-                    focus
+                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
             </span>
         </div>
         <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool', click: $root.stopPropagation">
             <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type new function name" data-bind="value: $root.newFunctionName" /></p>
             <div class="lisperanto-div-button webpad-color-blue" data-bind="click: $root.renameFunction">rename function</div>
         </div>
         <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool', click: $root.stopPropagation">
             <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type parameter name" data-bind="value: $root.newParameterName" /></p>
             <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>
@@ -151,7 +147,7 @@
 
     <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
         <div class="webpad-sky-frame diagonal-stripes-background">
-            <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+            <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
                 <input id="popup-omni-box-input" 
                     style="font-size: 1.2rem; margin: 0.2em;" 
                     class="omni-box-input" 
@@ -164,7 +160,7 @@
                         Go to definition
                     </span>
                 </div>
-                <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
                         add as 
