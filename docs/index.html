@@ -152,7 +152,11 @@
     <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
         <div class="webpad-sky-frame diagonal-stripes-background">
             <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-                <input id="popup-omni-box-input" style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type something here" data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress}" />
+                <input id="popup-omni-box-input" 
+                    style="font-size: 1.2rem; margin: 0.2em;" 
+                    class="omni-box-input" 
+                    placeholder="type something here" 
+                    data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress, keyup: $root.omniBoxInputKeyUp}" />
             </div>
             <div class="omnibox-options">
                 <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
@@ -161,8 +165,10 @@
                     </span>
                 </div>
                 <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-                    <div data-bind="click: $root.addConstant">add constant</div>
-                    <div data-bind="click: $root.addSymbol">add symbol</div>
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.tryParseOmniBox, text: $root.preParsedOmniBoxValueInformation">
+                        add as 
+                    </div>
                     <div data-bind="foreach: $root.functionsLookup">
                         <div data-bind="text: $data.text, click: $root.addFunction"></div>
                     </div>

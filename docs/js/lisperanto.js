@@ -815,6 +815,7 @@ lookup.filloutOmniBoxDataForFunction = function(callerId)
     });
     lookup.omniBoxVisible(true);
     $("#popup-omni-box-input").focus();
+    lookup.preParseOmniBox();
     event.stopPropagation();
 };
 
@@ -852,10 +853,46 @@ lookup.omniBoxClick = function()
     event.stopPropagation();
 };
 
-
+lookup.preParsedOmniBoxValueInformation = ko.observable("");
 
 lookup.preParseOmniBox = function()
 {
+    var toTest = lookup.omniBoxTextInput().trim();
+    if(toTest === "")
+    {
+        lookup.preParsedOmniBoxValueInformation("empty");
+    }
+    else
+    {
+        var result = "";
+        var intRegExp = new RegExp('^\\d+$');
+        if(intRegExp.test(toTest))
+        {
+            result = "integer";
+        }
+        else
+        {
+            //var symbolRegExp = new RegExp('^\\D.*$');
+
+            // this is either symbol either function call
+            // this can also be command or macros
+            // or image or matrix or float or string but later
+            var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+            {
+                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
+            });
+            if(filtered.length === 1)
+            {
+                result = "function";
+            }
+            else
+            {
+                result = "symbol";
+            }
+        }
+        lookup.preParsedOmniBoxValueInformation("add as " + result);
+    }
+    
 
 };
 
@@ -863,22 +900,35 @@ lookup.tryParseOmniBox = function()
 {
     lookup.hideOmniBox();
     var toTest = lookup.omniBoxTextInput().trim();
-    var intRegExp = new RegExp('^\\d+$');
-    if(intRegExp.test(toTest))
+    if(toTest !== "")
     {
-        lookup.addConstant(toTest);
+        var intRegExp = new RegExp('^\\d+$');
+        if(intRegExp.test(toTest))
+        {
+            lookup.addConstant(toTest);
+        }
+        else
+        {
+            //var symbolRegExp = new RegExp('^\\D.*$');
+
+            // this is either symbol either function call
+            // this can also be command or macros
+            // or image or matrix or float or string but later
+            var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+            {
+                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
+            });
+            if(filtered.length === 1)
+            {
+                lookup.addFunction(filtered[0]);
+            }
+            else
+            {
+                lookup.addSymbol(toTest);
+            }
+        }
     }
-    else
-    {
-        lookup.addSymbol(toTest);
-        // this is either symbol either function call
-
-    }
-
-
-    //var symbolRegExp = new RegExp('^\\D.*$');
-
-
+    lookup.omniBoxTextInput("");
 };
 
 lookup.omniBoxInputKeyPress = function(data, event) 
@@ -892,8 +942,22 @@ lookup.omniBoxInputKeyPress = function(data, event)
         {
             lookup.tryParseOmniBox();
         }
+        else
+        {
+            console.log(event.keyCode);
+        }
     }
     return true;
+};
+
+lookup.omniBoxInputKeyUp = function( data, event)
+{
+    console.log(event.code);
+    if(event.code === "Escape")
+    {
+        lookup.hideOmniBox();
+    }
+
 };
 
 function Lisperanto()
