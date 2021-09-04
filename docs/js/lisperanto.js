@@ -476,10 +476,6 @@ lookup.addConstant = function(text, obj)
 
 lookup.addFunction = function(funcObj, obj)
 {
-    if(typeof(obj) === "undefined")
-    {
-        obj = lookup.focusedObj();
-    }
     var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -507,6 +503,11 @@ lookup.addFunction = function(funcObj, obj)
     lookup.hideOmniBox();
     return guid;
 
+};
+
+lookup.addFunctionByClick = function(funcObj)
+{
+    lookup.addFunction(funcObj, lookup.focusedObj());
 };
 
 lookup.addSymbol = function(text, obj)
@@ -901,14 +902,6 @@ lookup.preParseOmniBox = function()
 
 lookup.tryParseOmniBox = function(toTest, obj)
 {
-    if(typeof(toTest) === "undefined")
-    {
-        toTest = lookup.omniBoxTextInput().trim();
-    }
-    if(typeof(obj) === "undefined")
-    {
-        obj = lookup.focusedObj();
-    }
     if(toTest !== "")
     {
         var intRegExp = new RegExp('^\\d+$');
@@ -973,6 +966,11 @@ lookup.omniBoxInputKeyPress = function(data, event)
         }
     }
     return true;
+};
+
+lookup.tryParseOmniBoxByClick = function()
+{
+    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
 };
 
 lookup.omniBoxInputKeyUp = function( data, event)
