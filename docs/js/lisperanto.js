@@ -881,9 +881,11 @@ lookup.preParseOmniBox = function()
             // this is either symbol either function call
             // this can also be command or macros
             // or image or matrix or float or string but later
+
+            var lowerCasedToTest = toTest.toLowerCase();
             var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
             {
-                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
+                return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
             });
             if(filtered.length === 1)
             {
@@ -891,10 +893,26 @@ lookup.preParseOmniBox = function()
             }
             else
             {
-                result = "symbol";
+                let words = lowerCasedToTest.split(' ');
+                if(words.length === 2 )
+                {
+                    result = "1 word from binary";
+                }
+                else
+                {
+                    if(words.length === 3)
+                    {
+                        result = "maybe binary";
+                    }
+                    else
+                    {
+                        result = "symbol";
+                    }
+                }
+                
             }
         }
-        lookup.preParsedOmniBoxValueInformation("add as " + result);
+        lookup.preParsedOmniBoxValueInformation(result);
     }
     
 
@@ -931,11 +949,19 @@ lookup.tryParseOmniBox = function(toTest, obj)
                     if(foundFunctionsTriple.length >= 1)
                     {
                         var guidOfFunction = lookup.addFunction(foundFunctionsTriple[0], obj);
-
+                        
+                        var firstParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[0]];
+                        var secondParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[1]];
+                        lookup.activeOperation("focusOnParameter");
+                        lookup.tryParseOmniBox(words[0], firstParameterUsageObj);
+                        lookup.activeOperation("focusOnParameter");
+                        lookup.tryParseOmniBox(words[2], secondParameterUsageObj);
                     }
-
-                    lookup.addSymbol(toTest, obj);
-
+                    else
+                    { 
+                        // no binary function found
+                        lookup.addSymbol(toTest, obj);
+                    }
                 }
                 else
                 {
