@@ -37,6 +37,12 @@ body {
   padding-right: 1rem;
 }
 
+.omnibox-options
+{
+  max-height: 20rem;
+  overflow-y: scroll;
+}
+
 .diagonal-stripes-background
 {
   background: repeating-linear-gradient( 45deg, #3d4574, #3d4574 2rem, #283058 2rem, #283058 4rem );
