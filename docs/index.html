@@ -48,12 +48,12 @@
             </span>
         </div>
         <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool'">
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool', click: $root.stopPropagation">
             <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type new function name" data-bind="value: $root.newFunctionName" /></p>
             <div class="lisperanto-div-button webpad-color-blue" data-bind="click: $root.renameFunction">rename function</div>
         </div>
         <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool'">
+        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool', click: $root.stopPropagation">
             <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type parameter name" data-bind="value: $root.newParameterName" /></p>
             <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>

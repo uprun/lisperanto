@@ -552,6 +552,7 @@ lookup.activateRenameFunctionTool = function(obj)
     lookup.focusedObj(obj);
     lookup.activeOperation("activateRenameFunctionTool");
     lookup.newFunctionName(obj.name());
+    event.stopPropagation();
 };
 
 lookup.renameFunction = function()
@@ -581,6 +582,7 @@ lookup.activateAddingParameterTool = function(obj)
     lookup.focusedObj(obj);
     lookup.activeOperation("activateAddingParameterTool");
     lookup.newParameterName("");
+    event.stopPropagation();
     //TODO: find undefined symbols in a function to suggest them
     //TODO: find undefined symbols in a subtree when adding (let x someting)
 };
@@ -879,6 +881,11 @@ lookup.omniBoxOpenFunctionAction = function()
 };
 
 lookup.omniBoxClick = function()
+{
+    event.stopPropagation();
+};
+
+lookup.stopPropagation = function()
 {
     event.stopPropagation();
 };
