@@ -926,7 +926,7 @@ lookup.preParseOmniBox = function()
             }
             else
             {
-                let words = lowerCasedToTest.split(' ');
+                let words = toTest.split(' ').filter(x => x.length > 0);
                 if(words.length === 2 )
                 {
                     result = "1 word from binary";
@@ -975,7 +975,7 @@ lookup.tryParseOmniBox = function(toTest, obj)
             }
             else
             {
-                let words = lowerCasedToTest.split(' ');
+                let words = toTest.split(' ').filter(x => x.length > 0);
                 if(words.length === 3)
                 {
                     var foundFunctionsTriple = lookup.findFunctionsWithSameName(words[1]);
