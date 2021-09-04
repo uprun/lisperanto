@@ -837,6 +837,7 @@ lookup.hideOmniBox = function()
 {
     lookup.omniBoxVisible(false);
     lookup.omniBoxSelectedFunction(undefined);
+    lookup.activeOperation("");
 };
 
 lookup.omniBoxOpenFunctionAction = function()
