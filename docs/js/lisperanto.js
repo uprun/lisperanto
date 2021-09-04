@@ -82,11 +82,6 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
                 }
-
-                if(value.type === "thought-idea-placeholder")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreThoughtIdeaPlaceholder(value);
-                }
                 
             }
         }
@@ -394,33 +389,6 @@ lookup.defineParameter = function(parameter)
     return guid;
 };
 
-lookup.defineThoughtIdeaPlaceholder = function(text)
-{
-    var guid = lookup.uuidv4();
-    
-    
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "thought-idea-placeholder",
-        idea: text
-    };
-    var operation = 
-    {
-        operation: "define-thought-idea-placeholder",
-        guid: guid,
-        idea: text
-    };
-    lookup.operationsPush(operation);
-    return guid;
-};
-
-lookup.tryRestoreThoughtIdeaPlaceholder = function(value)
-{
-    value.idea = ko.observable(value.idea);
-    return value;
-};
-
 
 lookup.uuidv4 = function() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -449,9 +417,9 @@ lookup.focusOnParameter = function(objId)
 
 };
 
-lookup.addConstant = function()
+lookup.addConstant = function(text)
 {
-    var guid = lookup.defineConstantInt(lookup.omniBoxTextInput().trim());
+    var guid = lookup.defineConstantInt(text);
     var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -818,6 +786,7 @@ lookup.filloutOmniBoxDataForFunction = function(callerId)
         left: foundUI.offsetLeft
     });
     lookup.omniBoxVisible(true);
+    $("#popup-omni-box-input").focus();
     event.stopPropagation();
 };
 
@@ -863,8 +832,15 @@ lookup.tryParseOmniBox = function()
     var intRegExp = new RegExp('^\\d+$');
     if(intRegExp.test(toTest))
     {
-        lookup.addConstant();
+        lookup.addConstant(toTest);
     }
+    else
+    {
+        // this is either symbol either function call
+
+    }
+
+    //var symbolRegExp = new RegExp('^\\D.*$');
 
 
 };

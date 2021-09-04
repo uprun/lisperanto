@@ -152,7 +152,7 @@
     <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
         <div class="webpad-sky-frame diagonal-stripes-background">
             <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
-                <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type something here" data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress}" />
+                <input id="popup-omni-box-input" style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type something here" data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress}" />
                 <div data-bind="click: $root.addConstant">add constant</div>
                 <div data-bind="click: $root.addSymbol">add symbol</div>
                 <div data-bind="foreach: $root.functionsLookup">
