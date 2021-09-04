@@ -444,10 +444,9 @@ lookup.focusOnParameter = function(objId)
 
 };
 
-lookup.addConstant = function(text)
+lookup.addConstant = function(text, obj)
 {
     var guid = lookup.defineConstantInt(text);
-    var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -475,10 +474,8 @@ lookup.addConstant = function(text)
 };
 
 
-lookup.addFunction = function(funcObj)
+lookup.addFunction = function(funcObj, obj)
 {
-    lookup.hideOmniBox();
-    var obj = lookup.focusedObj();
     var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -503,12 +500,18 @@ lookup.addFunction = function(funcObj)
         lookup.operationsPush(operation);
     }
     lookup.activeOperation("");
+    lookup.hideOmniBox();
+    return guid;
 
 };
 
-lookup.addSymbol = function(text)
+lookup.addFunctionByClick = function(funcObj)
 {
-    var obj = lookup.focusedObj();
+    lookup.addFunction(funcObj, lookup.focusedObj());
+};
+
+lookup.addSymbol = function(text, obj)
+{
     var guid = lookup.defineSymbolUsage(text);
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -837,6 +840,7 @@ lookup.hideOmniBox = function()
 {
     lookup.omniBoxVisible(false);
     lookup.omniBoxSelectedFunction(undefined);
+    lookup.activeOperation("");
 };
 
 lookup.omniBoxOpenFunctionAction = function()
@@ -877,9 +881,11 @@ lookup.preParseOmniBox = function()
             // this is either symbol either function call
             // this can also be command or macros
             // or image or matrix or float or string but later
+
+            var lowerCasedToTest = toTest.toLowerCase();
             var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
             {
-                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
+                return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
             });
             if(filtered.length === 1)
             {
@@ -887,25 +893,39 @@ lookup.preParseOmniBox = function()
             }
             else
             {
-                result = "symbol";
+                let words = lowerCasedToTest.split(' ');
+                if(words.length === 2 )
+                {
+                    result = "1 word from binary";
+                }
+                else
+                {
+                    if(words.length === 3)
+                    {
+                        result = "maybe binary";
+                    }
+                    else
+                    {
+                        result = "symbol";
+                    }
+                }
+                
             }
         }
-        lookup.preParsedOmniBoxValueInformation("add as " + result);
+        lookup.preParsedOmniBoxValueInformation(result);
     }
     
 
 };
 
-lookup.tryParseOmniBox = function()
+lookup.tryParseOmniBox = function(toTest, obj)
 {
-    lookup.hideOmniBox();
-    var toTest = lookup.omniBoxTextInput().trim();
     if(toTest !== "")
     {
         var intRegExp = new RegExp('^\\d+$');
         if(intRegExp.test(toTest))
         {
-            lookup.addConstant(toTest);
+            lookup.addConstant(toTest, obj);
         }
         else
         {
@@ -914,21 +934,45 @@ lookup.tryParseOmniBox = function()
             // this is either symbol either function call
             // this can also be command or macros
             // or image or matrix or float or string but later
-            var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+            var lowerCasedToTest = toTest.toLowerCase();
+            var foundFunctions = lookup.findFunctionsWithSameName(lowerCasedToTest);
+            if(foundFunctions.length === 1)
             {
-                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
-            });
-            if(filtered.length === 1)
-            {
-                lookup.addFunction(filtered[0]);
+                lookup.addFunction(foundFunctions[0], obj);
             }
             else
             {
-                lookup.addSymbol(toTest);
+                let words = lowerCasedToTest.split(' ');
+                if(words.length === 3)
+                {
+                    var foundFunctionsTriple = lookup.findFunctionsWithSameName(words[1]);
+                    if(foundFunctionsTriple.length >= 1)
+                    {
+                        var guidOfFunction = lookup.addFunction(foundFunctionsTriple[0], obj);
+                        
+                        var firstParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[0]];
+                        var secondParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters[1]];
+                        lookup.activeOperation("focusOnParameter");
+                        lookup.tryParseOmniBox(words[0], firstParameterUsageObj);
+                        lookup.activeOperation("focusOnParameter");
+                        lookup.tryParseOmniBox(words[2], secondParameterUsageObj);
+                    }
+                    else
+                    { 
+                        // no binary function found
+                        lookup.addSymbol(toTest, obj);
+                    }
+                }
+                else
+                {
+                    lookup.addSymbol(toTest, obj);
+                }
+                
             }
         }
     }
     lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
 };
 
 lookup.omniBoxInputKeyPress = function(data, event) 
@@ -940,7 +984,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
     {
         if(event.keyCode == 13)
         {
-            lookup.tryParseOmniBox();
+            lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
         }
         else
         {
@@ -948,6 +992,11 @@ lookup.omniBoxInputKeyPress = function(data, event)
         }
     }
     return true;
+};
+
+lookup.tryParseOmniBoxByClick = function()
+{
+    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
 };
 
 lookup.omniBoxInputKeyUp = function( data, event)
@@ -958,6 +1007,13 @@ lookup.omniBoxInputKeyUp = function( data, event)
         lookup.hideOmniBox();
     }
 
+};
+
+lookup.findFunctionsWithSameName = function (lowerCasedToTest) 
+{
+    return ko.utils.arrayFilter(lookup.functionsArray(), function (item) {
+        return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
+    });
 };
 
 function Lisperanto()
