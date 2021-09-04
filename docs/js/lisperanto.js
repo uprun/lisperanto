@@ -1,9 +1,36 @@
 ﻿var lookup = {};
 lookup.customObjects = {};
+lookup.omniBoxTextInput = ko.observable("");
+
+lookup.omniBoxTextInput
+    .extend({ rateLimit: 100 });
+
+lookup.omniBoxTextInput
+    .subscribe(function()
+    {
+        lookup.preParseOmniBox();
+    });
+
 lookup.functionsArray = ko.observableArray([]);
 lookup.functionsLookup = ko.computed(function()
 {
-    return ko.utils.arrayMap(lookup.functionsArray(), function(item) {
+    var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
+    var filtered = [];
+
+    if(searchQuery === "")
+    {
+        filtered = lookup.functionsArray();
+    }
+    else
+    {
+        filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+        {
+            return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
+        });
+
+    }
+     
+    return ko.utils.arrayMap(filtered, function(item) {
         var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
         {
             return lookup.customObjects[item].parameterName;
@@ -450,6 +477,7 @@ lookup.addConstant = function(text)
 
 lookup.addFunction = function(funcObj)
 {
+    lookup.hideOmniBox();
     var obj = lookup.focusedObj();
     var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
@@ -478,10 +506,10 @@ lookup.addFunction = function(funcObj)
 
 };
 
-lookup.addSymbol = function()
+lookup.addSymbol = function(text)
 {
     var obj = lookup.focusedObj();
-    var guid = lookup.defineSymbolUsage(lookup.omniBoxTextInput().trim());
+    var guid = lookup.defineSymbolUsage(text);
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -824,10 +852,16 @@ lookup.omniBoxClick = function()
     event.stopPropagation();
 };
 
-lookup.omniBoxTextInput = ko.observable("");
+
+
+lookup.preParseOmniBox = function()
+{
+
+};
 
 lookup.tryParseOmniBox = function()
 {
+    lookup.hideOmniBox();
     var toTest = lookup.omniBoxTextInput().trim();
     var intRegExp = new RegExp('^\\d+$');
     if(intRegExp.test(toTest))
@@ -836,9 +870,11 @@ lookup.tryParseOmniBox = function()
     }
     else
     {
+        lookup.addSymbol(toTest);
         // this is either symbol either function call
 
     }
+
 
     //var symbolRegExp = new RegExp('^\\D.*$');
 

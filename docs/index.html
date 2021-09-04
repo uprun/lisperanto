@@ -153,18 +153,22 @@
         <div class="webpad-sky-frame diagonal-stripes-background">
             <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
                 <input id="popup-omni-box-input" style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type something here" data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress}" />
-                <div data-bind="click: $root.addConstant">add constant</div>
-                <div data-bind="click: $root.addSymbol">add symbol</div>
-                <div data-bind="foreach: $root.functionsLookup">
-                    <div data-bind="text: $data.text, click: $root.addFunction"></div>
+            </div>
+            <div class="omnibox-options">
+                <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
+                    <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                        Go to definition
+                    </span>
+                </div>
+                <div data-bind="if: $root.activeOperation() === 'focusOnBody' || $root.activeOperation() === 'focusOnParameter'">
+                    <div data-bind="click: $root.addConstant">add constant</div>
+                    <div data-bind="click: $root.addSymbol">add symbol</div>
+                    <div data-bind="foreach: $root.functionsLookup">
+                        <div data-bind="text: $data.text, click: $root.addFunction"></div>
+                    </div>
                 </div>
             </div>
             
-            <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                    Go to definition
-                </span>
-            </div>
 
         </div>
         
