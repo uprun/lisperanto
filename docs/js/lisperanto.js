@@ -988,7 +988,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
         }
         else
         {
-            console.log(event.keyCode);
+            //console.log(event.keyCode);
         }
     }
     return true;
@@ -1001,7 +1001,7 @@ lookup.tryParseOmniBoxByClick = function()
 
 lookup.omniBoxInputKeyUp = function( data, event)
 {
-    console.log(event.code);
+    //console.log(event.code);
     if(event.code === "Escape")
     {
         lookup.hideOmniBox();
