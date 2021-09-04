@@ -104,6 +104,10 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreFunction(value);
                 }
+                if(value.type === "sandbox-unique")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreFunction(value);
+                }
                 if(value.type === "function-usage")
                 {
                     lookup.customObjects[key] = lookup.tryRestoreFunctionUsage(value);
@@ -161,14 +165,14 @@ lookup.defineBuiltInFunction = function (obj)
 {
     var name = obj.name;
     var parameters_list = obj.parameters
-    if(typeof(this.customObjects[name]) === 'undefined')
+    if(typeof(lookup.customObjects[name]) === 'undefined')
     {
         var toAdd ={
             id: obj.id,
             type: "built-in-function",
             name: ko.observable(name),
             parameters: ko.observableArray([]),
-            body: ko.observableArray([])
+            body: ko.observable(undefined)
         };
         for(var k = 0; k < parameters_list.length; k++)
         {
@@ -237,7 +241,35 @@ lookup.defineListOfPredefinedFunctions = function()
         var obj = lookup.builtInFunctionsArray[k];
         lookup.defineBuiltInFunction(obj);
     }
-}
+};
+
+lookup.sandbox = ko.observable(undefined);
+
+lookup.defineSandbox = function()
+{
+    var name = "sandbox-unique";
+    if(typeof(lookup.customObjects[name]) === 'undefined')
+    {
+        var toAdd ={
+            id: "sandbox-unique",
+            type: "sandbox-unique",
+            name: ko.observable(name),
+            parameters: ko.observableArray([]),
+            body: ko.observable(lookup.defineFunctionCall("code-block")),
+            evaluationResult: ko.observable("")
+        };
+        
+        lookup.customObjects[toAdd.id] = toAdd;
+        var operation = 
+        {
+            operation: "define-sandbox",
+            guid: toAdd.id
+        };
+        lookup.operationsPush(operation);
+    }
+
+    lookup.sandbox(lookup.customObjects[name]);
+};
 
 //this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
@@ -302,6 +334,8 @@ lookup.tryRestoreFunction = function(value)
     value.evaluationResult = ko.observable("");
     return value;
 };
+
+
 
 lookup.defineConstantInt = function(c)
 {
@@ -1071,6 +1105,7 @@ $(document).ready(function()
     lookup.loadFromStorage();
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
+    lookup.defineSandbox();
     lookup.restoreFunctionsArray();
     
     ko.applyBindings(viewModel);
