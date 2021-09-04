@@ -859,6 +859,13 @@ lookup.omniBoxTextInput = ko.observable("");
 
 lookup.tryParseOmniBox = function()
 {
+    var toTest = lookup.omniBoxTextInput().trim();
+    var intRegExp = new RegExp('^\\d+$');
+    if(intRegExp.test(toTest))
+    {
+        lookup.addConstant();
+    }
+
 
 };
 
