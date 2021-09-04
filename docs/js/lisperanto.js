@@ -444,10 +444,9 @@ lookup.focusOnParameter = function(objId)
 
 };
 
-lookup.addConstant = function(text)
+lookup.addConstant = function(text, obj)
 {
     var guid = lookup.defineConstantInt(text);
-    var obj = lookup.focusedObj();
     if(lookup.activeOperation() === "focusOnBody" )
     {
         lookup.customObjects[obj.id].body.push(guid);
@@ -475,10 +474,12 @@ lookup.addConstant = function(text)
 };
 
 
-lookup.addFunction = function(funcObj)
+lookup.addFunction = function(funcObj, obj)
 {
-    lookup.hideOmniBox();
-    var obj = lookup.focusedObj();
+    if(typeof(obj) === "undefined")
+    {
+        obj = lookup.focusedObj();
+    }
     var guid = lookup.defineFunctionCall(funcObj.id);
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -503,12 +504,13 @@ lookup.addFunction = function(funcObj)
         lookup.operationsPush(operation);
     }
     lookup.activeOperation("");
+    lookup.hideOmniBox();
+    return guid;
 
 };
 
-lookup.addSymbol = function(text)
+lookup.addSymbol = function(text, obj)
 {
-    var obj = lookup.focusedObj();
     var guid = lookup.defineSymbolUsage(text);
     if(lookup.activeOperation() === "focusOnBody" )
     {
@@ -897,16 +899,22 @@ lookup.preParseOmniBox = function()
 
 };
 
-lookup.tryParseOmniBox = function()
+lookup.tryParseOmniBox = function(toTest, obj)
 {
-    lookup.hideOmniBox();
-    var toTest = lookup.omniBoxTextInput().trim();
+    if(typeof(toTest) === "undefined")
+    {
+        toTest = lookup.omniBoxTextInput().trim();
+    }
+    if(typeof(obj) === "undefined")
+    {
+        obj = lookup.focusedObj();
+    }
     if(toTest !== "")
     {
         var intRegExp = new RegExp('^\\d+$');
         if(intRegExp.test(toTest))
         {
-            lookup.addConstant(toTest);
+            lookup.addConstant(toTest, obj);
         }
         else
         {
@@ -915,21 +923,37 @@ lookup.tryParseOmniBox = function()
             // this is either symbol either function call
             // this can also be command or macros
             // or image or matrix or float or string but later
-            var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+            var lowerCasedToTest = toTest.toLowerCase();
+            var foundFunctions = lookup.findFunctionsWithSameName(lowerCasedToTest);
+            if(foundFunctions.length === 1)
             {
-                return lookup.customObjects[item.id].name().toLowerCase() === toTest;
-            });
-            if(filtered.length === 1)
-            {
-                lookup.addFunction(filtered[0]);
+                lookup.addFunction(foundFunctions[0], obj);
             }
             else
             {
-                lookup.addSymbol(toTest);
+                let words = lowerCasedToTest.split(' ');
+                if(words.length === 3)
+                {
+                    var foundFunctionsTriple = lookup.findFunctionsWithSameName(words[1]);
+                    if(foundFunctionsTriple.length >= 1)
+                    {
+                        var guidOfFunction = lookup.addFunction(foundFunctionsTriple[0], obj);
+
+                    }
+
+                    lookup.addSymbol(toTest, obj);
+
+                }
+                else
+                {
+                    lookup.addSymbol(toTest, obj);
+                }
+                
             }
         }
     }
     lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
 };
 
 lookup.omniBoxInputKeyPress = function(data, event) 
@@ -941,7 +965,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
     {
         if(event.keyCode == 13)
         {
-            lookup.tryParseOmniBox();
+            lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
         }
         else
         {
@@ -959,6 +983,13 @@ lookup.omniBoxInputKeyUp = function( data, event)
         lookup.hideOmniBox();
     }
 
+};
+
+lookup.findFunctionsWithSameName = function (lowerCasedToTest) 
+{
+    return ko.utils.arrayFilter(lookup.functionsArray(), function (item) {
+        return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
+    });
 };
 
 function Lisperanto()
