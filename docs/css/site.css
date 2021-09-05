@@ -173,24 +173,31 @@ a
 
 .lisperanto-right-column
 {
+    position: absolute;
+    right: 0rem;
+    top: 0rem;
     width: 45vw;
     max-width: 45vw;
     overflow-x: scroll;
-    float: left;
-    padding: 20px;
-    border: 2px solid red;
+    border: 0px solid red;
+    height: 100vh;
     max-height: 100vh;
+    overflow-y: scroll;
 
 }
 
 .lisperanto-left-column
 {
     width: 45vw;
-    float: left;
+    position: absolute;
+    left: 0rem;
+    top: 0rem;
     max-width: 45vw;
     overflow-x: scroll;
-    padding: 20px;
-    border: 2px solid red;
+    border: 0px solid red;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: scroll;
 
 }
 
