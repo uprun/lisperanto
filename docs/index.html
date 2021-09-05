@@ -58,14 +58,14 @@
             <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>
     </script>
-    <script type="text/html" id="sandbox-definition-template">
+    <script type="text/html" id="sandbox-template">
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
             <span data-bind="if: name !== ''">
                 <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
             </span>
             <span data-bind="attr: {id: 'body--' + $data.id}">
-                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: body }">
+                <div data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
                 <span data-bind="">
                     <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
@@ -102,8 +102,7 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <span data-bind="text: '('"></span>
-        <strong 
+        <span data-bind="text: '('"></span><strong 
             class="my-function-name" 
             data-bind="
                 text: lookup.customObjects[$data.functionGuid].name(), 
@@ -165,7 +164,7 @@
         </div>
         <div class="lisperanto-right-column">
             <div data-bind="if: typeof($root.sandbox()) !== 'undefined' ">
-                <div data-bind="template: { name: 'sandbox-definition-template', data: $root.sandbox() }"></div>
+                <div data-bind="template: { name: 'sandbox-template', data: $root.sandbox() }"></div>
             </div>
     
         </div>
