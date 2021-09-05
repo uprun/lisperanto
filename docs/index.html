@@ -147,27 +147,33 @@
             Reset
         </div>
     </div>
-    <div data-bind="if: $root.listOfFunctionsIsActive()">
-        <div class="text-left" data-bind="foreach: functionsArray">
-            <div  >
-                <span data-bind="if: name !== ''">
-                    <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
-                    <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
-                </span>
+    <div class="lisperanto-columns-container">
+        <div class="lisperanto-left-column">
+            <div data-bind="if: $root.listOfFunctionsIsActive()">
+                <div class="text-left" data-bind="foreach: functionsArray">
+                    <div>
+                        <span data-bind="if: name !== ''">
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
+                            <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
+                        </span>
+                    </div>
+                </div>
             </div>
+            <div data-bind="if: $root.functionDefinitionIsActive() ">
+                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
+            </div>
+        </div>
+        <div class="lisperanto-right-column">
+            <div data-bind="if: typeof($root.sandbox()) !== 'undefined' ">
+                <div data-bind="template: { name: 'sandbox-definition-template', data: $root.sandbox() }"></div>
+            </div>
+    
         </div>
     </div>
     
-    <div data-bind="if: $root.functionDefinitionIsActive() ">
-        <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
+    
 
-
-    </div>
-
-    <div data-bind="if: typeof($root.sandbox()) !== 'undefined' ">
-        <div data-bind="template: { name: 'sandbox-definition-template', data: $root.sandbox() }"></div>
-        
-    </div>
+    
 
     <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
         <div class="webpad-sky-frame diagonal-stripes-background">

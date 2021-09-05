@@ -171,6 +171,30 @@ a
     filter: brightness(70%);
 }
 
+.lisperanto-right-column
+{
+    width: 45vw;
+    max-width: 45vw;
+    overflow-x: scroll;
+    float: left;
+    padding: 20px;
+    border: 2px solid red;
+    max-height: 100vh;
 
+}
 
+.lisperanto-left-column
+{
+    width: 45vw;
+    float: left;
+    max-width: 45vw;
+    overflow-x: scroll;
+    padding: 20px;
+    border: 2px solid red;
 
+}
+
+.lisperanto-columns-container
+{
+
+}
