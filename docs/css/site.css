@@ -196,5 +196,23 @@ a
 
 .lisperanto-columns-container
 {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: scroll;
+}
 
+.lisperanto-tool-bar
+{
+  position: absolute;
+  bottom: 0rem;
+  left: 0rem;
+}
+
+.lisperanto-main-body
+{
+  margin: 0rem;
+  padding: 0rem;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: scroll;
 }

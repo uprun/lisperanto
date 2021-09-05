@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/site.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
-<body data-bind="click: $root.hideOmniBox">
+<body class="lisperanto-main-body" data-bind="click: $root.hideOmniBox">
     <script type="text/html" id="function-definition-template">
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
@@ -132,7 +132,7 @@
             
         </div>
     </script>
-    <div class="text-center">
+    <div class="text-center lisperanto-tool-bar">
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.createFunction">
             create function
