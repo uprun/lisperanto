@@ -9,6 +9,35 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body class="lisperanto-main-body" data-bind="click: $root.hideOmniBox">
+    <script type="text/html" id="contextual-omni-box-template">
+        <div class="contextual-omni-box" data-bind="visible: typeof(visible) !== 'undefined' && visible, click: $root.omniBoxClick, style: { left: left, top: top }">
+            <div class="webpad-sky-frame diagonal-stripes-background">
+                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
+                    <input id="popup-omni-box-input" 
+                        style="font-size: 1.2rem; margin: 0.2em;" 
+                        class="omni-box-input" 
+                        placeholder="type something here" 
+                        data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress, keyup: $root.omniBoxInputKeyUp}" />
+                </div>
+                <div class="omnibox-options">
+                    <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
+                        <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            Go to definition
+                        </span>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
+                        <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                            data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
+                            add as 
+                        </div>
+                        <div data-bind="foreach: $root.functionsLookup">
+                            <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
     <script type="text/html" id="function-definition-template">
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
@@ -86,6 +115,8 @@
                     data-bind="click: $root.focusOnParameter">
                     focus
                 </div>
+                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
+                <!-- /ko -->
             <span>
         </div>
     </script>
@@ -126,11 +157,37 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                     <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
-                
+                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
+                <!-- /ko -->
             </span>
             
         </div>
     </script>
+    <div class="lisperanto-columns-container">
+        <div class="lisperanto-left-column">
+            <div data-bind="if: $root.listOfFunctionsIsActive()">
+                <div class="text-left" data-bind="foreach: functionsArray">
+                    <div>
+                        <span data-bind="if: name !== ''">
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
+                            <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
+                        </span>
+                        <!-- ko template: { name: 'contextual-omni-box-template', data: $data.omniBox } -->
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+            <div data-bind="if: $root.functionDefinitionIsActive() ">
+                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
+            </div>
+        </div>
+        <div class="lisperanto-right-column">
+            <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
+                <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
+                <!-- /ko -->
+            <!-- /ko -->
+        </div>
+    </div>
     <div class="text-center lisperanto-tool-bar">
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.createFunction">
@@ -145,65 +202,6 @@
             Reset
         </div>
     </div>
-    <div class="lisperanto-columns-container">
-        <div class="lisperanto-left-column">
-            <div data-bind="if: $root.listOfFunctionsIsActive()">
-                <div class="text-left" data-bind="foreach: functionsArray">
-                    <div>
-                        <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
-                            <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div data-bind="if: $root.functionDefinitionIsActive() ">
-                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
-            </div>
-        </div>
-        <div class="lisperanto-right-column">
-            <div data-bind="if: typeof($root.sandbox()) !== 'undefined' ">
-                <div data-bind="template: { name: 'sandbox-template', data: $root.sandbox() }"></div>
-            </div>
-    
-        </div>
-    </div>
-    
-    
-
-    
-
-    <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
-        <div class="webpad-sky-frame diagonal-stripes-background">
-            <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                <input id="popup-omni-box-input" 
-                    style="font-size: 1.2rem; margin: 0.2em;" 
-                    class="omni-box-input" 
-                    placeholder="type something here" 
-                    data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress, keyup: $root.omniBoxInputKeyUp}" />
-            </div>
-            <div class="omnibox-options">
-                <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                    <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                        Go to definition
-                    </span>
-                </div>
-                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
-                        add as 
-                    </div>
-                    <div data-bind="foreach: $root.functionsLookup">
-                        <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
-                    </div>
-                </div>
-            </div>
-            
-
-        </div>
-        
-    </div>
-    
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
     <script src="js/lisperanto.js" asp-append-version="true"></script>

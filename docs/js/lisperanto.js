@@ -150,6 +150,12 @@ lookup.restoreFunctionsArray = function()
                 lookup.functionsArray.push(value);
             }
         }
+        value.omniBox = {
+            visible : ko.observable(false),
+            left: ko.observable(0),
+            top: ko.observable(0)
+
+        };
     }
 };
 
@@ -303,23 +309,18 @@ lookup.getRandomInt = function(max) {
 
 lookup.createFunction = function()
 {
-    var guid = lookup.uuidv4();
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "function";
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
+    toAdd.body = ko.observable(lookup.defineFunctionCall("code-block"));
+    toAdd.parameters = ko.observableArray([]);
+    toAdd.evaluationResult = ko.observable("");
     
-    var toAdd = {
-        id: guid,
-        type: "function",
-        name: ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]),
-        body: ko.observable(lookup.defineFunctionCall("code-block")),
-        parameters: ko.observableArray([]),
-        evaluationResult: ko.observable("")
-
-    };
-
-    lookup.customObjects[guid] = toAdd;
     var operation = 
     {
         operation: "define-function",
-        guid: guid
+        guid: toAdd.id,
+        name: toAdd.name
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
@@ -335,32 +336,45 @@ lookup.tryRestoreFunction = function(value)
     return value;
 };
 
-
-
-lookup.defineConstantInt = function(c)
+lookup.createUIObject = function()
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
         id: guid,
-        type: "constant-int",
-        value: c
+        omniBox: {
+            visible : ko.observable(false),
+            left: ko.observable(0),
+            top: ko.observable(0)
+        }
     };
+    lookup.customObjects[guid] = toAdd;
+    return toAdd;
+};
+
+
+
+lookup.defineConstantInt = function(c)
+{
+    var toAdd = lookup.createUIObject();
+    
+    toAdd.type = "constant-int";
+    toAdd.value = c;
+    
     if(typeof(c) !== 'number')
     {
         toAdd.value = parseInt(c.trim())
     }
-    lookup.customObjects[guid] = toAdd;
     
 
     var operation = 
     {
         operation: "define-constant-int",
-        guid: guid,
+        guid: toAdd.id,
         constantValue: c
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 lookup.tryRestoreConstantInt = function(value)
@@ -374,46 +388,37 @@ lookup.tryRestoreConstantInt = function(value)
 
 lookup.defineSymbolUsage = function(symbol)
 {
-    var guid = lookup.uuidv4();
-    
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "symbol-usage",
-        symbolName: symbol
-    };
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "symbol-usage";
+    toAdd.symbolName = symbol;
+
     var operation = 
     {
         operation: "define-symbol-usage",
-        guid: guid,
+        guid: toAdd.id,
         symbolName: symbol
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
 {
-    var guid = lookup.uuidv4();
-    
-    
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "parameter-value",
-        parameterGuid: parameterGuid,
-        guidToUse: ko.observable(guidToUse),
-        functionCallGuid: functionCallGuid
-    };
+    var toAdd = lookup.createUIObject();
+    toAdd.type ="parameter-value";
+    toAdd.parameterGuid = parameterGuid;
+    toAdd.guidToUse = ko.observable(guidToUse);
+    toAdd.functionCallGuid = functionCallGuid;
+
     var operation = 
     {
         operation: "parameter-value",
-        guid: guid,
+        guid: toAdd.id,
         parameterGuid: parameterGuid,
         functionCallGuid: functionCallGuid
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 lookup.tryRestoreParameterValue = function(value)
@@ -426,41 +431,37 @@ lookup.defineFunctionCall = function( functionGuid)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
     var functionToCallName = toWorkWith.name
-    var guid = lookup.uuidv4();
-    
-    var functionUsageToAdd = {
-        id: guid,
-        type: "function-usage",
-        functionName: functionToCallName,
-        functionGuid: functionGuid,
-        parameters: ko.observableArray([]),
-        evaluationResult: ko.observable("")
-    };
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "function-usage";
+    toAdd.functionName = functionToCallName;
+    toAdd.functionGuid = functionGuid;
+    toAdd.parameters = ko.observableArray([]);
+    toAdd.evaluationResult = ko.observable("");
+
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
         var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, functionUsageToAdd.id);
         functionUsageToAdd.parameters.push(parameterValue);
     }
 
-    
-    lookup.customObjects[guid] = functionUsageToAdd;
 
     var operation = 
     {
         operation: "define-function-call",
-        guid: guid,
+        guid: toAdd.id,
         functionName: functionToCallName,
         functionGuid: functionGuid
     };
     lookup.operationsPush(operation);
 
-    return guid;
+    return toAdd.id;
 };
 
 lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
-    if( parameterNumber< toWorkWith.parameters().length)
+    if( parameterNumber < toWorkWith.parameters().length)
     {
         var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[parameterNumber], undefined, functionUsageToAdd.id);
         functionUsageToAdd.parameters.push(parameterValue);
@@ -482,22 +483,19 @@ lookup.tryRestoreFunctionUsage = function(value)
 
 lookup.defineParameter = function(parameter)
 {
-    var guid = lookup.uuidv4();
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "parameter";
+    toAdd.parameterName = parameter;
     
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "parameter",
-        parameterName: parameter
-    };
     var operation = 
     {
         operation: "define-parameter",
-        guid: guid,
+        guid: toAdd.id,
         parameterName: parameter
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 
@@ -514,9 +512,10 @@ lookup.focusedObj = ko.observable({});
 
 lookup.focusOnParameter = function(objId)
 {
-    lookup.focusedObj(lookup.customObjects[objId]);
+    const objToWorkOn = lookup.customObjects[objId];
+    lookup.focusedObj(objToWorkOn);
     lookup.activeOperation("focusOnParameter");
-    lookup.filloutOmniBoxDataForFunction(objId);
+    lookup.filloutOmniBoxDataForFunction(objId, objToWorkOn.omniBox);
 
 };
 
@@ -870,15 +869,17 @@ lookup.hideEverythingExcept = function(toShow)
 lookup.omniBoxVisible = ko.observable(false);
 lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
-lookup.filloutOmniBoxDataForFunction = function(callerId) 
+lookup.lastOmniBox = undefined;
+
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox) 
 {
     var foundUI = $("#" + callerId)[0];
-    var omnibox = $(".contextual-omni-box");
-    omnibox.css({
-        top: foundUI.offsetTop + foundUI.offsetHeight,
-        left: foundUI.offsetLeft
-    });
-    lookup.omniBoxVisible(true);
+    omniBox.visible(true);
+    omniBox.left(foundUI.offsetLeft);
+    omniBox.top(foundUI.offsetTop + foundUI.offsetHeight);
+
+    lookup.lastOmniBox = omniBox;
+    
     $("#popup-omni-box-input").focus();
     lookup.preParseOmniBox();
     event.stopPropagation();
@@ -887,7 +888,7 @@ lookup.filloutOmniBoxDataForFunction = function(callerId)
 lookup.openOmniBoxForFunction = function(caller)
 {
     lookup.omniBoxSelectedFunction(caller);
-    lookup.filloutOmniBoxDataForFunction(caller.id);
+    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
 
 
@@ -895,12 +896,17 @@ lookup.openOmniBoxForFunction = function(caller)
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
-    lookup.filloutOmniBoxDataForFunction(caller.id);
+    
+    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
 
 lookup.hideOmniBox = function()
 {
-    lookup.omniBoxVisible(false);
+    if(typeof(lookup.lastOmniBox) !== 'undefined' )
+    {
+        lookup.lastOmniBox.visible(false);
+        lookup.lastOmniBox = undefined;
+    }
     lookup.omniBoxSelectedFunction(undefined);
     lookup.activeOperation("");
 };
