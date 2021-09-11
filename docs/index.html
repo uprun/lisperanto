@@ -8,16 +8,41 @@
     <link rel="stylesheet" href="css/site.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
-<body class="lisperanto-main-body" data-bind="click: $root.hideOmniBox">
+<body 
+    class="lisperanto-main-body" 
+    data-bind=
+        "click: $root.hideOmniBox,
+        event: 
+            {
+                keyup: $root.bodyKeyUp
+            }">
     <script type="text/html" id="contextual-omni-box-template">
-        <div class="contextual-omni-box" data-bind="visible: typeof(visible) !== 'undefined' && visible, click: $root.omniBoxClick, style: { left: left, top: top }">
+        <div class="contextual-omni-box" 
+            data-bind="
+                visible: visible,
+                click: $root.omniBoxClick,
+                style: 
+                    { 
+                        left: left, 
+                        top: top 
+                    }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                    <input id="popup-omni-box-input" 
+                    <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
                         placeholder="type something here" 
-                        data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress, keyup: $root.omniBoxInputKeyUp}" />
+                        data-bind="
+                            textInput: $root.omniBoxTextInput,
+                            attr: 
+                                { 
+                                    id: id
+                                }, 
+                            event: 
+                                {
+                                    keypress: $root.omniBoxInputKeyPress,
+                                    keyup: $root.omniBoxInputKeyUp
+                                }" />
                 </div>
                 <div class="omnibox-options">
                     <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">

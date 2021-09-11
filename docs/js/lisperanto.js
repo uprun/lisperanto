@@ -153,8 +153,8 @@ lookup.restoreFunctionsArray = function()
         value.omniBox = {
             visible : ko.observable(false),
             left: ko.observable(0),
-            top: ko.observable(0)
-
+            top: ko.observable(0),
+            id: value.id + '--popup-omni-box-input'
         };
     }
 };
@@ -345,7 +345,8 @@ lookup.createUIObject = function()
         omniBox: {
             visible : ko.observable(false),
             left: ko.observable(0),
-            top: ko.observable(0)
+            top: ko.observable(0),
+            id: guid + '--popup-omni-box-input'
         }
     };
     lookup.customObjects[guid] = toAdd;
@@ -512,6 +513,7 @@ lookup.focusedObj = ko.observable({});
 
 lookup.focusOnParameter = function(objId)
 {
+    lookup.hideOmniBox();
     const objToWorkOn = lookup.customObjects[objId];
     lookup.focusedObj(objToWorkOn);
     lookup.activeOperation("focusOnParameter");
@@ -879,14 +881,15 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox)
     omniBox.top(foundUI.offsetTop + foundUI.offsetHeight);
 
     lookup.lastOmniBox = omniBox;
-    
-    $("#popup-omni-box-input").focus();
+
+    $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
     event.stopPropagation();
 };
 
 lookup.openOmniBoxForFunction = function(caller)
 {
+    lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(caller);
     lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
@@ -895,6 +898,7 @@ lookup.openOmniBoxForFunction = function(caller)
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
+    lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
     
     lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
@@ -1073,6 +1077,16 @@ lookup.tryParseOmniBoxByClick = function()
 };
 
 lookup.omniBoxInputKeyUp = function( data, event)
+{
+    //console.log(event.code);
+    if(event.code === "Escape")
+    {
+        lookup.hideOmniBox();
+    }
+
+};
+
+lookup.bodyKeyUp = function( data, event)
 {
     //console.log(event.code);
     if(event.code === "Escape")
