@@ -223,3 +223,22 @@ a
   max-height: 100vh;
   overflow-y: scroll;
 }
+
+.lisperanto-sandbox-evaluation-bar
+{
+  position: absolute;
+  bottom: 0rem;
+  left: 0rem;
+}
+
+.lisperanto-sandbox-main-container
+{
+  overflow-y: scroll;
+  width: 45vw;
+  max-width: 45vw;
+  overflow-x: scroll;
+  border: 0px solid red;
+  height: 100vh;
+  max-height: 100vh;
+
+}

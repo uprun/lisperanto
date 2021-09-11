@@ -59,20 +59,20 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div>
+        <div class="lisperanto-sandbox-main-container">
             <span data-bind="if: name !== ''">
                 <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
             </span>
             <span data-bind="attr: {id: 'body--' + $data.id}">
                 <div data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
-                <span data-bind="">
-                    <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                        data-bind="click: $root.startEvaluation">
-                        evaluate
-                    </div>
-                    <span data-bind="text: evaluationResult"></span>
-                </span>
+            </span>
+            <span class="lisperanto-sandbox-evaluation-bar" data-bind="">
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    data-bind="click: $root.startEvaluation">
+                    evaluate
+                </div>
+                <span data-bind="text: evaluationResult"></span>
             </span>
         </div>
     </script>
