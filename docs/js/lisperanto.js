@@ -442,8 +442,8 @@ lookup.defineFunctionCall = function( functionGuid)
 
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, functionUsageToAdd.id);
-        functionUsageToAdd.parameters.push(parameterValue);
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, toAdd.id);
+        toAdd.parameters.push(parameterValue);
     }
 
 

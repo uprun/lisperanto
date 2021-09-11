@@ -49,6 +49,14 @@ body {
 }
 
 
+.lisperanto-sandbox-stripes
+{
+  background: repeating-linear-gradient( 45deg, #473a00, #473a00 2rem, #210047 2rem, #210047 4rem );
+  display: inline-block;
+  min-width: 100%;
+}
+
+
 
 
 .webpad-color-orange{ 
