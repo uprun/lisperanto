@@ -521,6 +521,11 @@ lookup.focusOnParameter = function(objId)
 
 };
 
+lookup.startBackwardEvaluation = function()
+{
+
+};
+
 lookup.addConstant = function(text, obj)
 {
     var guid = lookup.defineConstantInt(text);
@@ -535,6 +540,7 @@ lookup.addConstant = function(text, obj)
         };
         lookup.operationsPush(operation);
     }
+    //if there is a parameter assignment then start evaluation
     lookup.activeOperation("");
 
 };
@@ -668,6 +674,18 @@ lookup.startEvaluation = function(obj)
 {
     var rootContext = {};
     var result = "";
+    if(typeof(obj.body()) !== "undefined")
+    {
+        result = lookup.evaluate(obj.body(), rootContext);
+    }
+    obj.evaluationResult(result);
+};
+
+lookup.startSandboxEvaluation = function()
+{
+    var rootContext = {};
+    var result = "";
+    var obj = lookup.sandbox();
     if(typeof(obj.body()) !== "undefined")
     {
         result = lookup.evaluate(obj.body(), rootContext);

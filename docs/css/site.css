@@ -49,12 +49,7 @@ body {
 }
 
 
-.lisperanto-sandbox-stripes
-{
-  background: repeating-linear-gradient( 45deg, #473a00, #473a00 2rem, #210047 2rem, #210047 4rem );
-  display: inline-block;
-  min-width: 100%;
-}
+
 
 
 
@@ -185,13 +180,19 @@ a
     right: 0rem;
     top: 0rem;
     width: 45vw;
-    max-width: 45vw;
-    overflow-x: scroll;
-    border: 0px solid red;
     height: 100vh;
-    max-height: 100vh;
-    overflow-y: scroll;
 
+}
+
+.lisperanto-sandbox-stripes
+{
+  background: repeating-linear-gradient( 45deg, #473a00, #473a00 2rem, #210047 2rem, #210047 4rem );
+  display: inline-block;
+  max-width: 80rem;
+  overflow-x: scroll;
+  max-height: 80rem;
+  overflow-y: scroll;
+  
 }
 
 .lisperanto-left-column
@@ -236,5 +237,11 @@ a
 {
   position: absolute;
   bottom: 0rem;
-  left: 0rem;
+  left: 55vw;
+  background-color: inherit;
+}
+
+.lisperanto-sandbox-title
+{
+  background-color: inherit;
 }

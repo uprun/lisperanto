@@ -113,21 +113,15 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-sandbox-main-container lisperanto-sandbox-stripes">
-            <span data-bind="if: name !== ''">
-                <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
-            </span>
-            <span data-bind="attr: {id: 'body--' + $data.id}">
+        <div class="lisperanto-sandbox-stripes">
+            
+            <span
+                data-bind="attr: {id: 'body--' + $data.id}">
                 <div data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
+                <div style="height: 3rem;"></div>
             </span>
-            <span class="lisperanto-sandbox-evaluation-bar" data-bind="">
-                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.startEvaluation">
-                    evaluate
-                </div>
-                <span data-bind="text: evaluationResult"></span>
-            </span>
+            
         </div>
     </script>
     <script type="text/html" id="parameter-value-template">
@@ -207,6 +201,9 @@
             </div>
         </div>
         <div class="lisperanto-right-column">
+            <div class="lisperanto-sandbox-title">
+                <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
+            </div>
             <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
                 <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
                 <!-- /ko -->
