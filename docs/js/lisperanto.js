@@ -48,7 +48,7 @@ lookup.operationsPush = function(some)
     if(some.operation === "set-parameter-value")
     {
         var parameterValueObj = lookup.customObjects[some.parameterValueGuid];
-        var functionCallObj = lookup.customObjects[parameterValueObj.functionCallGuid];
+        var functionCallObj = lookup.customObjects[parameterValueObj.assignedToGuid];
         if(functionCallObj.functionGuid === "code-block")
         {
             const lastParameterId = functionCallObj.parameters().length - 1;
@@ -261,7 +261,7 @@ lookup.defineSandbox = function()
             type: "sandbox-unique",
             name: ko.observable(name),
             parameters: ko.observableArray([]),
-            body: ko.observable(lookup.defineFunctionCall("code-block")),
+            body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
             evaluationResult: ko.observable("")
         };
         
@@ -312,7 +312,7 @@ lookup.createFunction = function()
     var toAdd = lookup.createUIObject();
     toAdd.type = "function";
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
-    toAdd.body = ko.observable(lookup.defineFunctionCall("code-block"));
+    toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
     toAdd.parameters = ko.observableArray([]);
     toAdd.evaluationResult = ko.observable("");
     
@@ -403,20 +403,20 @@ lookup.defineSymbolUsage = function(symbol)
     return toAdd.id;
 };
 
-lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
+lookup.defineParameterValue = function(parameterGuid, guidToUse, assignedToGuid)
 {
     var toAdd = lookup.createUIObject();
     toAdd.type ="parameter-value";
     toAdd.parameterGuid = parameterGuid;
     toAdd.guidToUse = ko.observable(guidToUse);
-    toAdd.functionCallGuid = functionCallGuid;
+    toAdd.assignedToGuid = assignedToGuid;
 
     var operation = 
     {
         operation: "parameter-value",
         guid: toAdd.id,
         parameterGuid: parameterGuid,
-        functionCallGuid: functionCallGuid
+        assignedToGuid: assignedToGuid
     };
     lookup.operationsPush(operation);
     return toAdd.id;
@@ -428,7 +428,7 @@ lookup.tryRestoreParameterValue = function(value)
     return value;
 };
 
-lookup.defineFunctionCall = function( functionGuid)
+lookup.defineFunctionCall = function( functionGuid, objId)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
     var functionToCallName = toWorkWith.name
@@ -439,6 +439,7 @@ lookup.defineFunctionCall = function( functionGuid)
     toAdd.functionGuid = functionGuid;
     toAdd.parameters = ko.observableArray([]);
     toAdd.evaluationResult = ko.observable("");
+    toAdd.assignedToGuid = objId;
 
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
@@ -482,18 +483,20 @@ lookup.tryRestoreFunctionUsage = function(value)
 };
 
 
-lookup.defineParameter = function(parameter)
+lookup.defineParameter = function(parameter, objId)
 {
     var toAdd = lookup.createUIObject();
 
     toAdd.type = "parameter";
     toAdd.parameterName = parameter;
+    toAdd.assignedToGuid = objId;
     
     var operation = 
     {
         operation: "define-parameter",
         guid: toAdd.id,
-        parameterName: parameter
+        parameterName: parameter,
+        assignedToGuid: objId
     };
     lookup.operationsPush(operation);
     return toAdd.id;
@@ -521,8 +524,14 @@ lookup.focusOnParameter = function(objId)
 
 };
 
-lookup.startBackwardEvaluation = function()
+lookup.goBackwardAndEvaluate = function(obj)
 {
+    var currentObj = obj;
+    for( var k = 0; typeof(currentObj.assignedToGuid) !== 'undefined' && k < 10000; k ++)
+    {
+        currentObj = lookup.customObjects[currentObj.assignedToGuid];
+    }
+    lookup.startEvaluation(currentObj);
 
 };
 
@@ -540,6 +549,7 @@ lookup.addConstant = function(text, obj)
         };
         lookup.operationsPush(operation);
     }
+    lookup.goBackwardAndEvaluate(obj);
     //if there is a parameter assignment then start evaluation
     lookup.activeOperation("");
 
@@ -548,7 +558,7 @@ lookup.addConstant = function(text, obj)
 
 lookup.addFunction = function(funcObj, obj)
 {
-    var guid = lookup.defineFunctionCall(funcObj.id);
+    var guid = lookup.defineFunctionCall(funcObj.id, obj.id);
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -562,6 +572,7 @@ lookup.addFunction = function(funcObj, obj)
     }
     lookup.activeOperation("");
     lookup.hideOmniBox();
+    lookup.goBackwardAndEvaluate(obj);
     return guid;
 
 };
@@ -631,7 +642,7 @@ lookup.activateAddingParameterTool = function(obj)
 lookup.addParameter = function()
 {
     var obj = lookup.focusedObj();
-    var toAdd = lookup.defineParameter(lookup.newParameterName());
+    var toAdd = lookup.defineParameter(lookup.newParameterName(), obj.id);
     obj.parameters.push(toAdd);
     
     var operation = 
@@ -674,23 +685,16 @@ lookup.startEvaluation = function(obj)
 {
     var rootContext = {};
     var result = "";
-    if(typeof(obj.body()) !== "undefined")
+    if(typeof(obj.body) !== "undefined")
     {
-        result = lookup.evaluate(obj.body(), rootContext);
+        var result = lookup.evaluate(obj.body(), rootContext);
+        obj.evaluationResult(result);
     }
-    obj.evaluationResult(result);
-};
-
-lookup.startSandboxEvaluation = function()
-{
-    var rootContext = {};
-    var result = "";
-    var obj = lookup.sandbox();
-    if(typeof(obj.body()) !== "undefined")
+    else
     {
-        result = lookup.evaluate(obj.body(), rootContext);
+        var result = lookup.evaluate(obj, rootContext);
     }
-    obj.evaluationResult(result);
+    
 };
 
 
