@@ -562,6 +562,11 @@ lookup.focusOnParameter = function(objId)
 
 };
 
+lookup.isOmniBoxOpen = ko.computed(function()
+{
+    return lookup.activeOperation() !== "" ;
+});
+
 lookup.goBackwardAndEvaluate = function(obj)
 {
     var currentObj = obj;
@@ -1022,6 +1027,7 @@ lookup.hideOmniBox = function()
         lookup.lastOmniBox.visible(false);
         lookup.lastOmniBox = undefined;
     }
+    lookup.focusedObj(undefined);
     lookup.omniBoxSelectedFunction(undefined);
     lookup.activeOperation("");
 };
@@ -1195,10 +1201,9 @@ lookup.omniBoxInputKeyUp = function( data, event)
         lookup.hideOmniBox();
     }
     event.stopPropagation();
-
 };
 
-lookup.bodyKeyUp = function( data, event)
+lookup.bodyKeyDown = function( data, event)
 {
     // turns out Firefox has a bug 
     // see https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event#ignoring_keydown_during_ime_composition
@@ -1212,12 +1217,12 @@ lookup.bodyKeyUp = function( data, event)
         lookup.hideOmniBox();
         lookup.hideMenu();
     }
-    if(event.code === "KeyM")
+    if(event.code === "KeyM" && !lookup.isOmniBoxOpen())
     {
         lookup.toggleMenu();
     }
 
-    if(event.code === "KeyF")
+    if(event.code === "KeyF" && !lookup.isOmniBoxOpen())
     {
         lookup.toggleFullScreen();
     }

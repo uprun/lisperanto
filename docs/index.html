@@ -15,7 +15,7 @@
         "click: $root.hideOmniBox,
         event: 
             {
-                keydown: $root.bodyKeyUp
+                keydown: $root.bodyKeyDown
             }">
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
@@ -42,7 +42,7 @@
                             event: 
                                 {
                                     keypress: $root.omniBoxInputKeyPress,
-                                    keyup: $root.omniBoxInputKeyUp
+                                    keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
                 <div class="omnibox-options">
