@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lisperanto</title>
     <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="css/webpad.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body 
@@ -176,6 +177,96 @@
             
         </div>
     </script>
+
+    <div 
+        class="webpad-menu-absolute-position webpad-menu-animate-left" 
+        style="display: none;" 
+        data-bind="
+            visible:  $root.menuWasAlreadyOpen(),
+            css: { 
+                'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
+                'webpad-menu-animate-fade-back': !$root.menuIsOpen()
+            }">
+        <div class="w3-row webpad-sky-frame webpad-options-background">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 2rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 2rem;">
+                    : functions
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1.3rem;">
+                    : functions
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleMenu">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close menu"/> 
+                    </span>
+                    
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-blue" style="font-size: 1.4rem; " >
+                        Background:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div style="font-size: 1.4rem; background: #333" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                        data-bind="click: $root.changeBackground">
+                        graphite
+                </div>
+                <div style="font-size: 1.4rem; background: #000" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.changeBackgroundToDefault">
+                        darkness
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-blue" style="font-size: 1.4rem; " >
+                        Export & import:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div style="font-size: 1.4rem; " class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-orange" 
+                        data-bind="click: $root.export">
+                        export
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <label for="importSnapshotFile" style="color: yellow;">Select a snapshot file to import:</label>
+                <br/>
+                <input type="file" id="importSnapshotFile" style="width: 20rem; color: yellow;" >
+                <div style="font-size: 1.4rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.import">
+                        import
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <br/>
+                <br/>
+                <br/>
+                <br/>    
+            </div>
+            
+            <address class="webpad-color-yellow" style="padding-left: 1rem;">
+                by Oleksandr Kryvonos, a developer from Odesa, Ukraine. <br/>
+                It is an open-source project: <a href="https://github.com/uprun/WebPad">https://github.com/uprun/WebPad</a> <br/>
+                
+                if you have any suggestions feel free to e-mail me: <a href="mailto:oleksandr.kryvonos.ods.ua@gmail.com">oleksandr.kryvonos.ods.ua@gmail.com</a><br/>
+            </address> 
+            <div class="w3-col w3-container s12 m12 l12 webpad-color-coral" data-bind="if: $root.platform_is_cordova()">
+                For more information you can visit a website of the project <a href="https://webpad.com.ua">https://webpad.com.ua</a> <br/>
+            </div>
+            
+
+            <br/>
+            <h2 style="padding-left: 1rem;"><a style="color: rgb(132, 191, 255);" data-bind="attr:
+                    {
+                        href: privacy_policy_link
+                    }">Privacy policy</a></h2>
+            
+            
+        </div>
+    </div>
     <div class="lisperanto-columns-container">
         <div class="lisperanto-left-column">
             <div data-bind="if: $root.listOfFunctionsIsActive()">
