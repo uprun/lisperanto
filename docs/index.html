@@ -12,6 +12,7 @@
 <body 
     class="lisperanto-main-body" 
     style="background-color: #000000; " 
+    onwheel="lookup.bodyOnWheel()"
     data-bind=
         "click: $root.hideOmniBox,
         event: 
@@ -70,7 +71,7 @@
         </div>
     </script>
     <script type="text/html" id="function-definition-template">
-        <div>
+        <div class="lisperanto-function-definition">
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
             <span data-bind="if: name !== ''">
                 <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
@@ -309,20 +310,30 @@
     <div class="lisperanto-columns-container" 
         style=
         "
+            position: absolute;
             top: 0; 
             left: 0;
             width: 100vw;
             height: 100vh; 
-            min-width: 100vw; 
-            min-height: 100vh; 
-            overflow-x: scroll; 
-            overflow-y: scroll;" >
+            max-width: 100vw; 
+            max-height: 100vh; 
+            overflow-x: clip; 
+            overflow-y: clip;" 
+            >
         <!-- <div class="lisperanto-left-column">
             <div data-bind="if: $root.functionDefinitionIsActive() ">
                 <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
             </div>
         </div> -->
-        <div class="lisperanto-right-column">
+        <!-- ko if: $root.functionDefinitionIsActive() -->
+            <!-- ko template: { name: 'function-definition-template', data: $root.activeFunction() } -->
+            <!-- /ko -->
+        <!-- /ko -->
+        <div class="lisperanto-right-column" data-bind="style: 
+        { 
+            left: $root.globalOffsetX, 
+            top: $root.globalOffsetY 
+        }">
             <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
                 <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
                 <!-- /ko -->
@@ -365,5 +376,6 @@
     <script src="js/toggleMenu.js" asp-append-version="true"></script>
     <script src="js/toggleOptions.js" asp-append-version="true"></script>
     <script src="js/changeBackground.js" asp-append-version="true"></script>
+    <script src="js/scroll.js" asp-append-version="true"></script>
 </body>
 </html>

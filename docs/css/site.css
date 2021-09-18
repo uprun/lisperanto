@@ -176,11 +176,20 @@ a
 
 .lisperanto-right-column
 {
-    position: relative;
+    position: absolute;
     display: inline-grid;
     left: 40vw;
     top: 33vh;
 
+}
+
+
+.lisperanto-function-definition
+{
+    position: absolute;
+    display: inline-grid;
+    left: 10vw;
+    top: 33vh;
 }
 
 .lisperanto-sandbox-stripes
