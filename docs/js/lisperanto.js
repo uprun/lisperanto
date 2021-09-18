@@ -1194,15 +1194,21 @@ lookup.omniBoxInputKeyUp = function( data, event)
     {
         lookup.hideOmniBox();
     }
+    event.stopPropagation();
 
 };
 
 lookup.bodyKeyUp = function( data, event)
 {
-    //console.log(event.code);
+    console.log(event.code);
     if(event.code === "Escape")
     {
         lookup.hideOmniBox();
+        lookup.hideMenu();
+    }
+    if(event.code === "KeyM")
+    {
+        lookup.toggleMenu();
     }
 
 };
