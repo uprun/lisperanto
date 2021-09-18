@@ -159,6 +159,8 @@ lookup.restoreFunctionsArray = function()
     }
 };
 
+
+
 lookup.tryRestoreBuiltInFunction = function(value)
 {
     value.name = ko.observable(value.name);
@@ -275,6 +277,21 @@ lookup.defineSandbox = function()
     }
 
     lookup.sandbox(lookup.customObjects[name]);
+};
+
+lookup.clearSandbox = function()
+{
+    var name = "sandbox-unique";
+    var sandboxObj = lookup.customObjects[name];
+    // maybe need to remove previous body function tree
+    var nextSandBoxBody = lookup.defineFunctionCall("code-block", "sandbox-unique");
+    sandboxObj.body(nextSandBoxBody);
+    var operation = 
+    {
+        operation: "clear-sandbox",
+        guid: nextSandBoxBody.id
+    };
+    lookup.operationsPush(operation);
 };
 
 //this is my personal list of people who inspire me

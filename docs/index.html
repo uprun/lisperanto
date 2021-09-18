@@ -83,17 +83,6 @@
                         data-bind="click: $root.activateAddingParameterTool">
                         add
                 </div>
-                <span data-bind="if: parameters().length == 0">
-                    <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                        data-bind="click: $root.startEvaluation">
-                        evaluate
-                    </div>
-                    <span data-bind="text: evaluationResult"></span>
-                </span>
-                <span data-bind="ifnot: parameters().length == 0">
-                    <span>to evaluate this function create another function with zero arguments and call this one from there</span>
-                </span>
-                
                 <div>
                     body:
                 </div>
@@ -113,15 +102,20 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
+        <div class="lisperanto-sandbox-title">
+            <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
+            <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    data-bind="click: $root.clearSandbox">
+                    clear
+            </div>
+        </div>
         <div class="lisperanto-sandbox-stripes">
-            
             <span
                 data-bind="attr: {id: 'body--' + $data.id}">
                 <div data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
                 <div style="height: 3rem;"></div>
             </span>
-            
         </div>
     </script>
     <script type="text/html" id="parameter-value-template">
@@ -201,9 +195,7 @@
             </div>
         </div>
         <div class="lisperanto-right-column">
-            <div class="lisperanto-sandbox-title">
-                <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
-            </div>
+            
             <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
                 <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
                 <!-- /ko -->
