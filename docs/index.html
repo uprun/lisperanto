@@ -306,17 +306,23 @@
             </div>
         </div>
     </div>
-    <div class="lisperanto-columns-container">
-        <div class="lisperanto-left-column">
-            <div data-bind="if: $root.listOfFunctionsIsActive()">
-                
-            </div>
+    <div class="lisperanto-columns-container" 
+        style=
+        "
+            top: 0; 
+            left: 0;
+            width: 100vw;
+            height: 100vh; 
+            min-width: 100vw; 
+            min-height: 100vh; 
+            overflow-x: scroll; 
+            overflow-y: scroll;" >
+        <!-- <div class="lisperanto-left-column">
             <div data-bind="if: $root.functionDefinitionIsActive() ">
                 <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
             </div>
-        </div>
+        </div> -->
         <div class="lisperanto-right-column">
-            
             <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
                 <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
                 <!-- /ko -->

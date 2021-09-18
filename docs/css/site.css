@@ -176,7 +176,8 @@ a
 
 .lisperanto-right-column
 {
-    position: absolute;
+    position: relative;
+    display: inline-grid;
     left: 40vw;
     top: 33vh;
 
@@ -205,9 +206,7 @@ a
 
 .lisperanto-columns-container
 {
-  height: 100vh;
-  max-height: 100vh;
-  overflow-y: scroll;
+  
 }
 
 .lisperanto-tool-bar
@@ -224,9 +223,8 @@ a
   margin: 0rem;
   padding: 0rem;
   height: 100vh;
+  width: 100vw;
   max-height: 100vh;
-  overflow-y: scroll;
-  overflow-x: scroll;
 }
 
 .lisperanto-sandbox-evaluation-bar
@@ -240,4 +238,5 @@ a
 .lisperanto-sandbox-title
 {
   background-color: inherit;
+  display: inline-block;
 }
