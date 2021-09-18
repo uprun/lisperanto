@@ -6,9 +6,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lisperanto</title>
     <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="css/webpad.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
-<body data-bind="click: $root.hideOmniBox">
+<body 
+    class="lisperanto-main-body" 
+    style="background-color: #000000; " 
+    data-bind=
+        "click: $root.hideOmniBox,
+        event: 
+            {
+                keydown: $root.bodyKeyDown
+            },
+        style: 
+            { 
+                background: $root.backgroundColor() 
+            }">
+    <script type="text/html" id="contextual-omni-box-template">
+        <div class="contextual-omni-box" 
+            data-bind="
+                visible: visible,
+                click: $root.omniBoxClick,
+                style: 
+                    { 
+                        left: left, 
+                        top: top 
+                    }">
+            <div class="webpad-sky-frame diagonal-stripes-background">
+                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
+                    <input 
+                        style="font-size: 1.2rem; margin: 0.2em;" 
+                        class="omni-box-input" 
+                        placeholder="type something here" 
+                        data-bind="
+                            textInput: $root.omniBoxTextInput,
+                            attr: 
+                                { 
+                                    id: id
+                                }, 
+                            event: 
+                                {
+                                    keypress: $root.omniBoxInputKeyPress,
+                                    keyup: $root.omniBoxInputKeyUp,
+                                }" />
+                </div>
+                <div class="omnibox-options">
+                    <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
+                        <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            Go to definition
+                        </span>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
+                        <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                            data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
+                            add as 
+                        </div>
+                        <div data-bind="foreach: $root.functionsLookup">
+                            <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
     <script type="text/html" id="function-definition-template">
         <div>
             <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
@@ -29,21 +89,10 @@
                         data-bind="click: $root.activateAddingParameterTool">
                         add
                 </div>
-                <span data-bind="if: parameters().length == 0">
-                    <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                        data-bind="click: $root.startEvaluation">
-                        evaluate
-                    </div>
-                    <span data-bind="text: evaluationResult"></span>
-                </span>
-                <span data-bind="ifnot: parameters().length == 0">
-                    <span>to evaluate this function create another function with zero arguments and call this one from there</span>
-                </span>
-                
                 <div>
                     body:
                 </div>
-                <div style="margin-left: 2rem;" data-bind="template: { name: 'body-element-template', data: body }">
+                <div style="margin-left: 0rem;" data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
             </span>
         </div>
@@ -58,6 +107,23 @@
             <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>
     </script>
+    <script type="text/html" id="sandbox-template">
+        <div class="lisperanto-sandbox-title">
+            <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
+            <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    data-bind="click: $root.clearSandbox">
+                    clear
+            </div>
+        </div>
+        <div class="lisperanto-sandbox-stripes">
+            <span
+                data-bind="attr: {id: 'body--' + $data.id}">
+                <div data-bind="template: { name: 'body-element-template', data: body }">
+                </div>
+                <div style="height: 3rem;"></div>
+            </span>
+        </div>
+    </script>
     <script type="text/html" id="parameter-value-template">
         <div>
             <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
@@ -68,6 +134,8 @@
                     data-bind="click: $root.focusOnParameter">
                     focus
                 </div>
+                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
+                <!-- /ko -->
             <span>
         </div>
     </script>
@@ -83,8 +151,7 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <span data-bind="text: '('"></span>
-        <strong 
+        <span data-bind="text: '('"></span><strong 
             class="my-function-name" 
             data-bind="
                 text: lookup.customObjects[$data.functionGuid].name(), 
@@ -92,7 +159,7 @@
                 attr: {id: $data.id}"
             >
         </strong>
-        <span class="my-function-result" data-bind="text: '// result: ' + evaluationResult() "></span>
+        <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
         <span data-bind="text: ')'"></span>
@@ -109,76 +176,194 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                     <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
-                
+                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
+                <!-- /ko -->
             </span>
             
         </div>
     </script>
-    <div class="text-center">
+
+    <div 
+        class="webpad-menu-absolute-position webpad-menu-animate-left" 
+        style="display: none;" 
+        data-bind="
+            visible:  $root.menuWasAlreadyOpen(),
+            css: { 
+                'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
+                'webpad-menu-animate-fade-back': !$root.menuIsOpen()
+            }">
+        <div class="w3-row webpad-sky-frame">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
+                    : functions
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
+                    : functions
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleMenu">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close menu"/> 
+                    </span>
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem;">
+                <div class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
+                    <div>
+                        <span data-bind="if: name !== ''">
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
+                            <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
+                        </span>
+                        <!-- ko template: { name: 'contextual-omni-box-template', data: $data.omniBox } -->
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div 
+        class="webpad-options-absolute-position webpad-options-animate-right" 
+        style="display: none;" 
+        data-bind="
+            visible:  $root.optionsWasAlreadyOpen(),
+            css: { 
+                'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
+                'webpad-options-animate-fade-back': !$root.optionsIsOpen()
+            }">
+        <div class="w3-row webpad-sky-frame">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
+                    : options
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
+                    : options
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleOptions">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close options"/> 
+                    </span>
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Background:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div style="font-size: 1.4rem; background: #333" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                        data-bind="click: $root.changeBackground">
+                        graphite
+                </div>
+                <div style="font-size: 1.4rem; background: #000" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.changeBackgroundToDefault">
+                        darkness
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div class="text-left" style="padding-left: 0.5rem;">
+                    <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto says hello to search engines.
+                    </div>
+                    <div class="webpad-color-coral">
+                        Lisperanto is a programming environment and version control system.
+                    </div>
+                    <div class="webpad-color-yellow">
+                        Lisperanto is an AST-based version control system.
+                    </div>
+                    <div class="webpad-color-green">
+                        Lisperanto is a projection editor.
+                    </div>
+                    <div class="webpad-color-pink">
+                        Lisperanto is a structure editor.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto is a mono-repository.
+                    </div>
+                    <div class="webpad-color-green">
+                        Lisperanto was inspired by Lisp.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto is an AST editor.
+                    </div>
+                    <div class="webpad-color-light-pink" style="margin-top: 0.5rem;">
+                        Lisperanto is distributed under MIT license.
+                    </div>
+                    <div class="webpad-color-blue">
+                        Lisperanto is an open-source project: <a href="https://github.com/uprun/lisperanto">https://github.com/uprun/lisperanto</a>
+                    </div>
+                    <div class="webpad-color-purple" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                        feel free to e-mail me: <a href="mailto:oleksandr.kryvonos.ods.ua@gmail.com">oleksandr.kryvonos.ods.ua@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="lisperanto-columns-container" 
+        style=
+        "
+            top: 0; 
+            left: 0;
+            width: 100vw;
+            height: 100vh; 
+            min-width: 100vw; 
+            min-height: 100vh; 
+            overflow-x: scroll; 
+            overflow-y: scroll;" >
+        <!-- <div class="lisperanto-left-column">
+            <div data-bind="if: $root.functionDefinitionIsActive() ">
+                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
+            </div>
+        </div> -->
+        <div class="lisperanto-right-column">
+            <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
+                <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
+                <!-- /ko -->
+            <!-- /ko -->
+        </div>
+    </div>
+    <div class="text-center lisperanto-tool-bar">
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.createFunction">
             create function
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            data-bind="click: $root.openListOfFunctions">
-            open list of functions
+            data-bind="click: $root.toggleMenu">
+            <span style="font-size: 1rem; vertical-align: middle;">
+                <img src="svg/bars.svg" class="webpad-edit-pencil" alt="toggle menu"/> 
+            </span>
+            m - menu
+        </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.toggleMenu">
+            <span style="font-size: 1rem; vertical-align: middle;">
+                <img src="svg/cogwheel.svg" class="webpad-edit-pencil" alt="toggle options"/> 
+            </span>
+            o - options
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             onclick="lookup.removeEverything()">
             Reset
         </div>
-    </div>
-    <div data-bind="if: $root.listOfFunctionsIsActive()">
-        <div class="text-left" data-bind="foreach: functionsArray">
-            <div  >
-                <span data-bind="if: name !== ''">
-                    <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
-                    <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
-                </span>
-            </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            onclick="lookup.toggleFullScreen()">
+            f - FullScreen
         </div>
     </div>
-    
-    <div data-bind="if: $root.functionDefinitionIsActive() ">
-        <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
-
-
-    </div>
-
-    <div class="contextual-omni-box" data-bind="visible: $root.omniBoxVisible, click: $root.omniBoxClick">
-        <div class="webpad-sky-frame diagonal-stripes-background">
-            <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                <input id="popup-omni-box-input" 
-                    style="font-size: 1.2rem; margin: 0.2em;" 
-                    class="omni-box-input" 
-                    placeholder="type something here" 
-                    data-bind="textInput: $root.omniBoxTextInput, event: {keypress: $root.omniBoxInputKeyPress, keyup: $root.omniBoxInputKeyUp}" />
-            </div>
-            <div class="omnibox-options">
-                <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                    <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                        Go to definition
-                    </span>
-                </div>
-                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
-                        add as 
-                    </div>
-                    <div data-bind="foreach: $root.functionsLookup">
-                        <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
-                    </div>
-                </div>
-            </div>
-            
-
-        </div>
-        
-    </div>
-    
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
     <script src="js/lisperanto.js" asp-append-version="true"></script>
     <script src="js/removeEverything.js" asp-append-version="true"></script>
+    <script src="js/toggleFullScreen.js" asp-append-version="true"></script>
+    <script src="js/toggleMenu.js" asp-append-version="true"></script>
+    <script src="js/toggleOptions.js" asp-append-version="true"></script>
+    <script src="js/changeBackground.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -48,7 +48,7 @@ lookup.operationsPush = function(some)
     if(some.operation === "set-parameter-value")
     {
         var parameterValueObj = lookup.customObjects[some.parameterValueGuid];
-        var functionCallObj = lookup.customObjects[parameterValueObj.functionCallGuid];
+        var functionCallObj = lookup.customObjects[parameterValueObj.assignedToGuid];
         if(functionCallObj.functionGuid === "code-block")
         {
             const lastParameterId = functionCallObj.parameters().length - 1;
@@ -84,6 +84,7 @@ lookup.operationsPush = function(some)
 
 lookup.loadFromStorage = function()
 {
+    lookup.localStorage = localStorage;
     var stored = localStorage.getItem('customObjects');
     if(typeof(stored) !== 'undefined' && stored != null)
     {
@@ -101,6 +102,10 @@ lookup.loadFromStorage = function()
                     lookup.customObjects[key] = value;
                 }
                 if(value.type === "function")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreFunction(value);
+                }
+                if(value.type === "sandbox-unique")
                 {
                     lookup.customObjects[key] = lookup.tryRestoreFunction(value);
                 }
@@ -146,8 +151,16 @@ lookup.restoreFunctionsArray = function()
                 lookup.functionsArray.push(value);
             }
         }
+        value.omniBox = {
+            visible : ko.observable(false),
+            left: ko.observable(0),
+            top: ko.observable(0),
+            id: value.id + '--popup-omni-box-input'
+        };
     }
 };
+
+
 
 lookup.tryRestoreBuiltInFunction = function(value)
 {
@@ -161,14 +174,14 @@ lookup.defineBuiltInFunction = function (obj)
 {
     var name = obj.name;
     var parameters_list = obj.parameters
-    if(typeof(this.customObjects[name]) === 'undefined')
+    if(typeof(lookup.customObjects[name]) === 'undefined')
     {
         var toAdd ={
             id: obj.id,
             type: "built-in-function",
             name: ko.observable(name),
             parameters: ko.observableArray([]),
-            body: ko.observableArray([])
+            body: ko.observable(undefined)
         };
         for(var k = 0; k < parameters_list.length; k++)
         {
@@ -237,7 +250,50 @@ lookup.defineListOfPredefinedFunctions = function()
         var obj = lookup.builtInFunctionsArray[k];
         lookup.defineBuiltInFunction(obj);
     }
-}
+};
+
+lookup.sandbox = ko.observable(undefined);
+
+lookup.defineSandbox = function()
+{
+    var name = "sandbox-unique";
+    if(typeof(lookup.customObjects[name]) === 'undefined')
+    {
+        var toAdd ={
+            id: "sandbox-unique",
+            type: "sandbox-unique",
+            name: ko.observable(name),
+            parameters: ko.observableArray([]),
+            body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
+            evaluationResult: ko.observable("")
+        };
+        
+        lookup.customObjects[toAdd.id] = toAdd;
+        var operation = 
+        {
+            operation: "define-sandbox",
+            guid: toAdd.id
+        };
+        lookup.operationsPush(operation);
+    }
+
+    lookup.sandbox(lookup.customObjects[name]);
+};
+
+lookup.clearSandbox = function()
+{
+    var name = "sandbox-unique";
+    var sandboxObj = lookup.customObjects[name];
+    // maybe need to remove previous body function tree
+    var nextSandBoxBody = lookup.defineFunctionCall("code-block", "sandbox-unique");
+    sandboxObj.body(nextSandBoxBody);
+    var operation = 
+    {
+        operation: "clear-sandbox",
+        guid: nextSandBoxBody.id
+    };
+    lookup.operationsPush(operation);
+};
 
 //this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
@@ -263,6 +319,8 @@ lookup.defaultNamesForFunctions =
     "Carl Hewitt (Actor model, Planner)",
     "Alain Colmerauer (Prolog)", 
     "Robert Kowalski (Prolog)",
+    "Niklaus Wirth (Pascal)",
+    "Premature optimization is the root of all evil - Sir Tony Hoare"
 ];
 
 lookup.getRandomInt = function(max) {
@@ -271,23 +329,18 @@ lookup.getRandomInt = function(max) {
 
 lookup.createFunction = function()
 {
-    var guid = lookup.uuidv4();
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "function";
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
+    toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
+    toAdd.parameters = ko.observableArray([]);
     
-    var toAdd = {
-        id: guid,
-        type: "function",
-        name: ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]),
-        body: ko.observable(lookup.defineFunctionCall("code-block")),
-        parameters: ko.observableArray([]),
-        evaluationResult: ko.observable("")
-
-    };
-
-    lookup.customObjects[guid] = toAdd;
+    
     var operation = 
     {
         operation: "define-function",
-        guid: guid
+        guid: toAdd.id,
+        name: toAdd.name
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
@@ -299,34 +352,69 @@ lookup.tryRestoreFunction = function(value)
     value.name = ko.observable(value.name);
     value.parameters = ko.observableArray(value.parameters);
     value.body = ko.observable(value.body);
-    value.evaluationResult = ko.observable("");
+    lookup.addEvaluationVariables(value);
     return value;
 };
 
-lookup.defineConstantInt = function(c)
+lookup.addEvaluationVariables = function(obj)
+{
+    obj.evaluationResult = ko.observable("");
+    obj.prettyPrintEvaluationResult = ko.computed(function()
+        {
+            if( lookup.isFailToEvaluate(obj.evaluationResult()) )
+            {
+                return "[failed to evaluate]";
+            }
+            else
+            {
+                return obj.evaluationResult();
+            }
+        }
+    );
+};
+
+lookup.createUIObject = function()
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
         id: guid,
-        type: "constant-int",
-        value: c
+        omniBox: {
+            visible : ko.observable(false),
+            left: ko.observable(0),
+            top: ko.observable(0),
+            id: guid + '--popup-omni-box-input'
+        }
     };
+    lookup.addEvaluationVariables(toAdd);
+
+    lookup.customObjects[guid] = toAdd;
+    return toAdd;
+};
+
+
+
+lookup.defineConstantInt = function(c)
+{
+    var toAdd = lookup.createUIObject();
+    
+    toAdd.type = "constant-int";
+    toAdd.value = c;
+    
     if(typeof(c) !== 'number')
     {
         toAdd.value = parseInt(c.trim())
     }
-    lookup.customObjects[guid] = toAdd;
     
 
     var operation = 
     {
         operation: "define-constant-int",
-        guid: guid,
+        guid: toAdd.id,
         constantValue: c
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 lookup.tryRestoreConstantInt = function(value)
@@ -340,46 +428,37 @@ lookup.tryRestoreConstantInt = function(value)
 
 lookup.defineSymbolUsage = function(symbol)
 {
-    var guid = lookup.uuidv4();
-    
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "symbol-usage",
-        symbolName: symbol
-    };
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "symbol-usage";
+    toAdd.symbolName = symbol;
+
     var operation = 
     {
         operation: "define-symbol-usage",
-        guid: guid,
+        guid: toAdd.id,
         symbolName: symbol
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
-lookup.defineParameterValue = function(parameterGuid, guidToUse, functionCallGuid)
+lookup.defineParameterValue = function(parameterGuid, guidToUse, assignedToGuid)
 {
-    var guid = lookup.uuidv4();
-    
-    
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "parameter-value",
-        parameterGuid: parameterGuid,
-        guidToUse: ko.observable(guidToUse),
-        functionCallGuid: functionCallGuid
-    };
+    var toAdd = lookup.createUIObject();
+    toAdd.type ="parameter-value";
+    toAdd.parameterGuid = parameterGuid;
+    toAdd.guidToUse = ko.observable(guidToUse);
+    toAdd.assignedToGuid = assignedToGuid;
+
     var operation = 
     {
         operation: "parameter-value",
-        guid: guid,
+        guid: toAdd.id,
         parameterGuid: parameterGuid,
-        functionCallGuid: functionCallGuid
+        assignedToGuid: assignedToGuid
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 lookup.tryRestoreParameterValue = function(value)
@@ -388,45 +467,42 @@ lookup.tryRestoreParameterValue = function(value)
     return value;
 };
 
-lookup.defineFunctionCall = function( functionGuid)
+lookup.defineFunctionCall = function( functionGuid, objId)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
     var functionToCallName = toWorkWith.name
-    var guid = lookup.uuidv4();
-    
-    var functionUsageToAdd = {
-        id: guid,
-        type: "function-usage",
-        functionName: functionToCallName,
-        functionGuid: functionGuid,
-        parameters: ko.observableArray([]),
-        evaluationResult: ko.observable("")
-    };
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "function-usage";
+    toAdd.functionName = functionToCallName;
+    toAdd.functionGuid = functionGuid;
+    toAdd.parameters = ko.observableArray([]);
+    lookup.addEvaluationVariables(toAdd);
+    toAdd.assignedToGuid = objId;
+
     for(var k = 0; k < toWorkWith.parameters().length; k++)
     {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, functionUsageToAdd.id);
-        functionUsageToAdd.parameters.push(parameterValue);
+        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, toAdd.id);
+        toAdd.parameters.push(parameterValue);
     }
 
-    
-    lookup.customObjects[guid] = functionUsageToAdd;
 
     var operation = 
     {
         operation: "define-function-call",
-        guid: guid,
+        guid: toAdd.id,
         functionName: functionToCallName,
         functionGuid: functionGuid
     };
     lookup.operationsPush(operation);
 
-    return guid;
+    return toAdd.id;
 };
 
 lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
-    if( parameterNumber< toWorkWith.parameters().length)
+    if( parameterNumber < toWorkWith.parameters().length)
     {
         var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[parameterNumber], undefined, functionUsageToAdd.id);
         functionUsageToAdd.parameters.push(parameterValue);
@@ -441,29 +517,28 @@ lookup.tryRestoreFunctionUsage = function(value)
     {
         parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
     }
-    value.evaluationResult = ko.observable("");
+    lookup.addEvaluationVariables(value);
     return value;
 };
 
 
-lookup.defineParameter = function(parameter)
+lookup.defineParameter = function(parameter, objId)
 {
-    var guid = lookup.uuidv4();
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "parameter";
+    toAdd.parameterName = parameter;
+    toAdd.assignedToGuid = objId;
     
-    lookup.customObjects[guid] = 
-    {
-        id: guid,
-        type: "parameter",
-        parameterName: parameter
-    };
     var operation = 
     {
         operation: "define-parameter",
-        guid: guid,
-        parameterName: parameter
+        guid: toAdd.id,
+        parameterName: parameter,
+        assignedToGuid: objId
     };
     lookup.operationsPush(operation);
-    return guid;
+    return toAdd.id;
 };
 
 
@@ -480,9 +555,27 @@ lookup.focusedObj = ko.observable({});
 
 lookup.focusOnParameter = function(objId)
 {
-    lookup.focusedObj(lookup.customObjects[objId]);
+    lookup.hideOmniBox();
+    const objToWorkOn = lookup.customObjects[objId];
+    lookup.focusedObj(objToWorkOn);
     lookup.activeOperation("focusOnParameter");
-    lookup.filloutOmniBoxDataForFunction(objId);
+    lookup.filloutOmniBoxDataForFunction(objId, objToWorkOn.omniBox);
+
+};
+
+lookup.isOmniBoxOpen = ko.computed(function()
+{
+    return lookup.activeOperation() !== "" ;
+});
+
+lookup.goBackwardAndEvaluate = function(obj)
+{
+    var currentObj = obj;
+    for( var k = 0; typeof(currentObj.assignedToGuid) !== 'undefined' && k < 10000; k ++)
+    {
+        currentObj = lookup.customObjects[currentObj.assignedToGuid];
+    }
+    lookup.startEvaluation(currentObj);
 
 };
 
@@ -500,6 +593,8 @@ lookup.addConstant = function(text, obj)
         };
         lookup.operationsPush(operation);
     }
+    lookup.goBackwardAndEvaluate(obj);
+    //if there is a parameter assignment then start evaluation
     lookup.activeOperation("");
 
 };
@@ -507,7 +602,7 @@ lookup.addConstant = function(text, obj)
 
 lookup.addFunction = function(funcObj, obj)
 {
-    var guid = lookup.defineFunctionCall(funcObj.id);
+    var guid = lookup.defineFunctionCall(funcObj.id, obj.id);
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -521,6 +616,7 @@ lookup.addFunction = function(funcObj, obj)
     }
     lookup.activeOperation("");
     lookup.hideOmniBox();
+    lookup.goBackwardAndEvaluate(obj);
     return guid;
 
 };
@@ -590,7 +686,7 @@ lookup.activateAddingParameterTool = function(obj)
 lookup.addParameter = function()
 {
     var obj = lookup.focusedObj();
-    var toAdd = lookup.defineParameter(lookup.newParameterName());
+    var toAdd = lookup.defineParameter(lookup.newParameterName(), obj.id);
     obj.parameters.push(toAdd);
     
     var operation = 
@@ -633,73 +729,66 @@ lookup.startEvaluation = function(obj)
 {
     var rootContext = {};
     var result = "";
-    if(typeof(obj.body()) !== "undefined")
+    if(typeof(obj.body) !== "undefined")
     {
-        result = lookup.evaluate(obj.body(), rootContext);
+        if(typeof(obj.body()) !== "undefined")
+        {
+            var result = lookup.evaluate(obj.body(), rootContext);
+            obj.evaluationResult(result);
+        }
     }
-    obj.evaluationResult(result);
+    else
+    {
+        var result = lookup.evaluate(obj, rootContext);
+    }
+    
 };
 
 
 lookup.evaluate = function(guid, context)
 {
-    
-    var toWork = lookup.customObjects[guid];
-    if(toWork != null )
+    if(typeof(guid) === "undefined")
     {
-        if(typeof(toWork.type) != undefined)
+        return lookup.generateFailToEvaluate();
+    }
+    else
+    {
+        var toWork = lookup.customObjects[guid];
+        if(toWork != null )
         {
-            if(toWork.type === 'function-usage')
+            if(typeof(toWork.type) != undefined)
             {
-                var functionDefinition = lookup.customObjects[toWork.functionGuid];
-                var result = "";
-                if(functionDefinition.type === "built-in-function")
+                if(toWork.type === 'function-usage')
                 {
-                    var localContext = lookup.makeCopyOfContext(context);
-                    if(functionDefinition.id === "if")
+                    var functionDefinition = lookup.customObjects[toWork.functionGuid];
+                    var result = "";
+                    if(functionDefinition.type === "built-in-function")
                     {
-                        result = lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInFunctions(context, functionDefinition, result, toWork);
                     }
-                    if(functionDefinition.id === "plus")
+                    if(functionDefinition.type === "function")
                     {
-                        result = lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
                     }
-                    if(functionDefinition.id === "minus")
-                    {
-                        result = lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "less-or-equal")
-                    {
-                        result = lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "multiply")
-                    {
-                        result = lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "divide")
-                    {
-                        result = lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "code-block")
-                    {
-                        result = lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
-                    }
+                    toWork.evaluationResult(result);
+                    return result;
                 }
-                if(functionDefinition.type === "function")
+                if(toWork.type === 'symbol-usage')
                 {
-                    result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
-
+                    if(lookup.isFieldPresent(context, toWork.symbolName))
+                    {
+                        return context[toWork.symbolName];
+                    }
+                    else
+                    {
+                        return lookup.generateFailToEvaluate();
+                    }
+                    
                 }
-                toWork.evaluationResult(result);
-                return result;
-            }
-            if(toWork.type === 'symbol-usage')
-            {
-                return context[toWork.symbolName];
-            }
-            if(toWork.type === 'constant-int')
-            {
-                return toWork.value;
+                if(toWork.type === 'constant-int')
+                {
+                    return toWork.value;
+                }
             }
         }
     }
@@ -732,15 +821,25 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
     var checkParameter = lookup.findBuiltInParameterById(toWork.parameters, "check", functionDefinition);
     var check = lookup.evaluate(checkParameter.guidToUse(), localContext);
 
-    if(check)
+    if
+    ( 
+        lookup.isFailToEvaluate(check)
+    )
     {
-        var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
-        return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
+        return lookup.generateFailToEvaluate();
     }
     else
     {
-        var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
-        return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
+        if(check)
+        {
+            var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
+            return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
+        }
+        else
+        {
+            var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
+            return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
+        }
     }
 };
 
@@ -750,7 +849,28 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a + b;
+};
+
+lookup.generateFailToEvaluate = function()
+{
+    var obj = {
+        type: "fail-to-evaluate"
+    };
+    return obj;
+};
+
+lookup.isFailToEvaluate = function(obj)
+{
+    return lookup.isFieldPresent(obj, "type") && obj.type === "fail-to-evaluate";
 };
 
 lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
@@ -758,6 +878,14 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a <= b;
 };
 
@@ -766,6 +894,14 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a - b;
 };
 
@@ -774,6 +910,14 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a * b;
 };
 
@@ -782,6 +926,14 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a / b;
 };
 
@@ -836,37 +988,47 @@ lookup.hideEverythingExcept = function(toShow)
 lookup.omniBoxVisible = ko.observable(false);
 lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
-lookup.filloutOmniBoxDataForFunction = function(callerId) 
+lookup.lastOmniBox = undefined;
+
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox) 
 {
     var foundUI = $("#" + callerId)[0];
-    var omnibox = $(".contextual-omni-box");
-    omnibox.css({
-        top: foundUI.offsetTop + foundUI.offsetHeight,
-        left: foundUI.offsetLeft
-    });
-    lookup.omniBoxVisible(true);
-    $("#popup-omni-box-input").focus();
+    omniBox.visible(true);
+    omniBox.left(foundUI.offsetLeft);
+    omniBox.top(foundUI.offsetTop + foundUI.offsetHeight);
+
+    lookup.lastOmniBox = omniBox;
+
+    $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
     event.stopPropagation();
 };
 
 lookup.openOmniBoxForFunction = function(caller)
 {
+    lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(caller);
-    lookup.filloutOmniBoxDataForFunction(caller.id);
+    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
 
 
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
+    lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
-    lookup.filloutOmniBoxDataForFunction(caller.id);
+    
+    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
 
 lookup.hideOmniBox = function()
 {
-    lookup.omniBoxVisible(false);
+    if(typeof(lookup.lastOmniBox) !== 'undefined' )
+    {
+        lookup.lastOmniBox.visible(false);
+        lookup.lastOmniBox = undefined;
+    }
+    lookup.focusedObj(undefined);
     lookup.omniBoxSelectedFunction(undefined);
     lookup.activeOperation("");
 };
@@ -875,6 +1037,8 @@ lookup.omniBoxOpenFunctionAction = function()
 {
     var functionToOpen = lookup.omniBoxSelectedFunction();
     lookup.hideOmniBox();
+    lookup.hideMenu();
+    lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
     lookup.omniBoxSelectedFunction(undefined);
@@ -1039,6 +1203,39 @@ lookup.omniBoxInputKeyUp = function( data, event)
     {
         lookup.hideOmniBox();
     }
+    event.stopPropagation();
+};
+
+lookup.bodyKeyDown = function( data, event)
+{
+    // turns out Firefox has a bug 
+    // see https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event#ignoring_keydown_during_ime_composition
+    if (event.isComposing || event.keyCode === 229) {
+        console.log("Fixign composing bug in Firefox")
+        return;
+    }
+    console.log(event.code);
+    if(event.code === "Escape")
+    {
+        lookup.hideOmniBox();
+        lookup.hideMenu();
+    }
+    if(event.code === "KeyM" && !lookup.isOmniBoxOpen())
+    {
+        lookup.toggleMenu();
+    }
+
+    if(event.code === "KeyO" && !lookup.isOmniBoxOpen())
+    {
+        lookup.toggleOptions();
+    }
+
+    if(event.code === "KeyF" && !lookup.isOmniBoxOpen())
+    {
+        lookup.toggleFullScreen();
+    }
+
+    return true;
 
 };
 
@@ -1047,6 +1244,33 @@ lookup.findFunctionsWithSameName = function (lowerCasedToTest)
     return ko.utils.arrayFilter(lookup.functionsArray(), function (item) {
         return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
     });
+};
+
+lookup.isFieldPresent = function(obj, fieldName) 
+{
+    return typeof(obj[fieldName]) !== "undefined";
+};
+
+lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, toWork) {
+    var localContext = lookup.makeCopyOfContext(context);
+
+    var localDictionary = {};
+    localDictionary["if"] = () => lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
+    localDictionary["plus"] = () => lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
+    localDictionary["minus"] = () => lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
+    localDictionary["less-or-equal"] = () => lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
+    localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
+    localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
+    localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+
+    if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
+    {
+        return localDictionary[functionDefinition.id]();
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
 };
 
 function Lisperanto()
@@ -1069,8 +1293,10 @@ $(document).ready(function()
 {
     var viewModel = new Lisperanto();
     lookup.loadFromStorage();
+    lookup.backgroundApplySaved();
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
+    lookup.defineSandbox();
     lookup.restoreFunctionsArray();
     
     ko.applyBindings(viewModel);

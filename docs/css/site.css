@@ -19,7 +19,7 @@ body {
 }
 .my-function-result
 {
-  color:rgb(138, 71, 8);
+  color:rgb(218, 116, 21);
   margin-left: 2rem;
 }
 .my-function-name
@@ -30,8 +30,8 @@ body {
 .contextual-omni-box
 {
   position: absolute;
-  top: 20rem;
-  left: 20rem;
+  top: 1rem;
+  left: 2rem;
   z-index: 10;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -47,6 +47,9 @@ body {
 {
   background: repeating-linear-gradient( 45deg, #3d4574, #3d4574 2rem, #283058 2rem, #283058 4rem );
 }
+
+
+
 
 
 
@@ -171,6 +174,69 @@ a
     filter: brightness(70%);
 }
 
+.lisperanto-right-column
+{
+    position: relative;
+    display: inline-grid;
+    left: 40vw;
+    top: 33vh;
 
+}
 
+.lisperanto-sandbox-stripes
+{
+  background: inherit;
+  display: inline-block;
+}
 
+.lisperanto-left-column
+{
+    width: 45vw;
+    position: absolute;
+    left: 0rem;
+    top: 0rem;
+    max-width: 45vw;
+    overflow-x: scroll;
+    border: 0px solid red;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: scroll;
+
+}
+
+.lisperanto-columns-container
+{
+  
+}
+
+.lisperanto-tool-bar
+{
+  position: absolute;
+  bottom: 0rem;
+  left: 0rem;
+  width: 100vw;
+  text-align: center;
+}
+
+.lisperanto-main-body
+{
+  margin: 0rem;
+  padding: 0rem;
+  height: 100vh;
+  width: 100vw;
+  max-height: 100vh;
+}
+
+.lisperanto-sandbox-evaluation-bar
+{
+  position: absolute;
+  bottom: 0rem;
+  left: 55vw;
+  background-color: inherit;
+}
+
+.lisperanto-sandbox-title
+{
+  background-color: inherit;
+  display: inline-block;
+}
