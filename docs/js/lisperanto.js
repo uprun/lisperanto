@@ -1200,6 +1200,12 @@ lookup.omniBoxInputKeyUp = function( data, event)
 
 lookup.bodyKeyUp = function( data, event)
 {
+    // turns out Firefox has a bug 
+    // see https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event#ignoring_keydown_during_ime_composition
+    if (event.isComposing || event.keyCode === 229) {
+        console.log("Fixign composing bug in Firefox")
+        return;
+    }
     console.log(event.code);
     if(event.code === "Escape")
     {
@@ -1210,6 +1216,13 @@ lookup.bodyKeyUp = function( data, event)
     {
         lookup.toggleMenu();
     }
+
+    if(event.code === "KeyF")
+    {
+        lookup.toggleFullScreen();
+    }
+
+    return true;
 
 };
 

@@ -217,6 +217,8 @@ a
   position: absolute;
   bottom: 0rem;
   left: 0rem;
+  width: 100vw;
+  text-align: center;
 }
 
 .lisperanto-main-body
