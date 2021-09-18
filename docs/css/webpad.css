@@ -374,6 +374,44 @@ a
 {
     from{left: 0;opacity:1} to{left: -40rem;opacity:0}
 }
+
+
+.webpad-options-absolute-position
+{
+    width: 40rem;
+    max-width: calc(100% - 4rem);
+    height: auto;
+    max-height: 100vh;
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    background: #333333;
+    z-index: 2100;
+    overflow-y: auto;
+}
+
+
+.webpad-options-animate-show-from-right
+{
+    animation:animateshowfromright 0.4s forwards;
+    
+}
+@keyframes animateshowfromright
+{
+    from{right:-40rem;opacity:0} to{right:0;opacity:1}
+}
+
+
+.webpad-options-animate-fade-back
+{
+    animation:animateoptionsfadeback 0.4s forwards;
+}
+@keyframes animateoptionsfadeback
+{
+    from{right: 0;opacity:1} to{right: -40rem;opacity:0}
+}
+
+
 .webpad-menu-logo {
     width: 5rem;
     height: 5rem;

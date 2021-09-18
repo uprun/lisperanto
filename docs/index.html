@@ -226,6 +226,74 @@
             </address> 
         </div>
     </div>
+    <div 
+        class="webpad-options-absolute-position webpad-options-animate-right" 
+        style="display: none;" 
+        data-bind="
+            visible:  $root.optionsWasAlreadyOpen(),
+            css: { 
+                'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
+                'webpad-options-animate-fade-back': !$root.optionsIsOpen()
+            }">
+        <div class="w3-row webpad-sky-frame">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
+                    : options
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
+                    : options
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleOptions">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close options"/> 
+                    </span>
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div class="text-left" style="padding-left: 0.5rem;">
+                    <div class="webpad-color-blue">
+                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto says hello to search engines.
+                    </div>
+                    <div class="webpad-color-coral">
+                        Lisperanto is a programming environment and version control system.
+                    </div>
+                    <div class="webpad-color-yellow">
+                        Lisperanto is an AST-based version control system.
+                    </div>
+                    <div class="webpad-color-green">
+                        Lisperanto is a projection editor.
+                    </div>
+                    <div class="webpad-color-pink">
+                        Lisperanto is a structure editor.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto is a mono-repository.
+                    </div>
+                    <div class="webpad-color-green">
+                        Lisperanto was inspired by Lisp.
+                    </div>
+                    <div class="webpad-color-orange">
+                        Lisperanto is an AST editor.
+                    </div>
+                    <div class="webpad-color-light-pink">
+                        Lisperanto is distributed under MIT license.
+                    </div>
+                    <div class="webpad-color-blue">
+                        Lisperanto is an open-source project: <a href="https://github.com/uprun/lisperanto">https://github.com/uprun/lisperanto</a>
+                    </div>
+                    <div class="webpad-color-purple">
+                        feel free to e-mail me: <a href="mailto:oleksandr.kryvonos.ods.ua@gmail.com">oleksandr.kryvonos.ods.ua@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="lisperanto-columns-container">
         <div class="lisperanto-left-column">
             <div data-bind="if: $root.listOfFunctionsIsActive()">
@@ -270,5 +338,6 @@
     <script src="js/removeEverything.js" asp-append-version="true"></script>
     <script src="js/toggleFullScreen.js" asp-append-version="true"></script>
     <script src="js/toggleMenu.js" asp-append-version="true"></script>
+    <script src="js/toggleOptions.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -1222,6 +1222,11 @@ lookup.bodyKeyDown = function( data, event)
         lookup.toggleMenu();
     }
 
+    if(event.code === "KeyO" && !lookup.isOmniBoxOpen())
+    {
+        lookup.toggleOptions();
+    }
+
     if(event.code === "KeyF" && !lookup.isOmniBoxOpen())
     {
         lookup.toggleFullScreen();
