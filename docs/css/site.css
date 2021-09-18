@@ -19,7 +19,7 @@ body {
 }
 .my-function-result
 {
-  color:rgb(138, 71, 8);
+  color:rgb(218, 116, 21);
   margin-left: 2rem;
 }
 .my-function-name
@@ -186,13 +186,8 @@ a
 
 .lisperanto-sandbox-stripes
 {
-  background: repeating-linear-gradient( 45deg, #473a00, #473a00 2rem, #210047 2rem, #210047 4rem );
+  background: inherit;
   display: inline-block;
-  max-width: 80rem;
-  overflow-x: scroll;
-  max-height: 80rem;
-  overflow-y: scroll;
-  
 }
 
 .lisperanto-left-column

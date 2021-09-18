@@ -159,7 +159,7 @@
                 attr: {id: $data.id}"
             >
         </strong>
-        <span class="my-function-result" data-bind="text: '// result: ' + evaluationResult() "></span>
+        <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
         <span data-bind="text: ')'"></span>

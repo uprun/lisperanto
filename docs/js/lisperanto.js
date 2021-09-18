@@ -301,6 +301,8 @@ lookup.defaultNamesForFunctions =
     "Carl Hewitt (Actor model, Planner)",
     "Alain Colmerauer (Prolog)", 
     "Robert Kowalski (Prolog)",
+    "Niklaus Wirth (Pascal)",
+    "Premature optimization is the root of all evil - Sir Tony Hoare"
 ];
 
 lookup.getRandomInt = function(max) {
@@ -314,7 +316,7 @@ lookup.createFunction = function()
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
     toAdd.parameters = ko.observableArray([]);
-    toAdd.evaluationResult = ko.observable("");
+    
     
     var operation = 
     {
@@ -332,8 +334,25 @@ lookup.tryRestoreFunction = function(value)
     value.name = ko.observable(value.name);
     value.parameters = ko.observableArray(value.parameters);
     value.body = ko.observable(value.body);
-    value.evaluationResult = ko.observable("");
+    lookup.addEvaluationVariables(value);
     return value;
+};
+
+lookup.addEvaluationVariables = function(obj)
+{
+    obj.evaluationResult = ko.observable("");
+    obj.prettyPrintEvaluationResult = ko.computed(function()
+        {
+            if( lookup.isFailToEvaluate(obj.evaluationResult()) )
+            {
+                return "[failed to evaluate]";
+            }
+            else
+            {
+                return obj.evaluationResult();
+            }
+        }
+    );
 };
 
 lookup.createUIObject = function()
@@ -349,6 +368,8 @@ lookup.createUIObject = function()
             id: guid + '--popup-omni-box-input'
         }
     };
+    lookup.addEvaluationVariables(toAdd);
+
     lookup.customObjects[guid] = toAdd;
     return toAdd;
 };
@@ -438,7 +459,7 @@ lookup.defineFunctionCall = function( functionGuid, objId)
     toAdd.functionName = functionToCallName;
     toAdd.functionGuid = functionGuid;
     toAdd.parameters = ko.observableArray([]);
-    toAdd.evaluationResult = ko.observable("");
+    lookup.addEvaluationVariables(toAdd);
     toAdd.assignedToGuid = objId;
 
     for(var k = 0; k < toWorkWith.parameters().length; k++)
@@ -478,7 +499,7 @@ lookup.tryRestoreFunctionUsage = function(value)
     {
         parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
     }
-    value.evaluationResult = ko.observable("");
+    lookup.addEvaluationVariables(value);
     return value;
 };
 
@@ -687,8 +708,11 @@ lookup.startEvaluation = function(obj)
     var result = "";
     if(typeof(obj.body) !== "undefined")
     {
-        var result = lookup.evaluate(obj.body(), rootContext);
-        obj.evaluationResult(result);
+        if(typeof(obj.body()) !== "undefined")
+        {
+            var result = lookup.evaluate(obj.body(), rootContext);
+            obj.evaluationResult(result);
+        }
     }
     else
     {
@@ -700,63 +724,48 @@ lookup.startEvaluation = function(obj)
 
 lookup.evaluate = function(guid, context)
 {
-    
-    var toWork = lookup.customObjects[guid];
-    if(toWork != null )
+    if(typeof(guid) === "undefined")
     {
-        if(typeof(toWork.type) != undefined)
+        return lookup.generateFailToEvaluate();
+    }
+    else
+    {
+        var toWork = lookup.customObjects[guid];
+        if(toWork != null )
         {
-            if(toWork.type === 'function-usage')
+            if(typeof(toWork.type) != undefined)
             {
-                var functionDefinition = lookup.customObjects[toWork.functionGuid];
-                var result = "";
-                if(functionDefinition.type === "built-in-function")
+                if(toWork.type === 'function-usage')
                 {
-                    var localContext = lookup.makeCopyOfContext(context);
-                    if(functionDefinition.id === "if")
+                    var functionDefinition = lookup.customObjects[toWork.functionGuid];
+                    var result = "";
+                    if(functionDefinition.type === "built-in-function")
                     {
-                        result = lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateBuiltInFunctions(context, functionDefinition, result, toWork);
                     }
-                    if(functionDefinition.id === "plus")
+                    if(functionDefinition.type === "function")
                     {
-                        result = lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
+                        result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
                     }
-                    if(functionDefinition.id === "minus")
-                    {
-                        result = lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "less-or-equal")
-                    {
-                        result = lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "multiply")
-                    {
-                        result = lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "divide")
-                    {
-                        result = lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
-                    }
-                    if(functionDefinition.id === "code-block")
-                    {
-                        result = lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
-                    }
+                    toWork.evaluationResult(result);
+                    return result;
                 }
-                if(functionDefinition.type === "function")
+                if(toWork.type === 'symbol-usage')
                 {
-                    result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
-
+                    if(lookup.isFieldPresent(context, toWork.symbolName))
+                    {
+                        return context[toWork.symbolName];
+                    }
+                    else
+                    {
+                        return lookup.generateFailToEvaluate();
+                    }
+                    
                 }
-                toWork.evaluationResult(result);
-                return result;
-            }
-            if(toWork.type === 'symbol-usage')
-            {
-                return context[toWork.symbolName];
-            }
-            if(toWork.type === 'constant-int')
-            {
-                return toWork.value;
+                if(toWork.type === 'constant-int')
+                {
+                    return toWork.value;
+                }
             }
         }
     }
@@ -789,15 +798,25 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
     var checkParameter = lookup.findBuiltInParameterById(toWork.parameters, "check", functionDefinition);
     var check = lookup.evaluate(checkParameter.guidToUse(), localContext);
 
-    if(check)
+    if
+    ( 
+        lookup.isFailToEvaluate(check)
+    )
     {
-        var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
-        return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
+        return lookup.generateFailToEvaluate();
     }
     else
     {
-        var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
-        return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
+        if(check)
+        {
+            var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
+            return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
+        }
+        else
+        {
+            var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
+            return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
+        }
     }
 };
 
@@ -807,7 +826,28 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a + b;
+};
+
+lookup.generateFailToEvaluate = function()
+{
+    var obj = {
+        type: "fail-to-evaluate"
+    };
+    return obj;
+};
+
+lookup.isFailToEvaluate = function(obj)
+{
+    return lookup.isFieldPresent(obj, "type") && obj.type === "fail-to-evaluate";
 };
 
 lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
@@ -815,6 +855,14 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a <= b;
 };
 
@@ -823,6 +871,14 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a - b;
 };
 
@@ -831,6 +887,14 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a * b;
 };
 
@@ -839,6 +903,14 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+    if
+    ( 
+        lookup.isFailToEvaluate(a)
+        || lookup.isFailToEvaluate(b)
+    )
+    {
+        return lookup.generateFailToEvaluate();
+    }
     return a / b;
 };
 
@@ -1123,6 +1195,33 @@ lookup.findFunctionsWithSameName = function (lowerCasedToTest)
     return ko.utils.arrayFilter(lookup.functionsArray(), function (item) {
         return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
     });
+};
+
+lookup.isFieldPresent = function(obj, fieldName) 
+{
+    return typeof(obj[fieldName]) !== "undefined";
+};
+
+lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, toWork) {
+    var localContext = lookup.makeCopyOfContext(context);
+
+    var localDictionary = {};
+    localDictionary["if"] = () => lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
+    localDictionary["plus"] = () => lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
+    localDictionary["minus"] = () => lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
+    localDictionary["less-or-equal"] = () => lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
+    localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
+    localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
+    localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+
+    if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
+    {
+        return localDictionary[functionDefinition.id]();
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
 };
 
 function Lisperanto()
