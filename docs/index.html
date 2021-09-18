@@ -11,11 +11,16 @@
 </head>
 <body 
     class="lisperanto-main-body" 
+    style="background-color: #000000; " 
     data-bind=
         "click: $root.hideOmniBox,
         event: 
             {
                 keydown: $root.bodyKeyDown
+            },
+        style: 
+            { 
+                background: $root.backgroundColor() 
             }">
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
@@ -252,6 +257,21 @@
                     </span>
                 </div>
             </div>
+            <div class="w3-col w3-container s12 m12 l12" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem; margin-left: 0.5rem;" >
+                        Background:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div style="font-size: 1.4rem; background: #333" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                        data-bind="click: $root.changeBackground">
+                        graphite
+                </div>
+                <div style="font-size: 1.4rem; background: #000" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.changeBackgroundToDefault">
+                        darkness
+                </div>
+            </div>
             <div class="w3-col w3-container s12 m12 l12">
                 <div class="text-left" style="padding-left: 0.5rem;">
                     <div class="webpad-color-blue">
@@ -321,7 +341,14 @@
             <span style="font-size: 1rem; vertical-align: middle;">
                 <img src="svg/bars.svg" class="webpad-edit-pencil" alt="toggle menu"/> 
             </span>
-            M
+            m - menu
+        </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.toggleMenu">
+            <span style="font-size: 1rem; vertical-align: middle;">
+                <img src="svg/cogwheel.svg" class="webpad-edit-pencil" alt="toggle options"/> 
+            </span>
+            o - options
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             onclick="lookup.removeEverything()">
@@ -329,7 +356,7 @@
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             onclick="lookup.toggleFullScreen()">
-            FullScreen
+            f - FullScreen
         </div>
     </div>
     <script src="lib/jquery/dist/jquery.min.js"></script>
@@ -339,5 +366,6 @@
     <script src="js/toggleFullScreen.js" asp-append-version="true"></script>
     <script src="js/toggleMenu.js" asp-append-version="true"></script>
     <script src="js/toggleOptions.js" asp-append-version="true"></script>
+    <script src="js/changeBackground.js" asp-append-version="true"></script>
 </body>
 </html>

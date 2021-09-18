@@ -84,6 +84,7 @@ lookup.operationsPush = function(some)
 
 lookup.loadFromStorage = function()
 {
+    lookup.localStorage = localStorage;
     var stored = localStorage.getItem('customObjects');
     if(typeof(stored) !== 'undefined' && stored != null)
     {
@@ -1290,6 +1291,7 @@ $(document).ready(function()
 {
     var viewModel = new Lisperanto();
     lookup.loadFromStorage();
+    lookup.backgroundApplySaved();
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
