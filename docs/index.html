@@ -249,22 +249,13 @@
             
             <address class="webpad-color-yellow" style="padding-left: 1rem;">
                 by Oleksandr Kryvonos, a developer from Odesa, Ukraine. <br/>
-                It is an open-source project: <a href="https://github.com/uprun/WebPad">https://github.com/uprun/WebPad</a> <br/>
+                code: <a href="https://github.com/uprun/lisperanto">https://github.com/uprun/lisperanto</a> <br/>
                 
                 if you have any suggestions feel free to e-mail me: <a href="mailto:oleksandr.kryvonos.ods.ua@gmail.com">oleksandr.kryvonos.ods.ua@gmail.com</a><br/>
             </address> 
-            <div class="w3-col w3-container s12 m12 l12 webpad-color-coral" data-bind="if: $root.platform_is_cordova()">
-                For more information you can visit a website of the project <a href="https://webpad.com.ua">https://webpad.com.ua</a> <br/>
-            </div>
             
 
             <br/>
-            <h2 style="padding-left: 1rem;"><a style="color: rgb(132, 191, 255);" data-bind="attr:
-                    {
-                        href: privacy_policy_link
-                    }">Privacy policy</a></h2>
-            
-            
         </div>
     </div>
     <div class="lisperanto-columns-container">
@@ -299,8 +290,8 @@
             create function
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            data-bind="click: $root.openListOfFunctions">
-            open list of functions
+            data-bind="click: $root.toggleMenu">
+            menu
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             onclick="lookup.removeEverything()">
@@ -316,5 +307,6 @@
     <script src="js/lisperanto.js" asp-append-version="true"></script>
     <script src="js/removeEverything.js" asp-append-version="true"></script>
     <script src="js/toggleFullScreen.js" asp-append-version="true"></script>
+    <script src="js/toggleMenu.js" asp-append-version="true"></script>
 </body>
 </html>
