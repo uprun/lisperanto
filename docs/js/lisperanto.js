@@ -1037,6 +1037,8 @@ lookup.omniBoxOpenFunctionAction = function()
 {
     var functionToOpen = lookup.omniBoxSelectedFunction();
     lookup.hideOmniBox();
+    lookup.hideMenu();
+    lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
     lookup.omniBoxSelectedFunction(undefined);

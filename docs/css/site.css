@@ -177,10 +177,8 @@ a
 .lisperanto-right-column
 {
     position: absolute;
-    right: 0rem;
-    top: 0rem;
-    width: 45vw;
-    height: 100vh;
+    left: 40vw;
+    top: 33vh;
 
 }
 
