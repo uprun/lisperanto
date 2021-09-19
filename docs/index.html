@@ -31,7 +31,7 @@
                 style: 
                     { 
                         left: isGlobal() ? $root.globalOffsetX() + left() : left(), 
-                        top: isGlobal() ? $root.globalOffsetY() + top() : top()
+                        top: isGlobal() ? $root.globalOffsetY() + top() : $root.theFunctionsListOffsetY() + top()
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div 
@@ -255,7 +255,13 @@
                     </span>
                 </div>
             </div>
-            <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem; margin-bottom: 3rem;">
+            <div class="w3-col w3-container s12 m12 l12" 
+                onwheel="lookup.theListOfFunctionsOnWheel()"
+                style="
+                    margin-top: 0.5rem;
+                    max-height: 70vh;
+                    overflow-y: scroll;
+                    ">
                 <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">
@@ -264,10 +270,10 @@
                         </span>
                     </div>
                 </div>
-                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.listOfFunctionsOmniBox } -->
-                <!-- /ko -->
             </div>
         </div>
+        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.listOfFunctionsOmniBox } -->
+        <!-- /ko -->
     </div>
     <div 
         class="webpad-options-absolute-position webpad-options-animate-right" 
@@ -374,7 +380,7 @@
             <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
         <!-- /ko -->
-        <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.canvasOmniBox } -->
+        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
         <!-- /ko -->
         <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
 

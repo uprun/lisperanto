@@ -1371,6 +1371,25 @@ lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
 
 };
 
+lookup.theFunctionsListOffsetY = ko.observable(0);
+
+lookup.theListOfFunctionsOnWheel = function()
+{
+    event.stopPropagation();
+
+    var foundList = $("#the-functions-list")[0];
+    lookup.theFunctionsListOffsetY(-foundList.parentNode.scrollTop);
+    //console.log(event);
+    // var newOffsetY = lookup.globalOffsetY() - event.deltaY * lookup.globalOffsetZ();
+    // newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
+    // newOffsetY = Math.max(newOffsetY, lookup.globalMinY());
+    // lookup.globalOffsetY( newOffsetY );
+    // var newOffsetX = lookup.globalOffsetX() - event.deltaX * lookup.globalOffsetZ();
+    // newOffsetX = Math.min(newOffsetX, lookup.globalMaxX());
+    // newOffsetX = Math.max(newOffsetX, lookup.globalMinX());
+    // lookup.globalOffsetX( newOffsetX );
+};
+
 
 
 $(document).ready(function()
