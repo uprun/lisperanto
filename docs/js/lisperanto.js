@@ -1018,6 +1018,7 @@ lookup.openOmniBoxForFunctionInTheList = function(caller)
     lookup.activeOperation("functionInTheListIsSelected");
     lookup.omniBoxSelectedFunction(caller);
     lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
+    lookup.refreshTheListOfFunctionsScroll();
 };
 
 lookup.omniBoxRenameFunctionAction = function()
@@ -1377,17 +1378,17 @@ lookup.theListOfFunctionsOnWheel = function()
 {
     event.stopPropagation();
 
+    lookup.refreshTheListOfFunctionsScroll();
+};
+
+lookup.refreshTheListOfFunctionsScroll = function() {
     var foundList = $("#the-functions-list")[0];
     lookup.theFunctionsListOffsetY(-foundList.parentNode.scrollTop);
-    //console.log(event);
-    // var newOffsetY = lookup.globalOffsetY() - event.deltaY * lookup.globalOffsetZ();
-    // newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
-    // newOffsetY = Math.max(newOffsetY, lookup.globalMinY());
-    // lookup.globalOffsetY( newOffsetY );
-    // var newOffsetX = lookup.globalOffsetX() - event.deltaX * lookup.globalOffsetZ();
-    // newOffsetX = Math.min(newOffsetX, lookup.globalMaxX());
-    // newOffsetX = Math.max(newOffsetX, lookup.globalMinX());
-    // lookup.globalOffsetX( newOffsetX );
+};
+
+lookup.omniBoxOnWheel = function()
+{
+    event.stopPropagation();
 };
 
 
@@ -1402,8 +1403,11 @@ $(document).ready(function()
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
     lookup.restoreFunctionsArray();
+    lookup.refreshTheListOfFunctionsScroll();
     
     
     ko.applyBindings(viewModel);
 });
+
+
   

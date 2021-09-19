@@ -25,6 +25,7 @@
             }">
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
+            onwheel="lookup.omniBoxOnWheel()"
             data-bind="
                 visible: visible,
                 click: $root.omniBoxClick,
