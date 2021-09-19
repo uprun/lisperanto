@@ -62,11 +62,18 @@
                 
                 <div class="omnibox-options">
                     <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            open definition
+                        <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
+                            <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                                open definition
+                            </div>
                         </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionAction">
-                            rename
+                        <div data-bind="if: $root.activeOperation() === 'functionInTheListIsSelected' ">
+                            <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                                open definition
+                            </div>
+                            <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionAction">
+                                rename
+                            </div>
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">

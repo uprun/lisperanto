@@ -1015,6 +1015,7 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot
 lookup.openOmniBoxForFunctionInTheList = function(caller)
 {
     lookup.hideOmniBox();
+    lookup.activeOperation("functionInTheListIsSelected");
     lookup.omniBoxSelectedFunction(caller);
     lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
 };
@@ -1033,6 +1034,7 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
+    lookup.activeOperation("functionUsageIsSelected");
 
     var root = lookup.findRoot(caller);
     
