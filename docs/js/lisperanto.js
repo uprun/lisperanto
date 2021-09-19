@@ -91,6 +91,7 @@ lookup.loadFromStorage = function()
         var parsed = JSON.parse(stored);
         for (const [key, value] of Object.entries(parsed)) 
         {
+            lookup.tryRestoreOffsetCoordinates(value);
             if(typeof(value.type) !== 'undefined')
             {
                 if(value.type === "built-in-function")
@@ -135,6 +136,27 @@ lookup.loadFromStorage = function()
     }
     
 };
+
+lookup.tryRestoreOffsetCoordinates = function(value)
+{
+    if(typeof(value.offsetX) === "undefined")
+    {
+        value.offsetX = ko.observable(0);
+    }
+    else
+    {
+        value.offsetX = ko.observable(value.offsetX);
+    }
+    if(typeof(value.offsetY) === "undefined")
+    {
+        value.offsetY = ko.observable(0);
+    }
+    else
+    {
+        value.offsetY = ko.observable(value.offsetY);
+    }
+};
+
 
 lookup.restoreFunctionsArray = function()
 {
@@ -268,7 +290,7 @@ lookup.defineSandbox = function()
             evaluationResult: ko.observable("")
         };
 
-        lookup.addOffsetCoordinates(toAdd);
+        lookup.tryRestoreOffsetCoordinates(toAdd);
         
         lookup.customObjects[toAdd.id] = toAdd;
         var operation = 
@@ -281,7 +303,7 @@ lookup.defineSandbox = function()
 
     var foundSandbox = lookup.customObjects[name];
 
-    lookup.addOffsetCoordinates(foundSandbox);
+    lookup.tryRestoreOffsetCoordinates(foundSandbox);
 
     lookup.sandbox(foundSandbox);
 };
@@ -393,17 +415,13 @@ lookup.createUIObject = function()
         }
     };
     lookup.addEvaluationVariables(toAdd);
-    lookup.addOffsetCoordinates(toAdd);
+    lookup.tryRestoreOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
 };
 
-lookup.addOffsetCoordinates = function(toAdd)
-{
-    toAdd.offsetX = ko.observable(0);
-    toAdd.offsetY = ko.observable(0);
-};
+
 
 
 

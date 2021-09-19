@@ -12,7 +12,7 @@ lookup.globalMinY = ko.observable(-2048);
 
 lookup.bodyOnWheel = function() {
     event.preventDefault();
-    console.log(event);
+    //console.log(event);
     var newOffsetY = lookup.globalOffsetY() - event.deltaY * lookup.globalOffsetZ();
     newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
     newOffsetY = Math.max(newOffsetY, lookup.globalMinY());

@@ -174,10 +174,11 @@ a
     filter: brightness(70%);
 }
 
-.lisperanto-right-column
+.lisperanto-ui-object
 {
     position: absolute;
     display: inline-grid;
+    width: max-content;
     left: 40vw;
     top: 33vh;
 

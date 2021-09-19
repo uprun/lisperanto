@@ -71,14 +71,20 @@
         </div>
     </script>
     <script type="text/html" id="function-definition-template">
-        <div class="lisperanto-function-definition">
-            <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            <span data-bind="if: name !== ''">
+        <div class="lisperanto-function-definition lisperanto-ui-object"
+            data-bind="
+                style: 
+                { 
+                    left: $root.globalOffsetX() + offsetX(), 
+                    top: $root.globalOffsetY() + offsetY() 
+                }">
+            <div>
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
                 <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
-            </span>
-            <div style="font-size: 1.2rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.activateRenameFunctionTool">
-                    rename
+                <div style="font-size: 1.2rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.activateRenameFunctionTool">
+                        rename
+                </div>
             </div>
             <div>
                 parameters:
@@ -109,7 +115,7 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-right-column" data-bind="style: 
+        <div class="lisperanto-ui-object" data-bind="style: 
         { 
             left: $root.globalOffsetX() + offsetX(), 
             top: $root.globalOffsetY() + offsetY() 
@@ -340,7 +346,7 @@
             <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
         <!-- /ko -->
-        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem;">
+        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
 
         </div>
     </div>
