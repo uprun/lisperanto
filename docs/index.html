@@ -115,11 +115,17 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-ui-object" data-bind="style: 
-        { 
-            left: $root.globalOffsetX() + offsetX(), 
-            top: $root.globalOffsetY() + offsetY() 
-        }">
+        <div class="lisperanto-ui-object" 
+            
+         data-bind="style: 
+            { 
+                left: $root.globalOffsetX() + offsetX(), 
+                top: $root.globalOffsetY() + offsetY() 
+            }, 
+            attr: 
+            {
+                id: $data.id
+            }">
             <div class="lisperanto-sandbox-title">
                 <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
                 <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
@@ -222,7 +228,7 @@
                     </span>
                 </div>
             </div>
-            <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem;">
+            <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem; margin-bottom: 3rem;">
                 <div class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">

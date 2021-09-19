@@ -601,11 +601,7 @@ lookup.isOmniBoxOpen = ko.computed(function()
 
 lookup.goBackwardAndEvaluate = function(obj)
 {
-    var currentObj = obj;
-    for( var k = 0; typeof(currentObj.assignedToGuid) !== 'undefined' && k < 10000; k ++)
-    {
-        currentObj = lookup.customObjects[currentObj.assignedToGuid];
-    }
+    var currentObj = lookup.findRoot(obj);
     lookup.startEvaluation(currentObj);
 
 };
@@ -992,6 +988,8 @@ lookup.openFunction = function(obj)
         lookup.listOfActiveFunctions.push(obj);
         lookup.mapOfOpenFunctions[obj.id] = true;
     }
+    obj.offsetX(lookup.desiredOffset.x);
+    obj.offsetY(lookup.desiredOffset.y);
 };
 
 
@@ -1021,7 +1019,7 @@ lookup.openOmniBoxForFunction = function(caller)
     lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 };
 
-
+lookup.desiredOffset = {x: 0, y: 0};
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
@@ -1029,6 +1027,18 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
     
     lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
+
+    var foundUI = $("#" + caller.id)[0];
+    
+    lookup.desiredOffset = 
+    { 
+        x : 0,
+        y : foundUI.offsetTop
+    };
+    var root = lookup.findRoot(caller);
+    var foundRoot = $("#" + root.id)[0];
+    lookup.desiredOffset.x += foundRoot.offsetLeft + foundRoot.offsetWidth;
+    lookup.desiredOffset.y += foundRoot.offsetTop;
 };
 
 lookup.hideOmniBox = function()
@@ -1281,6 +1291,15 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     {
         return lookup.generateFailToEvaluate();
     }
+};
+
+lookup.findRoot = function(obj) 
+{
+    var currentObj = obj;
+    for (var k = 0; typeof (currentObj.assignedToGuid) !== 'undefined' && k < 10000; k++) {
+        currentObj = lookup.customObjects[currentObj.assignedToGuid];
+    }
+    return currentObj;
 };
 
 function Lisperanto()
