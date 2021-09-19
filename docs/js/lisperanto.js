@@ -173,12 +173,6 @@ lookup.restoreFunctionsArray = function()
                 lookup.functionsArray.push(value);
             }
         }
-        value.omniBox = {
-            visible : ko.observable(false),
-            left: ko.observable(0),
-            top: ko.observable(0),
-            id: value.id + '--popup-omni-box-input'
-        };
     }
 };
 
@@ -590,7 +584,8 @@ lookup.focusOnParameter = function(objId)
     const objToWorkOn = lookup.customObjects[objId];
     lookup.focusedObj(objToWorkOn);
     lookup.activeOperation("focusOnParameter");
-    lookup.filloutOmniBoxDataForFunction(objId, objToWorkOn.omniBox);
+    var root = lookup.findRoot(objToWorkOn);
+    lookup.filloutOmniBoxDataForFunction(objId, lookup.canvasOmniBox, root);
 
 };
 
@@ -998,12 +993,22 @@ lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
 lookup.lastOmniBox = undefined;
 
-lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox) 
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot = true) 
 {
     var foundUI = $("#" + callerId)[0];
     omniBox.visible(true);
-    omniBox.left(foundUI.offsetLeft);
-    omniBox.top(foundUI.offsetTop + foundUI.offsetHeight);
+    var offsetX = foundUI.offsetLeft;
+    if(useRoot)
+    {
+        offsetX += root.offsetX();
+    }
+    omniBox.left(offsetX );
+    var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
+    if(useRoot)
+    {
+        offsetY += root.offsetY();
+    }
+    omniBox.top(offsetY);
 
     lookup.lastOmniBox = omniBox;
 
@@ -1012,11 +1017,11 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox)
     event.stopPropagation();
 };
 
-lookup.openOmniBoxForFunction = function(caller)
+lookup.openOmniBoxForFunctionInTheList = function(caller)
 {
     lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(caller);
-    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
+    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
 };
 
 lookup.desiredOffset = {x: 0, y: 0};
@@ -1025,8 +1030,10 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
     lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
+
+    var root = lookup.findRoot(caller);
     
-    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
+    lookup.filloutOmniBoxDataForFunction(caller.id, lookup.canvasOmniBox, root);
 
     var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
 
@@ -1037,10 +1044,10 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
         x : foundAnchor.offsetWidth,
         y : foundUI.offsetTop
     };
-    var root = lookup.findRoot(caller);
+    
     var foundRoot = $("#" + root.id)[0];
-    lookup.desiredOffset.x += foundRoot.offsetLeft + foundRoot.offsetWidth;
-    lookup.desiredOffset.y += foundRoot.offsetTop;
+    lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
+    lookup.desiredOffset.y += root.offsetY();
 };
 
 lookup.hideOmniBox = function()
@@ -1304,6 +1311,20 @@ lookup.findRoot = function(obj)
     return currentObj;
 };
 
+lookup.generateOmniBox = function(isGlobal) {
+    var omniBox = {
+        visible: ko.observable(false),
+        left: ko.observable(0),
+        top: ko.observable(0),
+        isGlobal: ko.observable(isGlobal),
+        id: isGlobal ? 'global--popup-omni-box-input' : 'local--popup-omni-box-input'
+    };
+    return omniBox;
+};
+
+lookup.listOfFunctionsOmniBox = lookup.generateOmniBox(false);
+lookup.canvasOmniBox = lookup.generateOmniBox(true);
+
 function Lisperanto()
 {
     var self = this;
@@ -1327,6 +1348,16 @@ lookup.findSandboxAnchorPosition = function()
 
 };
 
+lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
+{
+    lookup.hideOmniBox();
+    
+    lookup.focusedObj(obj);
+    lookup.activeOperation("focusOnFunctionDefinition");
+    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
+
+};
+
 
 
 $(document).ready(function()
@@ -1339,6 +1370,7 @@ $(document).ready(function()
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
     lookup.restoreFunctionsArray();
+    
     
     ko.applyBindings(viewModel);
 });

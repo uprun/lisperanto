@@ -30,8 +30,8 @@
                 click: $root.omniBoxClick,
                 style: 
                     { 
-                        left: left, 
-                        top: top 
+                        left: isGlobal() ? $root.globalOffsetX() + left() : left(), 
+                        top: isGlobal() ? $root.globalOffsetY() + top() : top()
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
@@ -54,7 +54,10 @@
                 <div class="omnibox-options">
                     <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
                         <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            Go to definition
+                            open definition
+                        </span>
+                        <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            rename
                         </span>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
@@ -77,14 +80,20 @@
                 { 
                     left: $root.globalOffsetX() + offsetX(), 
                     top: $root.globalOffsetY() + offsetY() 
+                },
+                attr: 
+                {
+                    id: $data.id
                 }">
-            <div>
+            <div 
+                data-bind="
+                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    attr: 
+                    {
+                        id: 'function-definition-header--' + $data.id
+                    }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
-                <div style="font-size: 1.2rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                        data-bind="click: $root.activateRenameFunctionTool">
-                        rename
-                </div>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
             </div>
             <div>
                 parameters:
@@ -153,8 +162,6 @@
                     data-bind="click: $root.focusOnParameter">
                     focus
                 </div>
-                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
-                <!-- /ko -->
             <span>
         </div>
     </script>
@@ -195,8 +202,6 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                     <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
-                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
-                <!-- /ko -->
             </span>
             
         </div>
@@ -229,16 +234,16 @@
                 </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem; margin-bottom: 3rem;">
-                <div class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
+                <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunctionInTheList, attr: {id: 'function-in-the-list--' + $data.id}"></span>
                             <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                         </span>
-                        <!-- ko template: { name: 'contextual-omni-box-template', data: $data.omniBox } -->
-                        <!-- /ko -->
                     </div>
                 </div>
+                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.listOfFunctionsOmniBox } -->
+                <!-- /ko -->
             </div>
         </div>
     </div>
@@ -346,6 +351,8 @@
         <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
             <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
+        <!-- /ko -->
+        <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.canvasOmniBox } -->
         <!-- /ko -->
         <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
 
