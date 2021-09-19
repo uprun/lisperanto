@@ -1028,11 +1028,13 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     
     lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
 
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+
     var foundUI = $("#" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 
-        x : 0,
+        x : foundAnchor.offsetWidth,
         y : foundUI.offsetTop
     };
     var root = lookup.findRoot(caller);
