@@ -665,35 +665,30 @@ lookup.addSymbol = function(text, obj)
     lookup.activeOperation("");
 };
 
-lookup.activateRenameFunctionTool = function(obj)
-{
-    lookup.focusedObj(obj);
-    lookup.activeOperation("activateRenameFunctionTool");
-    lookup.newFunctionName(obj.name());
-    event.stopPropagation();
-};
-
 lookup.renameFunction = function()
 {
     var obj = lookup.focusedObj();
     
+    const newName = lookup.omniBoxTextInput().trim();
     var operation = 
     {
         operation: "rename-function",
         functionGuid: obj.id,
-        newName: lookup.newFunctionName(),
+        newName: newName,
         oldName: obj.name()
     };
 
-    obj.name(lookup.newFunctionName());
+    obj.name(newName);
+    lookup.omniBoxTextInput("");
 
     lookup.operationsPush(operation);
     lookup.activeOperation("");
+    lookup.hideOmniBox();
 
 
 };
 
-lookup.newFunctionName = ko.observable("");
+
 
 lookup.activateAddingParameterTool = function(obj)
 {
@@ -1024,6 +1019,14 @@ lookup.openOmniBoxForFunctionInTheList = function(caller)
     lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
 };
 
+lookup.omniBoxRenameFunctionAction = function()
+{
+    lookup.activeOperation("renameFunction");
+    var obj = lookup.focusedObj();
+    lookup.omniBoxTextInput(obj.name())
+    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
+};
+
 lookup.desiredOffset = {x: 0, y: 0};
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
@@ -1210,7 +1213,15 @@ lookup.omniBoxInputKeyPress = function(data, event)
     {
         if(event.keyCode == 13)
         {
-            lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+            if(lookup.activeOperation() ===  "renameFunction")
+            {
+                lookup.renameFunction();
+
+            }
+            else
+            {
+                lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+            }
         }
         else
         {
@@ -1353,7 +1364,7 @@ lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
     lookup.hideOmniBox();
     
     lookup.focusedObj(obj);
-    lookup.activeOperation("focusOnFunctionDefinition");
+    lookup.activeOperation("focusOnFunctionHeaderDefinition");
     lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 
 };
