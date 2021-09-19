@@ -183,6 +183,14 @@ a
 
 }
 
+.lisperanto-anchor-sandbox
+{
+    position: absolute;
+    display: inline-grid;
+    left: 40vw;
+    top: 33vh;
+}
+
 
 .lisperanto-function-definition
 {

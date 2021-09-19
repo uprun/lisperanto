@@ -109,20 +109,26 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-sandbox-title">
-            <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
-            <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.clearSandbox">
-                    clear
-            </div>
-        </div>
-        <div class="lisperanto-sandbox-stripes">
-            <span
-                data-bind="attr: {id: 'body--' + $data.id}">
-                <div data-bind="template: { name: 'body-element-template', data: body }">
+        <div class="lisperanto-right-column" data-bind="style: 
+        { 
+            left: $root.globalOffsetX() + offsetX(), 
+            top: $root.globalOffsetY() + offsetY() 
+        }">
+            <div class="lisperanto-sandbox-title">
+                <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
+                <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.clearSandbox">
+                        clear
                 </div>
-                <div style="height: 3rem;"></div>
-            </span>
+            </div>
+            <div class="lisperanto-sandbox-stripes">
+                <span
+                    data-bind="attr: {id: 'body--' + $data.id}">
+                    <div data-bind="template: { name: 'body-element-template', data: body }">
+                    </div>
+                    <div style="height: 3rem;"></div>
+                </span>
+            </div>
         </div>
     </script>
     <script type="text/html" id="parameter-value-template">
@@ -329,15 +335,13 @@
             <!-- ko template: { name: 'function-definition-template', data: $root.activeFunction() } -->
             <!-- /ko -->
         <!-- /ko -->
-        <div class="lisperanto-right-column" data-bind="style: 
-        { 
-            left: $root.globalOffsetX, 
-            top: $root.globalOffsetY 
-        }">
-            <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
-                <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
-                <!-- /ko -->
+        
+        <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
+            <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
+        <!-- /ko -->
+        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem;">
+
         </div>
     </div>
     <div class="text-center lisperanto-tool-bar">

@@ -267,6 +267,8 @@ lookup.defineSandbox = function()
             body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
             evaluationResult: ko.observable("")
         };
+
+        lookup.addOffsetCoordinates(toAdd);
         
         lookup.customObjects[toAdd.id] = toAdd;
         var operation = 
@@ -277,7 +279,11 @@ lookup.defineSandbox = function()
         lookup.operationsPush(operation);
     }
 
-    lookup.sandbox(lookup.customObjects[name]);
+    var foundSandbox = lookup.customObjects[name];
+
+    lookup.addOffsetCoordinates(foundSandbox);
+
+    lookup.sandbox(foundSandbox);
 };
 
 lookup.clearSandbox = function()
@@ -387,9 +393,16 @@ lookup.createUIObject = function()
         }
     };
     lookup.addEvaluationVariables(toAdd);
+    lookup.addOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
+};
+
+lookup.addOffsetCoordinates = function(toAdd)
+{
+    toAdd.offsetX = ko.observable(0);
+    toAdd.offsetY = ko.observable(0);
 };
 
 
@@ -1287,6 +1300,15 @@ function Lisperanto()
 
 };
 
+lookup.findSandboxAnchorPosition = function()
+{
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+
+    lookup.sandbox().offsetX(foundAnchor.offsetLeft);
+    lookup.sandbox().offsetY(foundAnchor.offsetTop);
+
+};
+
 
 
 $(document).ready(function()
@@ -1297,6 +1319,7 @@ $(document).ready(function()
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
+    lookup.findSandboxAnchorPosition();
     lookup.restoreFunctionsArray();
     
     ko.applyBindings(viewModel);
