@@ -982,39 +982,18 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 };
 
 
-
-lookup.activeFunction = ko.observable(undefined);
+lookup.listOfActiveFunctions = ko.observableArray([]);
+lookup.mapOfOpenFunctions = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
 lookup.openFunction = function(obj)
 {
-    lookup.activeFunction(obj);
-    lookup.hideEverythingExcept(lookup.functionDefinitionIsActive);
-};
-
-lookup.listOfFunctionsIsActive = ko.observable(true);
-
-lookup.openListOfFunctions = function()
-{
-    lookup.hideEverythingExcept(lookup.listOfFunctionsIsActive);
-};
-
-lookup.listOfMenus = [
-    lookup.functionDefinitionIsActive,
-    lookup.listOfFunctionsIsActive
-];
-
-lookup.hideEverythingExcept = function(toShow)
-{
-    for(var k = 0; k < lookup.listOfMenus.length; k++)
+    if(typeof(lookup.mapOfOpenFunctions[obj.id]) === "undefined")
     {
-        var some = lookup.listOfMenus[k];
-        if(some !== toShow)
-        {
-            some(false);
-        }
+        lookup.listOfActiveFunctions.push(obj);
+        lookup.mapOfOpenFunctions[obj.id] = true;
     }
-    toShow(true);
 };
+
 
 lookup.omniBoxVisible = ko.observable(false);
 lookup.omniBoxSelectedFunction = ko.observable(undefined);

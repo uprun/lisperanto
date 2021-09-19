@@ -332,16 +332,11 @@
             overflow-x: clip; 
             overflow-y: clip;" 
             >
-        <!-- <div class="lisperanto-left-column">
-            <div data-bind="if: $root.functionDefinitionIsActive() ">
-                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
-            </div>
-        </div> -->
-        <!-- ko if: $root.functionDefinitionIsActive() -->
-            <!-- ko template: { name: 'function-definition-template', data: $root.activeFunction() } -->
-            <!-- /ko -->
+
+        <!-- ko template: { name: 'function-definition-template', foreach: $root.listOfActiveFunctions } -->
+
         <!-- /ko -->
-        
+
         <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
             <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
