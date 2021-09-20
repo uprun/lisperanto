@@ -12,6 +12,7 @@
 <body 
     class="lisperanto-main-body" 
     style="background-color: #000000; " 
+    onwheel="lookup.bodyOnWheel()"
     data-bind=
         "click: $root.hideOmniBox,
         event: 
@@ -24,16 +25,19 @@
             }">
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
+            onwheel="lookup.omniBoxOnWheel()"
             data-bind="
                 visible: visible,
                 click: $root.omniBoxClick,
                 style: 
                     { 
-                        left: left, 
-                        top: top 
+                        left: isGlobal() ? $root.globalOffsetX() + left() : left(), 
+                        top: isGlobal() ? $root.globalOffsetY() + top() : $root.theFunctionsListOffsetY() + top()
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
-                <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
+                <div 
+                    data-bind="if: 
+                        $root.activeOperation() === 'focusOnParameter' || $root.activeOperation() === 'renameFunction' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -50,11 +54,32 @@
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
+                <div data-bind="if: $root.activeOperation() === 'renameFunction'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.renameFunction">
+                            apply 
+                    </div>
+                </div>
+                
                 <div class="omnibox-options">
-                    <div data-bind="if: typeof($root.omniBoxSelectedFunction()) !== 'undefined' ">
-                        <span style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            Go to definition
-                        </span>
+                    <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            open definition
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'functionInTheListIsSelected' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            open definition
+                        </div>
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionFromTheListAction">
+                            rename
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionAction">
+                            rename
+                        </div>
+                        
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
                         <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
@@ -70,14 +95,26 @@
         </div>
     </script>
     <script type="text/html" id="function-definition-template">
-        <div>
-            <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            <span data-bind="if: name !== ''">
-                <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name"></span>
-            </span>
-            <div style="font-size: 1.2rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.activateRenameFunctionTool">
-                    rename
+        <div class="lisperanto-function-definition lisperanto-ui-object"
+            data-bind="
+                style: 
+                { 
+                    left: $root.globalOffsetX() + offsetX(), 
+                    top: $root.globalOffsetY() + offsetY() 
+                },
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    attr: 
+                    {
+                        id: 'function-definition-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
             </div>
             <div>
                 parameters:
@@ -108,20 +145,32 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-sandbox-title">
-            <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
-            <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.clearSandbox">
-                    clear
-            </div>
-        </div>
-        <div class="lisperanto-sandbox-stripes">
-            <span
-                data-bind="attr: {id: 'body--' + $data.id}">
-                <div data-bind="template: { name: 'body-element-template', data: body }">
+        <div class="lisperanto-ui-object" 
+            
+         data-bind="style: 
+            { 
+                left: $root.globalOffsetX() + offsetX(), 
+                top: $root.globalOffsetY() + offsetY() 
+            }, 
+            attr: 
+            {
+                id: $data.id
+            }">
+            <div class="lisperanto-sandbox-title">
+                <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
+                <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.clearSandbox">
+                        clear
                 </div>
-                <div style="height: 3rem;"></div>
-            </span>
+            </div>
+            <div class="lisperanto-sandbox-stripes">
+                <span
+                    data-bind="attr: {id: 'body--' + $data.id}">
+                    <div data-bind="template: { name: 'body-element-template', data: body }">
+                    </div>
+                    <div style="height: 3rem;"></div>
+                </span>
+            </div>
         </div>
     </script>
     <script type="text/html" id="parameter-value-template">
@@ -134,8 +183,6 @@
                     data-bind="click: $root.focusOnParameter">
                     focus
                 </div>
-                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
-                <!-- /ko -->
             <span>
         </div>
     </script>
@@ -176,8 +223,6 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                     <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
-                <!-- ko template: { name: 'contextual-omni-box-template', data: lookup.customObjects[$data].omniBox } -->
-                <!-- /ko -->
             </span>
             
         </div>
@@ -209,19 +254,26 @@
                     </span>
                 </div>
             </div>
-            <div class="w3-col w3-container s12 m12 l12" style="margin-top: 0.5rem;">
-                <div class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
+            <div class="w3-col w3-container s12 m12 l12" 
+                onwheel="lookup.theListOfFunctionsOnWheel()"
+                style="
+                    margin-top: 0.5rem;
+                    margin-bottom: 5rem;
+                    max-height: 70vh;
+                    overflow-y: scroll;
+                    ">
+                <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunction, attr: {id: $data.id}"></span>
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunctionInTheList, attr: {id: 'function-in-the-list--' + $data.id}"></span>
                             <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                         </span>
-                        <!-- ko template: { name: 'contextual-omni-box-template', data: $data.omniBox } -->
-                        <!-- /ko -->
                     </div>
                 </div>
             </div>
         </div>
+        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.listOfFunctionsOmniBox } -->
+        <!-- /ko -->
     </div>
     <div 
         class="webpad-options-absolute-position webpad-options-animate-right" 
@@ -309,24 +361,29 @@
     <div class="lisperanto-columns-container" 
         style=
         "
+            position: absolute;
             top: 0; 
             left: 0;
             width: 100vw;
             height: 100vh; 
-            min-width: 100vw; 
-            min-height: 100vh; 
-            overflow-x: scroll; 
-            overflow-y: scroll;" >
-        <!-- <div class="lisperanto-left-column">
-            <div data-bind="if: $root.functionDefinitionIsActive() ">
-                <div data-bind="template: { name: 'function-definition-template', data: $root.activeFunction() }"></div>
-            </div>
-        </div> -->
-        <div class="lisperanto-right-column">
-            <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
-                <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
-                <!-- /ko -->
+            max-width: 100vw; 
+            max-height: 100vh; 
+            overflow-x: clip; 
+            overflow-y: clip;" 
+            >
+
+        <!-- ko template: { name: 'function-definition-template', foreach: $root.listOfActiveFunctions } -->
+
+        <!-- /ko -->
+
+        <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
+            <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
             <!-- /ko -->
+        <!-- /ko -->
+        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
+        <!-- /ko -->
+        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
+
         </div>
     </div>
     <div class="text-center lisperanto-tool-bar">
@@ -365,5 +422,6 @@
     <script src="js/toggleMenu.js" asp-append-version="true"></script>
     <script src="js/toggleOptions.js" asp-append-version="true"></script>
     <script src="js/changeBackground.js" asp-append-version="true"></script>
+    <script src="js/scroll.js" asp-append-version="true"></script>
 </body>
 </html>

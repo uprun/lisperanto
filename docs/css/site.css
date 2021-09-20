@@ -174,13 +174,31 @@ a
     filter: brightness(70%);
 }
 
-.lisperanto-right-column
+.lisperanto-ui-object
 {
-    position: relative;
+    position: absolute;
     display: inline-grid;
+    width: max-content;
     left: 40vw;
     top: 33vh;
 
+}
+
+.lisperanto-anchor-sandbox
+{
+    position: absolute;
+    display: inline-grid;
+    left: 40vw;
+    top: 33vh;
+}
+
+
+.lisperanto-function-definition
+{
+    position: absolute;
+    display: inline-grid;
+    left: 10vw;
+    top: 33vh;
 }
 
 .lisperanto-sandbox-stripes

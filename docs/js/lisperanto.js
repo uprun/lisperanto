@@ -91,6 +91,7 @@ lookup.loadFromStorage = function()
         var parsed = JSON.parse(stored);
         for (const [key, value] of Object.entries(parsed)) 
         {
+            lookup.tryRestoreOffsetCoordinates(value);
             if(typeof(value.type) !== 'undefined')
             {
                 if(value.type === "built-in-function")
@@ -136,6 +137,27 @@ lookup.loadFromStorage = function()
     
 };
 
+lookup.tryRestoreOffsetCoordinates = function(value)
+{
+    if(typeof(value.offsetX) === "undefined")
+    {
+        value.offsetX = ko.observable(0);
+    }
+    else
+    {
+        value.offsetX = ko.observable(value.offsetX);
+    }
+    if(typeof(value.offsetY) === "undefined")
+    {
+        value.offsetY = ko.observable(0);
+    }
+    else
+    {
+        value.offsetY = ko.observable(value.offsetY);
+    }
+};
+
+
 lookup.restoreFunctionsArray = function()
 {
     for (const [key, value] of Object.entries(lookup.customObjects)) 
@@ -151,12 +173,6 @@ lookup.restoreFunctionsArray = function()
                 lookup.functionsArray.push(value);
             }
         }
-        value.omniBox = {
-            visible : ko.observable(false),
-            left: ko.observable(0),
-            top: ko.observable(0),
-            id: value.id + '--popup-omni-box-input'
-        };
     }
 };
 
@@ -267,6 +283,8 @@ lookup.defineSandbox = function()
             body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
             evaluationResult: ko.observable("")
         };
+
+        lookup.tryRestoreOffsetCoordinates(toAdd);
         
         lookup.customObjects[toAdd.id] = toAdd;
         var operation = 
@@ -277,7 +295,11 @@ lookup.defineSandbox = function()
         lookup.operationsPush(operation);
     }
 
-    lookup.sandbox(lookup.customObjects[name]);
+    var foundSandbox = lookup.customObjects[name];
+
+    lookup.tryRestoreOffsetCoordinates(foundSandbox);
+
+    lookup.sandbox(foundSandbox);
 };
 
 lookup.clearSandbox = function()
@@ -387,10 +409,13 @@ lookup.createUIObject = function()
         }
     };
     lookup.addEvaluationVariables(toAdd);
+    lookup.tryRestoreOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
 };
+
+
 
 
 
@@ -559,7 +584,8 @@ lookup.focusOnParameter = function(objId)
     const objToWorkOn = lookup.customObjects[objId];
     lookup.focusedObj(objToWorkOn);
     lookup.activeOperation("focusOnParameter");
-    lookup.filloutOmniBoxDataForFunction(objId, objToWorkOn.omniBox);
+    var root = lookup.findRoot(objToWorkOn);
+    lookup.filloutOmniBoxDataForFunction(objId, lookup.canvasOmniBox, root);
 
 };
 
@@ -570,11 +596,7 @@ lookup.isOmniBoxOpen = ko.computed(function()
 
 lookup.goBackwardAndEvaluate = function(obj)
 {
-    var currentObj = obj;
-    for( var k = 0; typeof(currentObj.assignedToGuid) !== 'undefined' && k < 10000; k ++)
-    {
-        currentObj = lookup.customObjects[currentObj.assignedToGuid];
-    }
+    var currentObj = lookup.findRoot(obj);
     lookup.startEvaluation(currentObj);
 
 };
@@ -643,35 +665,30 @@ lookup.addSymbol = function(text, obj)
     lookup.activeOperation("");
 };
 
-lookup.activateRenameFunctionTool = function(obj)
-{
-    lookup.focusedObj(obj);
-    lookup.activeOperation("activateRenameFunctionTool");
-    lookup.newFunctionName(obj.name());
-    event.stopPropagation();
-};
-
 lookup.renameFunction = function()
 {
     var obj = lookup.focusedObj();
     
+    const newName = lookup.omniBoxTextInput().trim();
     var operation = 
     {
         operation: "rename-function",
         functionGuid: obj.id,
-        newName: lookup.newFunctionName(),
+        newName: newName,
         oldName: obj.name()
     };
 
-    obj.name(lookup.newFunctionName());
+    obj.name(newName);
+    lookup.omniBoxTextInput("");
 
     lookup.operationsPush(operation);
     lookup.activeOperation("");
+    lookup.hideOmniBox();
 
 
 };
 
-lookup.newFunctionName = ko.observable("");
+
 
 lookup.activateAddingParameterTool = function(obj)
 {
@@ -951,51 +968,41 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 };
 
 
-
-lookup.activeFunction = ko.observable(undefined);
+lookup.listOfActiveFunctions = ko.observableArray([]);
+lookup.mapOfOpenFunctions = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
 lookup.openFunction = function(obj)
 {
-    lookup.activeFunction(obj);
-    lookup.hideEverythingExcept(lookup.functionDefinitionIsActive);
-};
-
-lookup.listOfFunctionsIsActive = ko.observable(true);
-
-lookup.openListOfFunctions = function()
-{
-    lookup.hideEverythingExcept(lookup.listOfFunctionsIsActive);
-};
-
-lookup.listOfMenus = [
-    lookup.functionDefinitionIsActive,
-    lookup.listOfFunctionsIsActive
-];
-
-lookup.hideEverythingExcept = function(toShow)
-{
-    for(var k = 0; k < lookup.listOfMenus.length; k++)
+    if(typeof(lookup.mapOfOpenFunctions[obj.id]) === "undefined")
     {
-        var some = lookup.listOfMenus[k];
-        if(some !== toShow)
-        {
-            some(false);
-        }
+        lookup.listOfActiveFunctions.push(obj);
+        lookup.mapOfOpenFunctions[obj.id] = true;
     }
-    toShow(true);
+    obj.offsetX(lookup.desiredOffset.x);
+    obj.offsetY(lookup.desiredOffset.y);
 };
+
 
 lookup.omniBoxVisible = ko.observable(false);
-lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
 lookup.lastOmniBox = undefined;
 
-lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox) 
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot = true) 
 {
     var foundUI = $("#" + callerId)[0];
     omniBox.visible(true);
-    omniBox.left(foundUI.offsetLeft);
-    omniBox.top(foundUI.offsetTop + foundUI.offsetHeight);
+    var offsetX = foundUI.offsetLeft;
+    if(useRoot)
+    {
+        offsetX += root.offsetX();
+    }
+    omniBox.left(offsetX );
+    var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
+    if(useRoot)
+    {
+        offsetY += root.offsetY();
+    }
+    omniBox.top(offsetY);
 
     lookup.lastOmniBox = omniBox;
 
@@ -1004,21 +1011,56 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox)
     event.stopPropagation();
 };
 
-lookup.openOmniBoxForFunction = function(caller)
+lookup.openOmniBoxForFunctionInTheList = function(caller)
 {
     lookup.hideOmniBox();
-    lookup.omniBoxSelectedFunction(caller);
-    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
+    lookup.activeOperation("functionInTheListIsSelected");
+    lookup.focusedObj(caller);
+    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
+    lookup.refreshTheListOfFunctionsScroll();
 };
 
+lookup.omniBoxRenameFunctionAction = function()
+{
+    lookup.activeOperation("renameFunction");
+    var obj = lookup.focusedObj();
+    lookup.omniBoxTextInput(obj.name());
+    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
+};
 
+lookup.omniBoxRenameFunctionFromTheListAction = function()
+{
+    lookup.activeOperation("renameFunction");
+    var obj = lookup.focusedObj();
+    lookup.omniBoxTextInput(obj.name());
+    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + obj.id, lookup.listOfFunctionsOmniBox, "", false);
+};
+
+lookup.desiredOffset = {x: 0, y: 0};
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
-    lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
+    lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
+    lookup.activeOperation("functionUsageIsSelected");
+
+    var root = lookup.findRoot(caller);
     
-    lookup.filloutOmniBoxDataForFunction(caller.id, caller.omniBox);
+    lookup.filloutOmniBoxDataForFunction(caller.id, lookup.canvasOmniBox, root);
+
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+
+    var foundUI = $("#" + caller.id)[0];
+    
+    lookup.desiredOffset = 
+    { 
+        x : foundAnchor.offsetWidth,
+        y : foundUI.offsetTop
+    };
+    
+    var foundRoot = $("#" + root.id)[0];
+    lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
+    lookup.desiredOffset.y += root.offsetY();
 };
 
 lookup.hideOmniBox = function()
@@ -1029,19 +1071,17 @@ lookup.hideOmniBox = function()
         lookup.lastOmniBox = undefined;
     }
     lookup.focusedObj(undefined);
-    lookup.omniBoxSelectedFunction(undefined);
     lookup.activeOperation("");
 };
 
 lookup.omniBoxOpenFunctionAction = function()
 {
-    var functionToOpen = lookup.omniBoxSelectedFunction();
+    var functionToOpen = lookup.focusedObj();
     lookup.hideOmniBox();
     lookup.hideMenu();
     lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
-    lookup.omniBoxSelectedFunction(undefined);
 };
 
 lookup.omniBoxClick = function()
@@ -1181,7 +1221,15 @@ lookup.omniBoxInputKeyPress = function(data, event)
     {
         if(event.keyCode == 13)
         {
-            lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+            if(lookup.activeOperation() ===  "renameFunction")
+            {
+                lookup.renameFunction();
+
+            }
+            else
+            {
+                lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+            }
         }
         else
         {
@@ -1273,6 +1321,29 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     }
 };
 
+lookup.findRoot = function(obj) 
+{
+    var currentObj = obj;
+    for (var k = 0; typeof (currentObj.assignedToGuid) !== 'undefined' && k < 10000; k++) {
+        currentObj = lookup.customObjects[currentObj.assignedToGuid];
+    }
+    return currentObj;
+};
+
+lookup.generateOmniBox = function(isGlobal) {
+    var omniBox = {
+        visible: ko.observable(false),
+        left: ko.observable(0),
+        top: ko.observable(0),
+        isGlobal: ko.observable(isGlobal),
+        id: isGlobal ? 'global--popup-omni-box-input' : 'local--popup-omni-box-input'
+    };
+    return omniBox;
+};
+
+lookup.listOfFunctionsOmniBox = lookup.generateOmniBox(false);
+lookup.canvasOmniBox = lookup.generateOmniBox(true);
+
 function Lisperanto()
 {
     var self = this;
@@ -1287,6 +1358,44 @@ function Lisperanto()
 
 };
 
+lookup.findSandboxAnchorPosition = function()
+{
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+
+    lookup.sandbox().offsetX(foundAnchor.offsetLeft);
+    lookup.sandbox().offsetY(foundAnchor.offsetTop);
+
+};
+
+lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
+{
+    lookup.hideOmniBox();
+    
+    lookup.focusedObj(obj);
+    lookup.activeOperation("focusOnFunctionHeaderDefinition");
+    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
+
+};
+
+lookup.theFunctionsListOffsetY = ko.observable(0);
+
+lookup.theListOfFunctionsOnWheel = function()
+{
+    event.stopPropagation();
+
+    lookup.refreshTheListOfFunctionsScroll();
+};
+
+lookup.refreshTheListOfFunctionsScroll = function() {
+    var foundList = $("#the-functions-list")[0];
+    lookup.theFunctionsListOffsetY(-foundList.parentNode.scrollTop);
+};
+
+lookup.omniBoxOnWheel = function()
+{
+    event.stopPropagation();
+};
+
 
 
 $(document).ready(function()
@@ -1297,8 +1406,13 @@ $(document).ready(function()
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
+    lookup.findSandboxAnchorPosition();
     lookup.restoreFunctionsArray();
+    lookup.refreshTheListOfFunctionsScroll();
+    
     
     ko.applyBindings(viewModel);
 });
+
+
   
