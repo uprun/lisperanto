@@ -984,7 +984,6 @@ lookup.openFunction = function(obj)
 
 
 lookup.omniBoxVisible = ko.observable(false);
-lookup.omniBoxSelectedFunction = ko.observable(undefined);
 
 lookup.lastOmniBox = undefined;
 
@@ -1016,7 +1015,7 @@ lookup.openOmniBoxForFunctionInTheList = function(caller)
 {
     lookup.hideOmniBox();
     lookup.activeOperation("functionInTheListIsSelected");
-    lookup.omniBoxSelectedFunction(caller);
+    lookup.focusedObj(caller);
     lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
     lookup.refreshTheListOfFunctionsScroll();
 };
@@ -1025,8 +1024,16 @@ lookup.omniBoxRenameFunctionAction = function()
 {
     lookup.activeOperation("renameFunction");
     var obj = lookup.focusedObj();
-    lookup.omniBoxTextInput(obj.name())
+    lookup.omniBoxTextInput(obj.name());
     lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
+};
+
+lookup.omniBoxRenameFunctionFromTheListAction = function()
+{
+    lookup.activeOperation("renameFunction");
+    var obj = lookup.focusedObj();
+    lookup.omniBoxTextInput(obj.name());
+    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + obj.id, lookup.listOfFunctionsOmniBox, "", false);
 };
 
 lookup.desiredOffset = {x: 0, y: 0};
@@ -1034,7 +1041,7 @@ lookup.desiredOffset = {x: 0, y: 0};
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
-    lookup.omniBoxSelectedFunction(lookup.customObjects[caller.functionGuid]);
+    lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
     lookup.activeOperation("functionUsageIsSelected");
 
     var root = lookup.findRoot(caller);
@@ -1064,19 +1071,17 @@ lookup.hideOmniBox = function()
         lookup.lastOmniBox = undefined;
     }
     lookup.focusedObj(undefined);
-    lookup.omniBoxSelectedFunction(undefined);
     lookup.activeOperation("");
 };
 
 lookup.omniBoxOpenFunctionAction = function()
 {
-    var functionToOpen = lookup.omniBoxSelectedFunction();
+    var functionToOpen = lookup.focusedObj();
     lookup.hideOmniBox();
     lookup.hideMenu();
     lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
-    lookup.omniBoxSelectedFunction(undefined);
 };
 
 lookup.omniBoxClick = function()
