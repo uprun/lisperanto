@@ -20,15 +20,14 @@ lookup.bodyOnWheel = function() {
     //scale += event.deltaY * -0.01;
 };
 
-
-lookup.bodyOnMouseMove = function()
+lookup.bodyOnPointerMove = function()
 {
-    console.log(event);
+    //console.log(event);
     if(event.buttons > 0)
     {
         lookup.applyMovement(-event.movementY, -event.movementX);
     }
-    
+
 };
 
  lookup.applyMovement = function (deltaY, deltaX) 
