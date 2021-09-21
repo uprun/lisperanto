@@ -1377,6 +1377,13 @@ lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
 
 };
 
+lookup.bodyOnClick = function()
+{
+    lookup.hideOmniBox();
+    lookup.hideMenu();
+    lookup.hideOptions();
+};
+
 lookup.theFunctionsListOffsetY = ko.observable(0);
 
 lookup.theListOfFunctionsOnWheel = function()
@@ -1395,6 +1402,8 @@ lookup.omniBoxOnWheel = function()
 {
     event.stopPropagation();
 };
+
+
 
 
 

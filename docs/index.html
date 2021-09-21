@@ -12,9 +12,10 @@
 <body 
     class="lisperanto-main-body" 
     style="background-color: #000000; " 
-    onwheel="lookup.bodyOnWheel()"
+    onwheel="typeof(lookup) !== 'undefined' && lookup.bodyOnWheel()"
+    onmousemove="typeof(lookup) !== 'undefined' && lookup.bodyOnMouseMove()"
     data-bind=
-        "click: $root.hideOmniBox,
+        "click: $root.bodyOnClick,
         event: 
             {
                 keydown: $root.bodyKeyDown
@@ -25,7 +26,7 @@
             }">
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
-            onwheel="lookup.omniBoxOnWheel()"
+            onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
             data-bind="
                 visible: visible,
                 click: $root.omniBoxClick,
@@ -255,7 +256,7 @@
                 </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" 
-                onwheel="lookup.theListOfFunctionsOnWheel()"
+                onwheel="typeof(lookup) !== 'undefined' && lookup.theListOfFunctionsOnWheel()"
                 style="
                     margin-top: 0.5rem;
                     margin-bottom: 5rem;
@@ -406,11 +407,11 @@
             o - options
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            onclick="lookup.removeEverything()">
+            onclick="typeof(lookup) !== 'undefined' && lookup.removeEverything()">
             Reset
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            onclick="lookup.toggleFullScreen()">
+            onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
             f - FullScreen
         </div>
     </div>
