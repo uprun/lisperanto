@@ -12,15 +12,34 @@ lookup.globalMinY = ko.observable(-2048);
 
 lookup.bodyOnWheel = function() {
     event.preventDefault();
+    const deltaY = event.deltaY;
+    const deltaX = event.deltaX;
     //console.log(event);
-    var newOffsetY = lookup.globalOffsetY() - event.deltaY * lookup.globalOffsetZ();
-    newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
-    newOffsetY = Math.max(newOffsetY, lookup.globalMinY());
-    lookup.globalOffsetY( newOffsetY );
-    var newOffsetX = lookup.globalOffsetX() - event.deltaX * lookup.globalOffsetZ();
-    newOffsetX = Math.min(newOffsetX, lookup.globalMaxX());
-    newOffsetX = Math.max(newOffsetX, lookup.globalMinX());
-    lookup.globalOffsetX( newOffsetX );
+    lookup.applyMovement(deltaY, deltaX);
   
     //scale += event.deltaY * -0.01;
+};
+
+
+lookup.bodyOnMouseMove = function()
+{
+    console.log(event);
+    if(event.buttons > 0)
+    {
+        lookup.applyMovement(-event.movementY, -event.movementX);
+    }
+    
+};
+
+ lookup.applyMovement = function (deltaY, deltaX) 
+ {
+    var newOffsetY = lookup.globalOffsetY() - deltaY * lookup.globalOffsetZ();
+    newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
+    newOffsetY = Math.max(newOffsetY, lookup.globalMinY());
+    lookup.globalOffsetY(newOffsetY);
+
+    var newOffsetX = lookup.globalOffsetX() - deltaX * lookup.globalOffsetZ();
+    newOffsetX = Math.min(newOffsetX, lookup.globalMaxX());
+    newOffsetX = Math.max(newOffsetX, lookup.globalMinX());
+    lookup.globalOffsetX(newOffsetX);
 };
