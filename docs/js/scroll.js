@@ -10,6 +10,8 @@ lookup.globalMaxY = ko.observable(2048);
 lookup.globalMinX = ko.observable(-2048);
 lookup.globalMinY = ko.observable(-2048);
 
+lookup.usePointerMovement = ko.observable(false);
+
 lookup.bodyOnWheel = function() {
     event.preventDefault();
     const deltaY = event.deltaY;
@@ -23,11 +25,17 @@ lookup.bodyOnWheel = function() {
 lookup.bodyOnPointerMove = function()
 {
     //console.log(event);
-    if(event.buttons > 0)
+    //if(event.buttons > 0)
+    if(lookup.usePointerMovement())
     {
         lookup.applyMovement(-event.movementY, -event.movementX);
     }
 
+};
+
+lookup.toggleUsePointerMovement = function()
+{
+    lookup.usePointerMovement(!lookup.usePointerMovement());
 };
 
  lookup.applyMovement = function (deltaY, deltaX) 
