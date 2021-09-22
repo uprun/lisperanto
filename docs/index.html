@@ -191,10 +191,9 @@
             <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
             </div>
             <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined", attr: {id: $data} '>
-                <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
-                <div style="margin-left: 2rem; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
                     data-bind="click: $root.focusOnParameter">
-                    focus
+                    <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
                 </div>
             <span>
         </div>
@@ -328,6 +327,11 @@
                         data-bind="click: $root.changeBackgroundToDefault">
                         darkness
                 </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Other:
+                </span>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
                 <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
