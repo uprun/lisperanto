@@ -329,6 +329,21 @@
                         darkness
                 </div>
             </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    data-bind="click: $root.createFunction">
+                    create function
+                </div>
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    onclick="typeof(lookup) !== 'undefined' && lookup.removeEverything()">
+                    Reset
+                </div>
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
+                    f - FullScreen
+                </div>
+            </div>
+            
             <div class="w3-col w3-container s12 m12 l12">
                 <div class="text-left" style="padding-left: 0.5rem;">
                     <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
@@ -401,10 +416,6 @@
     </div>
     <div class="text-center lisperanto-tool-bar">
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            data-bind="click: $root.createFunction">
-            create function
-        </div>
-        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.toggleMenu">
             <span style="font-size: 1rem; vertical-align: middle;">
                 <img src="svg/bars.svg" class="webpad-edit-pencil" alt="toggle menu"/> 
@@ -417,14 +428,6 @@
                 <img src="svg/cogwheel.svg" class="webpad-edit-pencil" alt="toggle options"/> 
             </span>
             o - options
-        </div>
-        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            onclick="typeof(lookup) !== 'undefined' && lookup.removeEverything()">
-            Reset
-        </div>
-        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-            onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
-            f - FullScreen
         </div>
     </div>
     <script src="lib/jquery/dist/jquery.min.js"></script>
