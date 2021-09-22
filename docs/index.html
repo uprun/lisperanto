@@ -210,14 +210,14 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <span data-bind="text: '('"></span><strong 
+        <span data-bind="text: '('"></span><span 
             class="my-function-name" 
             data-bind="
                 text: lookup.customObjects[$data.functionGuid].name(), 
                 click: $root.openOmniBoxForFunctionUsage, 
                 attr: {id: $data.id}"
             >
-        </strong>
+        </span>
         <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
@@ -347,6 +347,21 @@
                     f - FullScreen
                 </div>
             </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Info:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div class="webpad-color-orange" style="margin-left: 2rem;">
+                    Pan with [shift + left-mouse-button-click].
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        About:
+                </span>
+            </div>
             
             <div class="w3-col w3-container s12 m12 l12">
                 <div class="text-left" style="padding-left: 0.5rem;">
@@ -404,14 +419,20 @@
             overflow-y: clip;" 
             >
 
-        <!-- ko template: { name: 'function-definition-template', foreach: $root.listOfActiveFunctions } -->
+        <!-- ko foreach: $root.listOfActiveFunctions -->
 
-        <!-- /ko -->
-
-        <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
-            <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
+            <!-- ko if: $data.id === 'sandbox-unique' -->
+                <!-- ko template: { name: 'sandbox-template', data: $data} -->
+                <!-- /ko -->
             <!-- /ko -->
+            <!-- ko ifnot: $data.id === 'sandbox-unique' -->
+                <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
+
         <!-- /ko -->
+
+        
         <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
         <!-- /ko -->
         <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
