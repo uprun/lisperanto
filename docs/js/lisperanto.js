@@ -682,7 +682,6 @@ lookup.renameFunction = function()
     lookup.omniBoxTextInput("");
 
     lookup.operationsPush(operation);
-    lookup.activeOperation("");
     lookup.hideOmniBox();
 
 
@@ -690,20 +689,12 @@ lookup.renameFunction = function()
 
 
 
-lookup.activateAddingParameterTool = function(obj)
-{
-    lookup.focusedObj(obj);
-    lookup.activeOperation("activateAddingParameterTool");
-    lookup.newParameterName("");
-    event.stopPropagation();
-    //TODO: find undefined symbols in a function to suggest them
-    //TODO: find undefined symbols in a subtree when adding (let x someting)
-};
+
 
 lookup.addParameter = function()
 {
     var obj = lookup.focusedObj();
-    var toAdd = lookup.defineParameter(lookup.newParameterName(), obj.id);
+    var toAdd = lookup.defineParameter(lookup.omniBoxTextInput(), obj.id);
     obj.parameters.push(toAdd);
     
     var operation = 
@@ -713,11 +704,9 @@ lookup.addParameter = function()
         parameterGuid: toAdd.id
     };
     lookup.operationsPush(operation);
-    lookup.newParameterName("");
-    lookup.activeOperation("");
+    lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
 };
-
-lookup.newParameterName = ko.observable("");
 
 lookup.makeCopyOfContext = function( context)
 {
@@ -1027,7 +1016,11 @@ lookup.moveFunctionsOnCanvasIteration = function()
     const anchorWidth = lookup.anchorWidth();
     for (const [key, value] of Object.entries(functions)) 
     {
-        var box = lookup.getUIBoxOfFunction(value.id, anchorWidth / 2);
+        var box = lookup.getUIBoxOfFunction(value.id, anchorWidth);
+        if(typeof(box) === "undefined")
+        {
+            continue;
+        }
         var offset = {x: 0, y: 0};
         for (const [innerKey, innerValue] of Object.entries(avoid)) 
         {
@@ -1035,7 +1028,11 @@ lookup.moveFunctionsOnCanvasIteration = function()
             {
                 break;
             }
-            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id, anchorWidth / 2);
+            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id, anchorWidth);
+            if(typeof(boxToAvoid) === "undefined")
+            {
+                continue;
+            }
             if(lookup.doBoxesIntersect(box, boxToAvoid))
             {
                 offset.x +=  box.left - boxToAvoid.left;
@@ -1095,14 +1092,23 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot
 lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
 {
     var foundUI = $("#" + objId)[0];
-    var toReturn = 
+    if(typeof(foundUI) === "undefined")
     {
-        left: foundUI.offsetLeft - margin,
-        top: foundUI.offsetTop - margin,
-        width: foundUI.offsetWidth + margin,
-        height: foundUI.offsetHeight + margin
-    };
-    return toReturn;
+        return undefined;
+    }
+    else
+    {
+        var toReturn = 
+        {
+            left: foundUI.offsetLeft - margin,
+            top: foundUI.offsetTop - margin,
+            width: foundUI.offsetWidth + margin,
+            height: foundUI.offsetHeight + margin
+        };
+        return toReturn;
+
+    }
+    
 };
 
 lookup.isPointInsideTheBox = function(point, box)
@@ -1211,6 +1217,16 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     var foundRoot = $("#" + root.id)[0];
     lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
     lookup.desiredOffset.y += root.offsetY();
+};
+
+lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFunctionParameter");
+
+    lookup.filloutOmniBoxDataForFunction('add-function-parameter--' + caller.id, lookup.canvasOmniBox, caller);
+
 };
 
 lookup.hideOmniBox = function()
@@ -1377,6 +1393,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 lookup.renameFunction();
 
+            }
+            else if(lookup.activeOperation() ===  "addingFunctionParameter")
+            {
+                lookup.addParameter();
             }
             else
             {
