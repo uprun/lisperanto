@@ -301,6 +301,7 @@ lookup.defineSandbox = function()
 
 lookup.clearSandbox = function()
 {
+    lookup.hideOmniBox();
     var name = "sandbox-unique";
     var sandboxObj = lookup.customObjects[name];
     // maybe need to remove previous body function tree
@@ -1372,6 +1373,14 @@ lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
     lookup.activeOperation("focusOnFunctionHeaderDefinition");
     lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 
+};
+
+lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(obj);
+    lookup.activeOperation("focusOnSandboxHeaderDefinition");
+    lookup.filloutOmniBoxDataForFunction('sandbox-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 };
 
 lookup.bodyOnClick = function()

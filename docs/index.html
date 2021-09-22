@@ -86,6 +86,11 @@
                         </div>
                         
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'focusOnSandboxHeaderDefinition' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.clearSandbox">
+                            clear
+                        </div>
+                    </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
                         <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                             data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
@@ -162,11 +167,14 @@
                 id: $data.id
             }">
             <div class="lisperanto-sandbox-title">
-                <span class="my-function-name" style="font-size: 1.5rem;">sandbox</span>
-                <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                        data-bind="click: $root.clearSandbox">
-                        clear
-                </div>
+                <span class="my-function-name" style="font-size: 1.5rem;"
+                    data-bind="
+                    click: $root.openOmniBoxForSandboxHeaderDefinition,
+                    attr: 
+                    {
+                        id: 'sandbox-definition-header--' + $data.id
+                    }"
+                    >sandbox</span>
             </div>
             <div class="lisperanto-sandbox-stripes">
                 <span
