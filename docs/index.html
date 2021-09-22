@@ -210,14 +210,14 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <span data-bind="text: '('"></span><strong 
+        <span data-bind="text: '('"></span><span 
             class="my-function-name" 
             data-bind="
                 text: lookup.customObjects[$data.functionGuid].name(), 
                 click: $root.openOmniBoxForFunctionUsage, 
                 attr: {id: $data.id}"
             >
-        </strong>
+        </span>
         <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
         <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
         </div>
@@ -346,6 +346,21 @@
                     onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
                     f - FullScreen
                 </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Info:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div class="webpad-color-orange" style="margin-left: 2rem;">
+                    Pan with [shift + left-mouse-button-click].
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        About:
+                </span>
             </div>
             
             <div class="w3-col w3-container s12 m12 l12">
