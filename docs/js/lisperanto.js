@@ -188,14 +188,13 @@ lookup.tryRestoreBuiltInFunction = function(value)
 
 lookup.defineBuiltInFunction = function (obj) 
 {
-    var name = obj.name;
     var parameters_list = obj.parameters
-    if(typeof(lookup.customObjects[name]) === 'undefined')
+    if(typeof(lookup.customObjects[obj.id]) === 'undefined')
     {
         var toAdd ={
             id: obj.id,
             type: "built-in-function",
-            name: ko.observable(name),
+            name: ko.observable(obj.name),
             parameters: ko.observableArray([]),
             body: ko.observable(undefined)
         };
@@ -283,8 +282,6 @@ lookup.defineSandbox = function()
             body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
             evaluationResult: ko.observable("")
         };
-
-        lookup.tryRestoreOffsetCoordinates(toAdd);
         
         lookup.customObjects[toAdd.id] = toAdd;
         var operation = 
