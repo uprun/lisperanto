@@ -365,6 +365,8 @@ lookup.createFunction = function()
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
     lookup.openFunction(toAdd);
+    lookup.clearAvoidList();
+    lookup.maybeAddToAvoidList(toAdd);
 };
 
 lookup.tryRestoreFunction = function(value)
@@ -978,6 +980,87 @@ lookup.openFunction = function(obj)
     }
     obj.offsetX(lookup.desiredOffset.x);
     obj.offsetY(lookup.desiredOffset.y);
+    lookup.maybeAddToAvoidList(obj);
+};
+
+lookup.clearAvoidList = function()
+{
+    lookup.functionsToBeAvoid.removeAll();
+    lookup.mapOfFunctionToAvoid = {};
+
+};
+
+lookup.maybeAddToAvoidList = function(value)
+{
+    if(typeof(lookup.mapOfFunctionToAvoid[value.id]) === "undefined")
+    {
+        lookup.functionsToBeAvoid.push(value);
+        lookup.mapOfFunctionToAvoid[value.id] = true;
+    }
+}
+
+lookup.mapOfFunctionToAvoid = {};
+
+lookup.functionsToBeAvoid = ko.observableArray([]);
+
+lookup.timerForFunctions = undefined;
+
+lookup.vectorLengthSquared = function(point)
+{
+    return point.x * point.x + point.y * point.y;
+};
+
+lookup.normalizeVector = function(point)
+{
+    var newLength = Math.sqrt(lookup.vectorLengthSquared(point));
+    point.x /= newLength;
+    point.y /= newLength;
+    return point;
+};
+
+lookup.moveFunctionsOnCanvasIteration = function()
+{
+    console.log("moveFunctionsOnCanvasIteration");
+
+    var functions = lookup.listOfActiveFunctions();
+    var avoid = lookup.functionsToBeAvoid();
+    const anchorWidth = lookup.anchorWidth();
+    for (const [key, value] of Object.entries(functions)) 
+    {
+        var box = lookup.getUIBoxOfFunction(value.id, anchorWidth / 2);
+        var offset = {x: 0, y: 0};
+        for (const [innerKey, innerValue] of Object.entries(avoid)) 
+        {
+            if(value.id == innerValue.id)
+            {
+                break;
+            }
+            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id, anchorWidth / 2);
+            if(lookup.doBoxesIntersect(box, boxToAvoid))
+            {
+                offset.x +=  box.left - boxToAvoid.left;
+                offset.y += box.top - boxToAvoid.top;
+                offset.x += 1;
+                lookup.maybeAddToAvoidList(value);
+            }
+        }
+        if(lookup.vectorLengthSquared(offset) > 0)
+        {
+            offset = lookup.normalizeVector(offset);
+            
+            var factor = anchorWidth / 10.0;
+            offset.x *= factor;
+            offset.y *= factor;
+        }
+        value.offsetX(value.offsetX() + offset.x);
+        value.offsetY(value.offsetY() + offset.y);
+    }
+
+};
+
+lookup.defineTimerForFunctions = function()
+{
+    lookup.timerForFunctions = setInterval(lookup.moveFunctionsOnCanvasIteration, 30);
 };
 
 
@@ -1007,6 +1090,75 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot
     $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
     event.stopPropagation();
+};
+
+lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
+{
+    var foundUI = $("#" + objId)[0];
+    var toReturn = 
+    {
+        left: foundUI.offsetLeft - margin,
+        top: foundUI.offsetTop - margin,
+        width: foundUI.offsetWidth + margin,
+        height: foundUI.offsetHeight + margin
+    };
+    return toReturn;
+};
+
+lookup.isPointInsideTheBox = function(point, box)
+{
+    var result =
+        point.x >= box.left 
+        && point.x <= (box.left + box.width) 
+        && point.y >= box.top && point.y <= (box.top + box.height);
+    return result;
+};
+
+lookup.generateCornersOfTheBox = function(box)
+{
+    var result = [
+        {
+            x: box.left,
+            y: box.top
+        },
+        {
+            x: box.left + box.width,
+            y: box.top
+        },
+        {
+            x: box.left,
+            y: box.top + box.height
+        },
+        {
+            x: box.left + box.width,
+            y: box.top + box.height
+        }
+    ];
+    return result;
+};
+
+lookup.doBoxesIntersect = function(firstBox, secondBox)
+{
+    var firstCorners = lookup.generateCornersOfTheBox(firstBox);
+    var resultFirst = firstCorners.find(point => lookup.isPointInsideTheBox(point, secondBox));
+    if(typeof(resultFirst) === "undefined")
+    {
+        var secondCorners = lookup.generateCornersOfTheBox(secondBox);
+        var resultSecond = secondCorners.find(point => lookup.isPointInsideTheBox(point, firstBox));
+        if(typeof(resultSecond) === "undefined")
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else
+    {
+        return true;
+    }
+
 };
 
 lookup.openOmniBoxForFunctionInTheList = function(caller)
@@ -1080,6 +1232,8 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
+    lookup.clearAvoidList();
+    lookup.maybeAddToAvoidList(functionToOpen);
 };
 
 lookup.omniBoxClick = function()
@@ -1356,12 +1510,16 @@ function Lisperanto()
 
 };
 
+lookup.anchorWidth = ko.observable(0);
+
 lookup.findSandboxAnchorPosition = function()
 {
     var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
 
-    lookup.sandbox().offsetX(foundAnchor.offsetLeft);
-    lookup.sandbox().offsetY(foundAnchor.offsetTop);
+    lookup.desiredOffset.x = foundAnchor.offsetLeft;
+    lookup.desiredOffset.y = foundAnchor.offsetTop;
+
+    lookup.anchorWidth(foundAnchor.offsetWidth)
 
 };
 
@@ -1422,8 +1580,10 @@ $(document).ready(function()
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
+    lookup.openFunction(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.refreshTheListOfFunctionsScroll();
+    lookup.defineTimerForFunctions();
     
     
     ko.applyBindings(viewModel);

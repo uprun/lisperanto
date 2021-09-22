@@ -404,14 +404,20 @@
             overflow-y: clip;" 
             >
 
-        <!-- ko template: { name: 'function-definition-template', foreach: $root.listOfActiveFunctions } -->
+        <!-- ko foreach: $root.listOfActiveFunctions -->
 
-        <!-- /ko -->
-
-        <!-- ko if: typeof($root.sandbox()) !== 'undefined' -->
-            <!-- ko template: { name: 'sandbox-template', data: $root.sandbox()} -->
+            <!-- ko if: $data.id === 'sandbox-unique' -->
+                <!-- ko template: { name: 'sandbox-template', data: $data} -->
+                <!-- /ko -->
             <!-- /ko -->
+            <!-- ko ifnot: $data.id === 'sandbox-unique' -->
+                <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
+
         <!-- /ko -->
+
+        
         <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
         <!-- /ko -->
         <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
