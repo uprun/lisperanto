@@ -42,7 +42,9 @@
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div 
                     data-bind="if: 
-                        $root.activeOperation() === 'focusOnParameter' || $root.activeOperation() === 'renameFunction' ">
+                        $root.activeOperation() === 'focusOnParameter' 
+                        || $root.activeOperation() === 'renameFunction' 
+                        || $root.activeOperation() === 'addingFunctionParameter' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -63,6 +65,12 @@
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.renameFunction">
                             apply 
+                    </div>
+                </div>
+                <div data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.addParameter">
+                            add 
                     </div>
                 </div>
                 
@@ -131,9 +139,11 @@
             </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
             </div>
-            <span data-bind="if: type !== 'built-in-function', attr: {id: 'body--' + $data.id}">
+            <span data-bind="if: type !== 'built-in-function' ">
                 <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.activateAddingParameterTool">
+                        data-bind=" 
+                            click: $root.openOmniBoxForAddingParametersInFunctionDefiniton, 
+                            attr: {id: 'add-function-parameter--' + $data.id}">
                         add
                 </div>
                 <div>
@@ -142,16 +152,6 @@
                 <div style="margin-left: 0rem;" data-bind="template: { name: 'body-element-template', data: body }">
                 </div>
             </span>
-        </div>
-        <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateRenameFunctionTool', click: $root.stopPropagation">
-            <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type new function name" data-bind="value: $root.newFunctionName" /></p>
-            <div class="lisperanto-div-button webpad-color-blue" data-bind="click: $root.renameFunction">rename function</div>
-        </div>
-        <br>
-        <div class="text-center" data-bind="if: $root.activeOperation() === 'activateAddingParameterTool', click: $root.stopPropagation">
-            <input style="font-size: 1.2rem; margin: 0.2em;" class="omni-box-input" placeholder="type parameter name" data-bind="value: $root.newParameterName" /></p>
-            <div class="lisperanto-div-button webpad-color-coral" data-bind="click: $root.addParameter">add parameter</div>
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
@@ -177,8 +177,7 @@
                     >sandbox</span>
             </div>
             <div class="lisperanto-sandbox-stripes">
-                <span
-                    data-bind="attr: {id: 'body--' + $data.id}">
+                <span>
                     <div data-bind="template: { name: 'body-element-template', data: body }">
                     </div>
                     <div style="height: 3rem;"></div>
