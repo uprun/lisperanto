@@ -47,7 +47,7 @@ lookup.previosTouch = undefined;
 
 lookup.bodyOnTouchMove = function()
 {
-    console.log(event);
+    //console.log(event);
     var touches = event.changedTouches;
     if(touches.length > 0 )
     {
