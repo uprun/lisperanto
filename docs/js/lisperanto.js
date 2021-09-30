@@ -365,8 +365,6 @@ lookup.createFunction = function()
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
     lookup.openFunction(toAdd);
-    lookup.clearAvoidList();
-    lookup.maybeAddToAvoidList(toAdd);
 };
 
 lookup.tryRestoreFunction = function(value)
@@ -969,7 +967,6 @@ lookup.openFunction = function(obj)
     }
     obj.offsetX(lookup.desiredOffset.x);
     obj.offsetY(lookup.desiredOffset.y);
-    lookup.maybeAddToAvoidList(obj);
 };
 
 lookup.clearAvoidList = function()
@@ -979,18 +976,6 @@ lookup.clearAvoidList = function()
 
 };
 
-lookup.maybeAddToAvoidList = function(value)
-{
-    if(typeof(lookup.mapOfFunctionToAvoid[value.id]) === "undefined")
-    {
-        lookup.functionsToBeAvoid.push(value);
-        lookup.mapOfFunctionToAvoid[value.id] = true;
-    }
-}
-
-lookup.mapOfFunctionToAvoid = {};
-
-lookup.functionsToBeAvoid = ko.observableArray([]);
 
 lookup.timerForFunctions = undefined;
 
@@ -1007,50 +992,61 @@ lookup.normalizeVector = function(point)
     return point;
 };
 
+lookup.alignOffset = function(point)
+{
+    if(Math.abs(point.x) > Math.abs(point.y) )
+    {
+        point.y = 0;
+    }
+    else
+    {
+        point.x = 0;
+    }
+    point = lookup.normalizeVector(point);
+    return point;
+};
+
 lookup.moveFunctionsOnCanvasIteration = function()
 {
     console.log("moveFunctionsOnCanvasIteration");
 
     var functions = lookup.listOfActiveFunctions();
-    var avoid = lookup.functionsToBeAvoid();
     const anchorWidth = lookup.anchorWidth();
+    const margin = anchorWidth * 2 ;
     for (const [key, value] of Object.entries(functions)) 
     {
-        var box = lookup.getUIBoxOfFunction(value.id, anchorWidth);
+        var box = lookup.getUIBoxOfFunction(value.id, margin);
         if(typeof(box) === "undefined")
         {
             continue;
         }
-        var offset = {x: 0, y: 0};
-        for (const [innerKey, innerValue] of Object.entries(avoid)) 
+        
+        for (const [innerKey, innerValue] of Object.entries(functions, margin)) 
         {
             if(value.id == innerValue.id)
             {
-                break;
+                continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id, anchorWidth);
+            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
             }
+            
             if(lookup.doBoxesIntersect(box, boxToAvoid))
             {
-                offset.x +=  box.left - boxToAvoid.left;
-                offset.y += box.top - boxToAvoid.top;
-                offset.x += 1;
-                lookup.maybeAddToAvoidList(value);
+                offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, margin);
+                if(lookup.vectorLengthSquared(offset) > 0)
+                {
+                    offset = lookup.normalizeVector(offset);
+                    var factor = anchorWidth / 10.0;
+                    offset.x *= factor;
+                    offset.y *= factor;
+                    value.offsetX(value.offsetX() + offset.x);
+                    value.offsetY(value.offsetY() + offset.y);
+                }
             }
         }
-        if(lookup.vectorLengthSquared(offset) > 0)
-        {
-            offset = lookup.normalizeVector(offset);
-            
-            var factor = anchorWidth / 10.0;
-            offset.x *= factor;
-            offset.y *= factor;
-        }
-        value.offsetX(value.offsetX() + offset.x);
-        value.offsetY(value.offsetY() + offset.y);
     }
 
 };
@@ -1102,8 +1098,8 @@ lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
         {
             left: foundUI.offsetLeft - margin,
             top: foundUI.offsetTop - margin,
-            width: foundUI.offsetWidth + margin,
-            height: foundUI.offsetHeight + margin
+            width: foundUI.offsetWidth + 2 * margin,
+            height: foundUI.offsetHeight + 2 * margin
         };
         return toReturn;
 
@@ -1111,12 +1107,13 @@ lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
     
 };
 
-lookup.isPointInsideTheBox = function(point, box)
+lookup.isPointInsideTheBox = function(point, box, margin = 0)
 {
     var result =
-        point.x >= box.left 
-        && point.x <= (box.left + box.width) 
-        && point.y >= box.top && point.y <= (box.top + box.height);
+        point.x >= (box.left - margin)
+        && point.x <= (box.left + box.width + margin)  
+        && point.y >= (box.top - margin)
+        && point.y <= (box.top + box.height + margin);
     return result;
 };
 
@@ -1164,6 +1161,130 @@ lookup.doBoxesIntersect = function(firstBox, secondBox)
     {
         return true;
     }
+
+};
+
+lookup.getVectorsFromBox = function(point, box, margin)
+{
+    var result = [
+        lookup.createVector(point, {x: point.x, y: box.top - margin}),
+        lookup.createVector(point, {x: point.x, y: box.top + box.height + margin}),
+        lookup.createVector(point, {x: box.left - margin, y: point.y}),
+        lookup.createVector(point, {x: box.left + box.width + margin, y: point.y})
+    ];
+    return result;
+    
+};
+
+lookup.generateVectors = function(point, otherPoints)
+{
+    var result = [];
+    for (const [key, somePoint] of Object.entries(otherPoints)) 
+    {
+        result.push(lookup.createVector(point, somePoint));
+    }
+    return result;
+};
+
+lookup.vectorsDotProduct = function(a, b)
+{
+    result = a.x * b.x + a.y * b.y;
+    return result;
+};
+
+lookup.vectorLength = function(v)
+{
+    var result = Math.sqrt(lookup.vectorLengthSquared(v));
+    return result;
+};
+
+lookup.epsilonEqual = function(a, b, e = 0.00001 )
+{
+    var result = Math.abs(a-b) < e;
+    return result;
+};
+
+lookup.vectorsAreCoAligned = function(bv, obv)
+{
+    var dp = lookup.vectorsDotProduct(bv, obv);
+    var cosAlpha = dp / (lookup.vectorLength(bv) * lookup.vectorLength(obv));
+    var result = lookup.epsilonEqual(cosAlpha, 1.0);
+    return result;
+
+
+
+};
+
+
+lookup.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
+{
+    var offsets = []; 
+    var firstCorners = lookup.generateCornersOfTheBox(firstBox, margin);
+    for (const [key, point] of Object.entries(firstCorners)) 
+    {
+        if(lookup.isPointInsideTheBox(point, secondBox, margin))
+        {
+            var boxVectors = lookup.getVectorsFromBox(point, secondBox, margin);
+            var originalBoxVectors = lookup.generateVectors(point, firstCorners);
+            for (const [key, bv] of Object.entries(boxVectors)) 
+            {
+                for (const [key, obv] of Object.entries(originalBoxVectors)) 
+                {
+                    if(lookup.vectorLengthSquared(obv) > 0)
+                    {
+                        if(lookup.vectorsAreCoAligned(bv, obv))
+                        {
+                            offsets.push(bv);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(offsets.length == 0)
+    {
+        return {x: 0, y: 0};
+    }
+    else
+    {
+        var minimalOffset = offsets[0];
+        for (const [key, o] of Object.entries(offsets)) 
+        {
+            if(lookup.vectorLengthSquared(o) < lookup.vectorLengthSquared(minimalOffset))
+            {
+                minimalOffset = o;
+            }
+        }
+        return minimalOffset;
+    }
+    
+};
+
+lookup.createVector = function(a, b)
+{
+    var result = {
+        x: b.x - a.x,
+        y: b.y - a.y
+    };
+    return result;
+    
+};
+
+lookup.vectorBetweenBoxes = function(firstBox, secondBox)
+{
+    var a = 
+    { 
+        x: firstBox.left + firstBox.width / 2,
+        y: firstBox.top + firstBox.height / 2
+    };
+
+    var b =
+    {
+        x: secondBox.left + secondBox.width / 2,
+        y: secondBox.top + secondBox.height / 2
+    };
+    var v = lookup.createVector(a, b);
+    return v;
 
 };
 
@@ -1248,8 +1369,8 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
-    lookup.clearAvoidList();
-    lookup.maybeAddToAvoidList(functionToOpen);
+    //lookup.clearAvoidList();
+    //lookup.maybeAddToAvoidList(functionToOpen);
 };
 
 lookup.omniBoxClick = function()
