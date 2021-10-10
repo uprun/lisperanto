@@ -1064,8 +1064,6 @@ lookup.defineTimerForFunctions = function()
 
 lookup.omniBoxVisible = ko.observable(false);
 
-lookup.lastOmniBox = undefined;
-
 lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root) 
 {
     var foundUI = $("#" + callerId)[0];
@@ -1076,8 +1074,6 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
     var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
         offsetY += root.offsetY();
     omniBox.top(offsetY);
-
-    lookup.lastOmniBox = omniBox;
 
     $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
@@ -1334,11 +1330,7 @@ lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 
 lookup.hideOmniBox = function()
 {
-    if(typeof(lookup.lastOmniBox) !== 'undefined' )
-    {
-        lookup.lastOmniBox.visible(false);
-        lookup.lastOmniBox = undefined;
-    }
+    lookup.canvasOmniBox.visible(false);
     lookup.focusedObj(undefined);
     lookup.activeOperation("");
 };
