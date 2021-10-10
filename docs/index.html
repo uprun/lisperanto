@@ -36,8 +36,8 @@
                 click: $root.omniBoxClick,
                 style: 
                     { 
-                        left: isGlobal() ? $root.globalOffsetX() + left() : left(), 
-                        top: isGlobal() ? $root.globalOffsetY() + top() : $root.theFunctionsListOffsetY() + top()
+                        left: $root.globalOffsetX() + left(), 
+                        top: $root.globalOffsetY() + top()
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div 
@@ -78,14 +78,6 @@
                     <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                             open definition
-                        </div>
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'functionInTheListIsSelected' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            open definition
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionFromTheListAction">
-                            rename
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">
@@ -276,15 +268,13 @@
                 <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunctionInTheList, attr: {id: 'function-in-the-list--' + $data.id}"></span>
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openFunctionFromTheListOfFunctions, attr: {id: 'function-in-the-list--' + $data.id}"></span>
                             <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                         </span>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.listOfFunctionsOmniBox } -->
-        <!-- /ko -->
     </div>
     <div 
         class="webpad-options-absolute-position webpad-options-animate-right" 

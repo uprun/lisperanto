@@ -1066,21 +1066,15 @@ lookup.omniBoxVisible = ko.observable(false);
 
 lookup.lastOmniBox = undefined;
 
-lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot = true) 
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root) 
 {
     var foundUI = $("#" + callerId)[0];
     omniBox.visible(true);
     var offsetX = foundUI.offsetLeft;
-    if(useRoot)
-    {
         offsetX += root.offsetX();
-    }
     omniBox.left(offsetX );
     var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
-    if(useRoot)
-    {
         offsetY += root.offsetY();
-    }
     omniBox.top(offsetY);
 
     lookup.lastOmniBox = omniBox;
@@ -1293,29 +1287,12 @@ lookup.vectorBetweenBoxes = function(firstBox, secondBox)
 
 };
 
-lookup.openOmniBoxForFunctionInTheList = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.activeOperation("functionInTheListIsSelected");
-    lookup.focusedObj(caller);
-    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
-    lookup.refreshTheListOfFunctionsScroll();
-};
-
 lookup.omniBoxRenameFunctionAction = function()
 {
     lookup.activeOperation("renameFunction");
     var obj = lookup.focusedObj();
     lookup.omniBoxTextInput(obj.name());
     lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
-};
-
-lookup.omniBoxRenameFunctionFromTheListAction = function()
-{
-    lookup.activeOperation("renameFunction");
-    var obj = lookup.focusedObj();
-    lookup.omniBoxTextInput(obj.name());
-    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + obj.id, lookup.listOfFunctionsOmniBox, "", false);
 };
 
 lookup.desiredOffset = {x: 0, y: 0};
@@ -1376,6 +1353,13 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.openFunction(functionToOpen);
     //lookup.clearAvoidList();
     //lookup.maybeAddToAvoidList(functionToOpen);
+};
+
+lookup.openFunctionFromTheListOfFunctions = function(obj)
+{
+    lookup.hideMenu();
+    lookup.hideOptions();
+    lookup.openFunction(obj);
 };
 
 lookup.omniBoxClick = function()
@@ -1628,19 +1612,17 @@ lookup.findRoot = function(obj)
     return currentObj;
 };
 
-lookup.generateOmniBox = function(isGlobal) {
+lookup.defineOmniBox = function() {
     var omniBox = {
         visible: ko.observable(false),
         left: ko.observable(0),
         top: ko.observable(0),
-        isGlobal: ko.observable(isGlobal),
-        id: isGlobal ? 'global--popup-omni-box-input' : 'local--popup-omni-box-input'
+        id: 'global--popup-omni-box-input' 
     };
     return omniBox;
 };
 
-lookup.listOfFunctionsOmniBox = lookup.generateOmniBox(false);
-lookup.canvasOmniBox = lookup.generateOmniBox(true);
+lookup.canvasOmniBox = lookup.defineOmniBox();
 
 function Lisperanto()
 {
