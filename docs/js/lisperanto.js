@@ -398,13 +398,7 @@ lookup.createUIObject = function()
     var guid = lookup.uuidv4();
     
     var toAdd = {
-        id: guid,
-        omniBox: {
-            visible : ko.observable(false),
-            left: ko.observable(0),
-            top: ko.observable(0),
-            id: guid + '--popup-omni-box-input'
-        }
+        id: guid
     };
     lookup.addEvaluationVariables(toAdd);
     lookup.tryRestoreOffsetCoordinates(toAdd);
