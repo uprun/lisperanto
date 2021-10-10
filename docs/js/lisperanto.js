@@ -976,13 +976,6 @@ lookup.openFunction = function(obj)
     
 };
 
-lookup.clearAvoidList = function()
-{
-    lookup.functionsToBeAvoid.removeAll();
-    lookup.mapOfFunctionToAvoid = {};
-
-};
-
 
 lookup.timerForFunctions = undefined;
 
@@ -1373,8 +1366,6 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideOptions();
     event.stopPropagation();
     lookup.openFunction(functionToOpen);
-    //lookup.clearAvoidList();
-    //lookup.maybeAddToAvoidList(functionToOpen);
 };
 
 lookup.openFunctionDefinitionFromOmniBox = function(obj)
