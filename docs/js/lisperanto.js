@@ -1103,6 +1103,13 @@ lookup.filloutGlobalOmniBox = function(omniBox)
     event.stopPropagation();
 };
 
+lookup.openSandbox = function()
+{
+    lookup.openFunction(lookup.sandbox());
+    event.stopPropagation();
+    lookup.hideOmniBox();
+};
+
 lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
 {
     var foundUI = $("#" + objId)[0];
