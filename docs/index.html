@@ -44,7 +44,8 @@
                     data-bind="if: 
                         $root.activeOperation() === 'focusOnParameter' 
                         || $root.activeOperation() === 'renameFunction' 
-                        || $root.activeOperation() === 'addingFunctionParameter' ">
+                        || $root.activeOperation() === 'addingFunctionParameter'
+                        || $root.activeOperation() === 'global-omni-box-activated' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -60,6 +61,12 @@
                                     keypress: $root.omniBoxInputKeyPress,
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
+                </div>
+                <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.createFunction">
+                            create function 
+                    </div>
                 </div>
                 <div data-bind="if: $root.activeOperation() === 'renameFunction'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 

@@ -23,4 +23,5 @@ lookup.toggleFullScreen = function()
             document.msExitFullscreen();
         }
     }
+    event.stopPropagation();
 };

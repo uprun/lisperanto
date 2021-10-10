@@ -351,7 +351,7 @@ lookup.createFunction = function()
 {
     var toAdd = lookup.createUIObject();
     toAdd.type = "function";
-    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
     toAdd.parameters = ko.observableArray([]);
     
@@ -365,6 +365,8 @@ lookup.createFunction = function()
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
     lookup.openFunction(toAdd);
+    event.stopPropagation();
+    lookup.hideOmniBox();
 };
 
 lookup.tryRestoreFunction = function(value)
@@ -1062,8 +1064,6 @@ lookup.defineTimerForFunctions = function()
 };
 
 
-lookup.omniBoxVisible = ko.observable(false);
-
 lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root) 
 {
     var foundUI = $("#" + callerId)[0];
@@ -1074,6 +1074,28 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
     var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
         offsetY += root.offsetY();
     omniBox.top(offsetY);
+
+    $("#" + omniBox.id ).focus();
+    lookup.preParseOmniBox();
+    event.stopPropagation();
+};
+
+lookup.filloutGlobalOmniBox = function(omniBox) 
+{
+    lookup.activeOperation("global-omni-box-activated");
+    var foundAnchor = lookup.findAnchor();
+    omniBox.visible(true);
+    var offsetX = foundAnchor.offsetLeft;
+        offsetX -= lookup.globalOffsetX();
+    omniBox.left(offsetX );
+    var offsetY = foundAnchor.offsetTop ;
+        offsetY -= lookup.globalOffsetY();
+    omniBox.top(offsetY);
+
+    lookup.desiredOffset = {
+        x: offsetX,
+        y: offsetY
+    };
 
     $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
@@ -1669,7 +1691,15 @@ lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
 
 lookup.bodyOnClick = function()
 {
-    lookup.hideOmniBox();
+    if(lookup.canvasOmniBox.visible())
+    {
+        lookup.hideOmniBox();
+    }
+    else
+    {
+        lookup.filloutGlobalOmniBox(lookup.canvasOmniBox);
+    }
+    
     lookup.hideMenu();
     lookup.hideOptions();
 };
