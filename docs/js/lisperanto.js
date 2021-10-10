@@ -959,8 +959,19 @@ lookup.openFunction = function(obj)
         lookup.listOfActiveFunctions.push(obj);
         lookup.mapOfOpenFunctions[obj.id] = true;
     }
-    obj.offsetX(lookup.desiredOffset.x);
-    obj.offsetY(lookup.desiredOffset.y);
+    if(typeof(lookup.desiredOffset) !== "undefined")
+    {
+        obj.offsetX(lookup.desiredOffset.x);
+        obj.offsetY(lookup.desiredOffset.y);
+        lookup.desiredOffset = undefined;
+    }
+    else
+    {
+        var foundAnchor = lookup.findAnchor();
+        obj.offsetX(-lookup.globalOffsetX() + foundAnchor.offsetLeft);
+        obj.offsetY(-lookup.globalOffsetY() + foundAnchor.offsetTop);
+    }
+    
 };
 
 lookup.clearAvoidList = function()
@@ -1319,7 +1330,7 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     
     lookup.filloutOmniBoxDataForFunction(caller.id, lookup.canvasOmniBox, root);
 
-    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    var foundAnchor = lookup.findAnchor();
 
     var foundUI = $("#" + caller.id)[0];
     
@@ -1649,13 +1660,19 @@ lookup.anchorWidth = ko.observable(0);
 
 lookup.findSandboxAnchorPosition = function()
 {
-    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    var foundAnchor = lookup.findAnchor();
 
     lookup.desiredOffset.x = foundAnchor.offsetLeft;
     lookup.desiredOffset.y = foundAnchor.offsetTop;
 
     lookup.anchorWidth(foundAnchor.offsetWidth)
 
+};
+
+lookup.findAnchor = function()
+{
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    return foundAnchor;
 };
 
 lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
