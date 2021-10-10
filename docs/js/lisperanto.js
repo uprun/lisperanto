@@ -1082,6 +1082,7 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
 
 lookup.filloutGlobalOmniBox = function(omniBox) 
 {
+    lookup.focusedObj(undefined);
     lookup.activeOperation("global-omni-box-activated");
     var foundAnchor = lookup.findAnchor();
     omniBox.visible(true);
@@ -1524,7 +1525,15 @@ lookup.omniBoxInputKeyPress = function(data, event)
             }
             else
             {
-                lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+                if(typeof(lookup.focusedObj()) !== 'undefined')
+                {
+                    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+                }
+                else
+                {
+                    lookup.hideOmniBox();
+                }
+                
             }
         }
         else
