@@ -1377,6 +1377,14 @@ lookup.omniBoxOpenFunctionAction = function()
     //lookup.maybeAddToAvoidList(functionToOpen);
 };
 
+lookup.openFunctionDefinitionFromOmniBox = function(obj)
+{
+    event.stopPropagation();
+    lookup.hideOmniBox();
+    var functionToOpen = lookup.customObjects[obj.id];
+    lookup.openFunction(functionToOpen);
+};
+
 lookup.openFunctionFromTheListOfFunctions = function(obj)
 {
     lookup.hideMenu();
