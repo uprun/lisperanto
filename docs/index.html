@@ -90,6 +90,9 @@
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                             open definition
                         </div>
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
+                            unplug
+                        </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionAction">
@@ -424,15 +427,22 @@
             overflow-y: clip;" 
             >
 
-        <!-- ko foreach: $root.listOfActiveFunctions -->
+        <!-- ko foreach: $root.listOfOpenTrees -->
 
             <!-- ko if: $data.id === 'sandbox-unique' -->
                 <!-- ko template: { name: 'sandbox-template', data: $data} -->
                 <!-- /ko -->
             <!-- /ko -->
             <!-- ko ifnot: $data.id === 'sandbox-unique' -->
-                <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                <!-- ko if: $data.type === 'function' || $data.type === 'built-in-function' -->
+                    <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                    <!-- /ko -->
                 <!-- /ko -->
+                <!-- ko ifnot: $data.type === 'function' || $data.type === 'built-in-function'-->
+                    <!-- ko template: { name: 'body-element-template', data: $data.id } -->
+                    <!-- /ko -->
+                <!-- /ko -->
+                
             <!-- /ko -->
 
         <!-- /ko -->

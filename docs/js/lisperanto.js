@@ -464,7 +464,7 @@ lookup.defineSymbolUsage = function(symbol)
 lookup.defineParameterValue = function(parameterGuid, guidToUse, assignedToGuid)
 {
     var toAdd = lookup.createUIObject();
-    toAdd.type ="parameter-value";
+    toAdd.type = "parameter-value";
     toAdd.parameterGuid = parameterGuid;
     toAdd.guidToUse = ko.observable(guidToUse);
     toAdd.assignedToGuid = assignedToGuid;
@@ -516,6 +516,25 @@ lookup.defineFunctionCall = function( functionGuid, objId)
     lookup.operationsPush(operation);
 
     return toAdd.id;
+};
+
+lookup.unplug = function()
+{
+    var usedObj = lookup.calledObj;
+    var obj = lookup.customObjects[usedObj.assignedToGuid];
+    
+    usedObj.assignedToGuid = undefined;
+    obj.guidToUse(undefined);
+
+    var operation = 
+    {
+        operation: "unplug",
+        objId: obj.id,
+        usedObjId: usedObj.id
+    };
+    lookup.openFunction(usedObj);
+    lookup.operationsPush(operation);
+    lookup.hideOmniBox();
 };
 
 lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
@@ -951,14 +970,15 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 };
 
 
-lookup.listOfActiveFunctions = ko.observableArray([]);
+lookup.listOfOpenTrees = ko.observableArray([]);
 lookup.mapOfOpenFunctions = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
 lookup.openFunction = function(obj)
 {
+    lookup.tryRestoreOffsetCoordinates(obj);
     if(typeof(lookup.mapOfOpenFunctions[obj.id]) === "undefined")
     {
-        lookup.listOfActiveFunctions.push(obj);
+        lookup.listOfOpenTrees.push(obj);
         lookup.mapOfOpenFunctions[obj.id] = true;
     }
     if(typeof(lookup.desiredOffset) !== "undefined")
@@ -1010,7 +1030,7 @@ lookup.moveFunctionsOnCanvasIteration = function()
 {
     console.log("moveFunctionsOnCanvasIteration");
 
-    var functions = lookup.listOfActiveFunctions();
+    var functions = lookup.listOfOpenTrees();
     const anchorWidth = lookup.anchorWidth();
     const margin = anchorWidth * 2 ;
     for (const [key, value] of Object.entries(functions)) 
@@ -1316,9 +1336,12 @@ lookup.omniBoxRenameFunctionAction = function()
 
 lookup.desiredOffset = {x: 0, y: 0};
 
+lookup.calledObj = undefined;
+
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
+    lookup.calledObj = caller;
     lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
     lookup.activeOperation("functionUsageIsSelected");
 
