@@ -1028,7 +1028,6 @@ lookup.alignOffset = function(point)
 
 lookup.moveFunctionsOnCanvasIteration = function()
 {
-    console.log("moveFunctionsOnCanvasIteration");
 
     var functions = lookup.listOfOpenTrees();
     const anchorWidth = lookup.anchorWidth();
