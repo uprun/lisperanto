@@ -124,7 +124,7 @@
         </div>
     </script>
     <script type="text/html" id="function-definition-template">
-        <div class="lisperanto-function-definition lisperanto-ui-object"
+        <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
                 style: 
                 { 
@@ -166,7 +166,7 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-ui-object" 
+        <div class="lisperanto-ui-element" 
             
          data-bind="style: 
             { 
@@ -245,6 +245,31 @@
                 <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                     <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
                 </span>
+            </span>
+            
+        </div>
+    </script>
+    <script type="text/html" id="ui-element-template">
+        <div class="lisperanto-ui-element"
+            data-bind="
+                style: 
+                { 
+                    left: $root.globalOffsetX() + offsetX(), 
+                    top: $root.globalOffsetY() + offsetY() 
+                },
+                attr: 
+                {
+                    id: $data.id
+                }">
+            
+            <span data-bind='if: $data.type === "constant-int" '>
+                <div data-bind="template: { name: 'constant-int-template', data: $data }"></div>
+            </span>
+            <span data-bind='if: $data.type === "function-usage" '>
+                <div data-bind="template: { name: 'function-usage-template', data: $data }"></div>
+            </span>
+            <span data-bind='if: $data.type === "symbol-usage" '>
+                <div data-bind="template: { name: 'symbol-usage-template', data: $data }"></div>
             </span>
             
         </div>
@@ -439,7 +464,7 @@
                     <!-- /ko -->
                 <!-- /ko -->
                 <!-- ko ifnot: $data.type === 'function' || $data.type === 'built-in-function'-->
-                    <!-- ko template: { name: 'body-element-template', data: $data.id } -->
+                    <!-- ko template: { name: 'ui-element-template', data: $data } -->
                     <!-- /ko -->
                 <!-- /ko -->
                 
