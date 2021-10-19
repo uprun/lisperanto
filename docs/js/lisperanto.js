@@ -970,16 +970,16 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 };
 
 
-lookup.listOfOpenTrees = ko.observableArray([]);
-lookup.mapOfOpenFunctions = {};
+lookup.listOfOpenElements = ko.observableArray([]);
+lookup.mapOfOpenElements = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
 lookup.openFunction = function(obj)
 {
     lookup.tryRestoreOffsetCoordinates(obj);
-    if(typeof(lookup.mapOfOpenFunctions[obj.id]) === "undefined")
+    if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
     {
-        lookup.listOfOpenTrees.push(obj);
-        lookup.mapOfOpenFunctions[obj.id] = true;
+        lookup.listOfOpenElements.push(obj);
+        lookup.mapOfOpenElements[obj.id] = true;
     }
     if(typeof(lookup.desiredOffset) !== "undefined")
     {
@@ -1026,27 +1026,28 @@ lookup.alignOffset = function(point)
     return point;
 };
 
-lookup.moveFunctionsOnCanvasIteration = function()
+lookup.moveElementsOnCanvasIteration = function()
 {
+    console.log("moveFunctionsOnCanvasIteration");
 
-    var functions = lookup.listOfOpenTrees();
+    var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
     const margin = anchorWidth * 2 ;
-    for (const [key, value] of Object.entries(functions)) 
+    for (const [key, value] of Object.entries(elements)) 
     {
-        var box = lookup.getUIBoxOfFunction(value.id, margin);
+        var box = lookup.getUIBoxOfElement(value.id, margin);
         if(typeof(box) === "undefined")
         {
             continue;
         }
         
-        for (const [innerKey, innerValue] of Object.entries(functions, margin)) 
+        for (const [innerKey, innerValue] of Object.entries(elements, margin)) 
         {
             if(value.id == innerValue.id)
             {
                 continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id);
+            var boxToAvoid = lookup.getUIBoxOfElement(innerValue.id);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
@@ -1072,7 +1073,7 @@ lookup.moveFunctionsOnCanvasIteration = function()
 
 lookup.defineTimerForFunctions = function()
 {
-    lookup.timerForFunctions = setInterval(lookup.moveFunctionsOnCanvasIteration, 30);
+    lookup.timerForFunctions = setInterval(lookup.moveElementsOnCanvasIteration, 30);
 };
 
 
@@ -1118,11 +1119,11 @@ lookup.filloutGlobalOmniBox = function(omniBox)
 lookup.openSandbox = function()
 {
     lookup.openFunction(lookup.sandbox());
-    event.stopPropagation();
+    //event.stopPropagation();
     lookup.hideOmniBox();
 };
 
-lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
+lookup.getUIBoxOfElement = function(objId, margin = 0.0)
 {
     var foundUI = $("#" + objId)[0];
     if(typeof(foundUI) === "undefined")
