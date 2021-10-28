@@ -155,6 +155,15 @@ lookup.tryRestoreOffsetCoordinates = function(value)
     {
         value.offsetY = ko.observable(value.offsetY);
     }
+    value.inWorldOffsetX = ko.computed(function()
+    {
+        return value.offsetX() + lookup.globalOffsetX();
+    });
+
+    value.inWorldOffsetY = ko.computed(function()
+    {
+        return value.offsetY() + lookup.globalOffsetY();
+    });
 };
 
 
@@ -973,8 +982,15 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 lookup.listOfOpenElements = ko.observableArray([]);
 lookup.mapOfOpenElements = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
+lookup.closeFunction = function(obj)
+{
+    delete lookup.mapOfOpenElements[obj.id];
+    lookup.listOfOpenElements.remove(obj);
+};
+
 lookup.openFunction = function(obj)
 {
+    lookup.closeFunction(obj);
     lookup.tryRestoreOffsetCoordinates(obj);
     if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
     {
@@ -985,15 +1001,19 @@ lookup.openFunction = function(obj)
     {
         obj.offsetX(lookup.desiredOffset.x);
         obj.offsetY(lookup.desiredOffset.y);
+        console.log("set coordinates to desired offset: " + JSON.stringify(lookup.desiredOffset));
         lookup.desiredOffset = undefined;
     }
     else
     {
         var foundAnchor = lookup.findAnchor();
-        obj.offsetX(-lookup.globalOffsetX() + foundAnchor.offsetLeft);
-        obj.offsetY(-lookup.globalOffsetY() + foundAnchor.offsetTop);
+        const newLocalX = -lookup.globalOffsetX() + foundAnchor.offsetLeft;
+        obj.offsetX(newLocalX);
+        const newLocalY = -lookup.globalOffsetY() + foundAnchor.offsetTop;
+        obj.offsetY(newLocalY);
+        console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
     }
-    
+    console.log("finished openFunction");
 };
 
 
