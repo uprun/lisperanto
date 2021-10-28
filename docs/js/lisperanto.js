@@ -1755,11 +1755,16 @@ lookup.bodyOnClick = function()
     }
     else
     {
-        lookup.filloutGlobalOmniBox(lookup.canvasOmniBox);
+        if(lookup.menuIsOpen() || lookup.optionsIsOpen())
+        {
+            lookup.hideMenu();
+            lookup.hideOptions();
+        }
+        else
+        {
+            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox);
+        }
     }
-    
-    lookup.hideMenu();
-    lookup.hideOptions();
 };
 
 lookup.theFunctionsListOffsetY = ko.observable(0);
