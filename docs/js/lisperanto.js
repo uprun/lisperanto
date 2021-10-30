@@ -533,7 +533,11 @@ lookup.unplug = function()
     var obj = lookup.customObjects[usedObj.assignedToGuid];
     
     usedObj.assignedToGuid = undefined;
-    obj.guidToUse(undefined);
+    if(typeof(obj["guidToUse"]) !== 'undefined')
+    {
+        obj.guidToUse(undefined);
+    }
+    
 
     var operation = 
     {
