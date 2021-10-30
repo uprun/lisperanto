@@ -271,6 +271,9 @@
             <span data-bind='if: $data.type === "symbol-usage" '>
                 <div data-bind="template: { name: 'symbol-usage-template', data: $data }"></div>
             </span>
+            <span data-bind='if: $data.type === "record" '>
+                <div style="color: aliceblue;" >record</div>
+            </span>
             
         </div>
     </script>
