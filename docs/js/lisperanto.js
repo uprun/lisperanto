@@ -373,7 +373,7 @@ lookup.createFunction = function()
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
-    lookup.openFunction(toAdd);
+    lookup.openElement(toAdd);
     event.stopPropagation();
     lookup.hideOmniBox();
 };
@@ -416,6 +416,30 @@ lookup.createUIObject = function()
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
+};
+
+
+lookup.defineRecord = function()
+{
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "record";
+    toAdd.name = ko.observable("some new object");
+    toAdd.fields = ko.observableArray([]);
+
+    var operation = 
+    {
+        operation: "define-record",
+        guid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    return toAdd;
+};
+
+
+lookup.createAndShowRecord = function()
+{
+    var toShow = lookup.defineRecord();
+    lookup.openElement(toShow);
 };
 
 
@@ -545,7 +569,7 @@ lookup.unplug = function()
         objId: obj.id,
         usedObjId: usedObj.id
     };
-    lookup.openFunction(usedObj);
+    lookup.openElement(usedObj);
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
 };
@@ -986,15 +1010,15 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
 lookup.listOfOpenElements = ko.observableArray([]);
 lookup.mapOfOpenElements = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
-lookup.closeFunction = function(obj)
+lookup.closeElement = function(obj)
 {
     delete lookup.mapOfOpenElements[obj.id];
     lookup.listOfOpenElements.remove(obj);
 };
 
-lookup.openFunction = function(obj)
+lookup.openElement = function(obj)
 {
-    lookup.closeFunction(obj);
+    lookup.closeElement(obj);
     lookup.tryRestoreOffsetCoordinates(obj);
     if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
     {
@@ -1017,7 +1041,7 @@ lookup.openFunction = function(obj)
         obj.offsetY(newLocalY);
         console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
     }
-    console.log("finished openFunction");
+    console.log("finished openElement");
 };
 
 
@@ -1142,7 +1166,7 @@ lookup.filloutGlobalOmniBox = function(omniBox)
 
 lookup.openSandbox = function()
 {
-    lookup.openFunction(lookup.sandbox());
+    lookup.openElement(lookup.sandbox());
     //event.stopPropagation();
     lookup.hideOmniBox();
 };
@@ -1412,7 +1436,7 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideMenu();
     lookup.hideOptions();
     event.stopPropagation();
-    lookup.openFunction(functionToOpen);
+    lookup.openElement(functionToOpen);
 };
 
 lookup.openFunctionDefinitionFromOmniBox = function(obj)
@@ -1420,14 +1444,14 @@ lookup.openFunctionDefinitionFromOmniBox = function(obj)
     event.stopPropagation();
     lookup.hideOmniBox();
     var functionToOpen = lookup.customObjects[obj.id];
-    lookup.openFunction(functionToOpen);
+    lookup.openElement(functionToOpen);
 };
 
 lookup.openFunctionFromTheListOfFunctions = function(obj)
 {
     lookup.hideMenu();
     lookup.hideOptions();
-    lookup.openFunction(obj);
+    lookup.openElement(obj);
 };
 
 lookup.omniBoxClick = function()
@@ -1803,7 +1827,7 @@ $(document).ready(function()
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
-    lookup.openFunction(lookup.sandbox());
+    lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.refreshTheListOfFunctionsScroll();
     lookup.defineTimerForFunctions();
