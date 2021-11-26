@@ -127,6 +127,27 @@
             </div>
         </div>
     </script>
+    <script type="text/html" id="record-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element"
+            data-bind="
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    attr: 
+                    {
+                        id: 'record-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+            </div>
+            <div>
+                Record/Map/Dictionary:
+            </div>
+        </div>
+    </script>
     <script type="text/html" id="function-definition-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -258,8 +279,8 @@
             data-bind="
                 style: 
                 { 
-                    left: $root.globalOffsetX() + offsetX(), 
-                    top: $root.globalOffsetY() + offsetY() 
+                    left: inWorldOffsetX(), 
+                    top: inWorldOffsetY()
                 }">
             
             <span data-bind='if: $data.type === "constant-int" '>
@@ -272,7 +293,7 @@
                 <div data-bind="template: { name: 'symbol-usage-template', data: $data }"></div>
             </span>
             <span data-bind='if: $data.type === "record" '>
-                <div style="color: aliceblue;" >record</div>
+                <div data-bind="template: { name: 'record-template', data: $data }"></div>
             </span>
             
         </div>

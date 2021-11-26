@@ -25,3 +25,6 @@ seems like i forgot that thinking of an issue upfront is same bad idea as premat
 
 what if there will be a destinction between hosted-code and between Lisperanto-code
     so I can generate host-code in JS later?
+
+2021-11-27
+i need a dictionary like map
