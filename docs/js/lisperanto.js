@@ -164,6 +164,31 @@ lookup.tryRestoreOffsetCoordinates = function(value)
     {
         return value.offsetY() + lookup.globalOffsetY();
     });
+    value.box = ko.computed(function(){
+        var a = value.offsetX();
+        var b = value.offsetY();
+        var ga = lookup.globalOffsetX();
+        var gb = lookup.globalOffsetY();
+        const anchorWidth = lookup.anchorWidth();
+        const margin = anchorWidth * 2 ;
+    
+        var box = {};
+        var bb = lookup.getUIBoxOfElement(value, margin);
+        box.left = a + ga;
+        box.top = b + gb;
+        box.width = 10;
+        box.height = 10;
+        
+        if(typeof(bb) !== 'undefined')
+        {
+            box.width = bb.width;
+            box.height = bb.height;
+            box.left = bb.left;
+            box.top = bb.top;
+        }
+        
+        return box;
+    });
 };
 
 
@@ -1404,7 +1429,7 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 
     var foundAnchor = lookup.findAnchor();
 
-    var foundUI = $("#usage-" + caller.id)[0];
+    var foundUI = $("#" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 

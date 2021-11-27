@@ -181,6 +181,7 @@ a
     width: max-content;
     left: 40vw;
     top: 33vh;
+    z-index: 1;
 
 }
 
