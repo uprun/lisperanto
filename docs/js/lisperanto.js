@@ -1081,9 +1081,10 @@ lookup.moveElementsOnCanvasIteration = function()
     var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
     const margin = anchorWidth * 2 ;
+    console.log("Checking for intersections: " + elements.length);
     for (const [key, value] of Object.entries(elements)) 
     {
-        var box = lookup.getUIBoxOfElement(value.id, margin);
+        var box = lookup.getUIBoxOfElement(value, margin);
         if(typeof(box) === "undefined")
         {
             continue;
@@ -1095,7 +1096,7 @@ lookup.moveElementsOnCanvasIteration = function()
             {
                 continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfElement(innerValue.id);
+            var boxToAvoid = lookup.getUIBoxOfElement(innerValue);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
@@ -1103,8 +1104,11 @@ lookup.moveElementsOnCanvasIteration = function()
             
             if(lookup.doBoxesIntersect(box, boxToAvoid))
             {
+                console.log("intersection occured");
+                console.log(value.type);
+                console.log(innerValue.type);
                 offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, margin);
-                if(lookup.vectorLengthSquared(offset) > 0)
+                if(lookup.vectorLengthSquared(offset) > 0.1)
                 {
                     offset = lookup.normalizeVector(offset);
                     var factor = anchorWidth / 10.0;
@@ -1171,8 +1175,9 @@ lookup.openSandbox = function()
     lookup.hideOmniBox();
 };
 
-lookup.getUIBoxOfElement = function(objId, margin = 0.0)
+lookup.getUIBoxOfElement = function(obj, margin = 0.0)
 {
+    var objId = obj.id
     var foundUI = $("#" + objId)[0];
     if(typeof(foundUI) === "undefined")
     {
@@ -1182,8 +1187,8 @@ lookup.getUIBoxOfElement = function(objId, margin = 0.0)
     {
         var toReturn = 
         {
-            left: foundUI.offsetLeft - margin,
-            top: foundUI.offsetTop - margin,
+            left: obj.offsetX() - margin,
+            top: obj.offsetY() - margin,
             width: foundUI.offsetWidth + 2 * margin,
             height: foundUI.offsetHeight + 2 * margin
         };
@@ -1253,10 +1258,10 @@ lookup.doBoxesIntersect = function(firstBox, secondBox)
 lookup.getVectorsFromBox = function(point, box, margin)
 {
     var result = [
-        lookup.createVector(point, {x: point.x, y: box.top - margin}),
-        lookup.createVector(point, {x: point.x, y: box.top + box.height + margin}),
-        lookup.createVector(point, {x: box.left - margin, y: point.y}),
-        lookup.createVector(point, {x: box.left + box.width + margin, y: point.y})
+        lookup.createVector(point, {x: point.x, y: box.top - margin}), // to Up
+        lookup.createVector(point, {x: point.x, y: box.top + box.height + margin}), // to Bottom
+        lookup.createVector(point, {x: box.left - margin, y: point.y}), // to Left
+        lookup.createVector(point, {x: box.left + box.width + margin, y: point.y}) // to Right
     ];
     return result;
     
@@ -1305,22 +1310,22 @@ lookup.vectorsAreCoAligned = function(bv, obv)
 lookup.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
 {
     var offsets = []; 
-    var firstCorners = lookup.generateCornersOfTheBox(firstBox, margin);
-    for (const [key, point] of Object.entries(firstCorners)) 
+    var firstBoxCorners = lookup.generateCornersOfTheBox(firstBox);
+    for (const [key, pointF] of Object.entries(firstBoxCorners)) 
     {
-        if(lookup.isPointInsideTheBox(point, secondBox, margin))
+        if(lookup.isPointInsideTheBox(pointF, secondBox, margin))
         {
-            var boxVectors = lookup.getVectorsFromBox(point, secondBox, margin);
-            var originalBoxVectors = lookup.generateVectors(point, firstCorners);
-            for (const [key, bv] of Object.entries(boxVectors)) 
+            var escapesFromSecondBox = lookup.getVectorsFromBox(pointF, secondBox, margin);
+            var firstBoxVectors = lookup.getVectorsFromBox(pointF, firstBox, margin=0);
+            for (const [key, escapeV] of Object.entries(escapesFromSecondBox)) 
             {
-                for (const [key, obv] of Object.entries(originalBoxVectors)) 
+                for (const [key, firstV] of Object.entries(firstBoxVectors)) 
                 {
-                    if(lookup.vectorLengthSquared(obv) > 0)
+                    if(lookup.vectorLengthSquared(firstV) > 0.1)
                     {
-                        if(lookup.vectorsAreCoAligned(bv, obv))
+                        if(lookup.vectorsAreCoAligned(escapeV, firstV))
                         {
-                            offsets.push(bv);
+                            offsets.push(escapeV);
                         }
                     }
                 }
@@ -1399,7 +1404,7 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 
     var foundAnchor = lookup.findAnchor();
 
-    var foundUI = $("#" + caller.id)[0];
+    var foundUI = $("#usage-" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 
