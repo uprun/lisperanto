@@ -281,22 +281,24 @@
                     left: inWorldOffsetX(), 
                     top: inWorldOffsetY()
                 }">
-            <!-- ko if: $data.type === 'constant-int' -->
-                <!-- ko template: { name: 'constant-int-template', data: $data} -->
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: $data.type === 'function-usage' -->
-                <!-- ko template: { name: 'function-usage-template', data: $data} -->
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: $data.type === 'symbol-usage' -->
-                <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: $data.type === 'record' -->
-                <!-- ko template: { name: 'record-template', data: $data} -->
-                <!-- /ko -->
-            <!-- /ko -->
+                <div>
+                    <!-- ko if: $data.type === 'constant-int' -->
+                        <!-- ko template: { name: 'constant-int-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'function-usage' -->
+                        <!-- ko template: { name: 'function-usage-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'symbol-usage' -->
+                        <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'record' -->
+                        <!-- ko template: { name: 'record-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                </div>
         </div>
     </script>
 
