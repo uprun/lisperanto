@@ -463,6 +463,7 @@ lookup.createAndShowRecord = function()
 {
     var toShow = lookup.defineRecord();
     lookup.openElement(toShow);
+    lookup.hideOmniBox();
 };
 
 
@@ -1166,16 +1167,16 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
     event.stopPropagation();
 };
 
-lookup.filloutGlobalOmniBox = function(omniBox) 
+lookup.filloutGlobalOmniBox = function(omniBox, offset) 
 {
     lookup.focusedObj(undefined);
     lookup.activeOperation("global-omni-box-activated");
     var foundAnchor = lookup.findAnchor();
     omniBox.visible(true);
-    var offsetX = foundAnchor.offsetLeft;
+    var offsetX = offset.x;
         offsetX -= lookup.globalOffsetX();
     omniBox.left(offsetX );
-    var offsetY = foundAnchor.offsetTop ;
+    var offsetY = offset.y;
         offsetY -= lookup.globalOffsetY();
     omniBox.top(offsetY);
 
@@ -1808,8 +1809,14 @@ lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
     lookup.filloutOmniBoxDataForFunction('sandbox-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 };
 
-lookup.bodyOnClick = function()
+lookup.bodyOnClick = function(e)
 {
+    console.log(event);
+    var offset = 
+    {
+        x: event.pageX,
+        y: event.pageY
+    };
     if(lookup.canvasOmniBox.visible())
     {
         lookup.hideOmniBox();
@@ -1823,7 +1830,7 @@ lookup.bodyOnClick = function()
         }
         else
         {
-            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox);
+            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
 };
