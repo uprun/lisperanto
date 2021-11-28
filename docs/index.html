@@ -413,6 +413,10 @@
                     onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
                     f - FullScreen
                 </div>
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                    onclick="typeof(lookup) !== 'undefined' && lookup.toggleShowBorders()">
+                    Borders
+                </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
                 <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
@@ -491,22 +495,25 @@
                 <!-- /ko -->
                 
             <!-- /ko -->
-            <div style="
-                position: absolute;
-                border: aliceblue;
-                border-width: 2px;
-                border-style: dotted;
-                z-index: 0;
-                "
-            data-bind="style: 
-            { 
-                left: box().left, 
-                top: box().top, 
-                width: box().width,
-                height: $data.box().height
-            }," >
+            <!-- ko if: $root.showBorders -->
+                <div style="
+                    position: absolute;
+                    border: aliceblue;
+                    border-width: 2px;
+                    border-style: dotted;
+                    z-index: 0;
+                    "
+                data-bind="style: 
+                { 
+                    left: box().left, 
+                    top: box().top, 
+                    width: box().width,
+                    height: $data.box().height
+                }," >
 
-            </div>
+                </div>
+            <!-- /ko -->
+            
 
         <!-- /ko -->
 

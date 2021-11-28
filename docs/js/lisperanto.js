@@ -1412,6 +1412,13 @@ lookup.desiredOffset = {x: 0, y: 0};
 
 lookup.calledObj = undefined;
 
+lookup.showBorders = ko.observable(false);
+
+lookup.toggleShowBorders = function()
+{
+    lookup.showBorders(!lookup.showBorders());
+};
+
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
