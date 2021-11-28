@@ -165,17 +165,15 @@ lookup.tryRestoreOffsetCoordinates = function(value)
         return value.offsetY() + lookup.globalOffsetY();
     });
     value.box = ko.computed(function(){
-        var a = value.offsetX();
-        var b = value.offsetY();
-        var ga = lookup.globalOffsetX();
-        var gb = lookup.globalOffsetY();
+        var x = value.inWorldOffsetX();
+        var y = value.inWorldOffsetY();
         const anchorWidth = lookup.anchorWidth();
-        const margin = anchorWidth * 2 ;
+        const margin = anchorWidth ;
     
         var box = {};
         var bb = lookup.getUIBoxOfElement(value, margin);
-        box.left = a + ga;
-        box.top = b + gb;
+        box.left = x;
+        box.top = y;
         box.width = 10;
         box.height = 10;
         
@@ -183,8 +181,8 @@ lookup.tryRestoreOffsetCoordinates = function(value)
         {
             box.width = bb.width;
             box.height = bb.height;
-            box.left = bb.left;
-            box.top = bb.top;
+            box.left = bb.left + lookup.globalOffsetX();
+            box.top = bb.top + + lookup.globalOffsetY();
         }
         
         return box;
@@ -1028,6 +1026,10 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
             result = lookup.evaluate(parameterUsage.guidToUse(), localContext);
         }
     }
+    if(typeof(result) === 'undefined')
+    {
+        result = lookup.generateFailToEvaluate();
+    }
     return result;
 };
 
@@ -1105,7 +1107,7 @@ lookup.moveElementsOnCanvasIteration = function()
 
     var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
-    const margin = anchorWidth * 2 ;
+    const margin = anchorWidth ;
     console.log("Checking for intersections: " + elements.length);
     for (const [key, value] of Object.entries(elements)) 
     {
@@ -1121,7 +1123,7 @@ lookup.moveElementsOnCanvasIteration = function()
             {
                 continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfElement(innerValue);
+            var boxToAvoid = lookup.getUIBoxOfElement(innerValue, margin);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
@@ -1132,8 +1134,8 @@ lookup.moveElementsOnCanvasIteration = function()
                 console.log("intersection occured");
                 console.log(value.type);
                 console.log(innerValue.type);
-                offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, margin);
-                if(lookup.vectorLengthSquared(offset) > 0.1)
+                offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, 0);
+                if(lookup.vectorLengthSquared(offset) > 0)
                 {
                     offset = lookup.normalizeVector(offset);
                     var factor = anchorWidth / 10.0;
@@ -1259,11 +1261,11 @@ lookup.generateCornersOfTheBox = function(box)
 lookup.doBoxesIntersect = function(firstBox, secondBox)
 {
     var firstCorners = lookup.generateCornersOfTheBox(firstBox);
-    var resultFirst = firstCorners.find(point => lookup.isPointInsideTheBox(point, secondBox));
+    var resultFirst = firstCorners.find(point => lookup.isPointInsideTheBox(point, secondBox, margin=1));
     if(typeof(resultFirst) === "undefined")
     {
         var secondCorners = lookup.generateCornersOfTheBox(secondBox);
-        var resultSecond = secondCorners.find(point => lookup.isPointInsideTheBox(point, firstBox));
+        var resultSecond = secondCorners.find(point => lookup.isPointInsideTheBox(point, firstBox, margin=1));
         if(typeof(resultSecond) === "undefined")
         {
             return false;
@@ -1338,9 +1340,9 @@ lookup.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
     var firstBoxCorners = lookup.generateCornersOfTheBox(firstBox);
     for (const [key, pointF] of Object.entries(firstBoxCorners)) 
     {
-        if(lookup.isPointInsideTheBox(pointF, secondBox, margin))
+        if(lookup.isPointInsideTheBox(pointF, secondBox, margin=2))
         {
-            var escapesFromSecondBox = lookup.getVectorsFromBox(pointF, secondBox, margin);
+            var escapesFromSecondBox = lookup.getVectorsFromBox(pointF, secondBox, margin=2);
             var firstBoxVectors = lookup.getVectorsFromBox(pointF, firstBox, margin=0);
             for (const [key, escapeV] of Object.entries(escapesFromSecondBox)) 
             {
