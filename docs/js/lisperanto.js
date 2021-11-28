@@ -1421,11 +1421,11 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
 
     var root = lookup.findRoot(caller);
     
-    lookup.filloutOmniBoxDataForFunction(caller.id, lookup.canvasOmniBox, root);
+    lookup.filloutOmniBoxDataForFunction("function-name-" + caller.id, lookup.canvasOmniBox, root);
 
     var foundAnchor = lookup.findAnchor();
 
-    var foundUI = $("#" + caller.id)[0];
+    var foundUI = $("#function-name-" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 
