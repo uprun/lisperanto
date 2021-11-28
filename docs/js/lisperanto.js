@@ -1103,12 +1103,9 @@ lookup.alignOffset = function(point)
 
 lookup.moveElementsOnCanvasIteration = function()
 {
-    console.log("moveFunctionsOnCanvasIteration");
-
     var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
     const margin = anchorWidth ;
-    console.log("Checking for intersections: " + elements.length);
     for (const [key, value] of Object.entries(elements)) 
     {
         var box = lookup.getUIBoxOfElement(value, margin);
@@ -1117,7 +1114,7 @@ lookup.moveElementsOnCanvasIteration = function()
             continue;
         }
         
-        for (const [innerKey, innerValue] of Object.entries(elements, margin)) 
+        for (const [innerKey, innerValue] of Object.entries(elements)) 
         {
             if(value.id == innerValue.id)
             {
@@ -1131,9 +1128,6 @@ lookup.moveElementsOnCanvasIteration = function()
             
             if(lookup.doBoxesIntersect(box, boxToAvoid))
             {
-                console.log("intersection occured");
-                console.log(value.type);
-                console.log(innerValue.type);
                 offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, 0);
                 if(lookup.vectorLengthSquared(offset) > 0)
                 {
