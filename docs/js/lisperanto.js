@@ -155,6 +155,38 @@ lookup.tryRestoreOffsetCoordinates = function(value)
     {
         value.offsetY = ko.observable(value.offsetY);
     }
+    value.inWorldOffsetX = ko.computed(function()
+    {
+        return value.offsetX() + lookup.globalOffsetX();
+    });
+
+    value.inWorldOffsetY = ko.computed(function()
+    {
+        return value.offsetY() + lookup.globalOffsetY();
+    });
+    value.box = ko.computed(function(){
+        var x = value.inWorldOffsetX();
+        var y = value.inWorldOffsetY();
+        const anchorWidth = lookup.anchorWidth();
+        const margin = anchorWidth ;
+    
+        var box = {};
+        var bb = lookup.getUIBoxOfElement(value, margin);
+        box.left = x;
+        box.top = y;
+        box.width = 10;
+        box.height = 10;
+        
+        if(typeof(bb) !== 'undefined')
+        {
+            box.width = bb.width;
+            box.height = bb.height;
+            box.left = bb.left + lookup.globalOffsetX();
+            box.top = bb.top + + lookup.globalOffsetY();
+        }
+        
+        return box;
+    });
 };
 
 
@@ -351,7 +383,7 @@ lookup.createFunction = function()
 {
     var toAdd = lookup.createUIObject();
     toAdd.type = "function";
-    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[this.getRandomInt(lookup.defaultNamesForFunctions.length)]);
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
     toAdd.parameters = ko.observableArray([]);
     
@@ -364,7 +396,9 @@ lookup.createFunction = function()
     };
     lookup.operationsPush(operation);
     lookup.functionsArray.push(toAdd);
-    lookup.openFunction(toAdd);
+    lookup.openElement(toAdd);
+    event.stopPropagation();
+    lookup.hideOmniBox();
 };
 
 lookup.tryRestoreFunction = function(value)
@@ -398,19 +432,38 @@ lookup.createUIObject = function()
     var guid = lookup.uuidv4();
     
     var toAdd = {
-        id: guid,
-        omniBox: {
-            visible : ko.observable(false),
-            left: ko.observable(0),
-            top: ko.observable(0),
-            id: guid + '--popup-omni-box-input'
-        }
+        id: guid
     };
     lookup.addEvaluationVariables(toAdd);
     lookup.tryRestoreOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
+};
+
+
+lookup.defineRecord = function()
+{
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "record";
+    toAdd.name = ko.observable("some new object");
+    toAdd.fields = ko.observableArray([]);
+
+    var operation = 
+    {
+        operation: "define-record",
+        guid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    return toAdd;
+};
+
+
+lookup.createAndShowRecord = function()
+{
+    var toShow = lookup.defineRecord();
+    lookup.openElement(toShow);
+    lookup.hideOmniBox();
 };
 
 
@@ -468,7 +521,7 @@ lookup.defineSymbolUsage = function(symbol)
 lookup.defineParameterValue = function(parameterGuid, guidToUse, assignedToGuid)
 {
     var toAdd = lookup.createUIObject();
-    toAdd.type ="parameter-value";
+    toAdd.type = "parameter-value";
     toAdd.parameterGuid = parameterGuid;
     toAdd.guidToUse = ko.observable(guidToUse);
     toAdd.assignedToGuid = assignedToGuid;
@@ -520,6 +573,29 @@ lookup.defineFunctionCall = function( functionGuid, objId)
     lookup.operationsPush(operation);
 
     return toAdd.id;
+};
+
+lookup.unplug = function()
+{
+    var usedObj = lookup.calledObj;
+    var obj = lookup.customObjects[usedObj.assignedToGuid];
+    
+    usedObj.assignedToGuid = undefined;
+    if(typeof(obj["guidToUse"]) !== 'undefined')
+    {
+        obj.guidToUse(undefined);
+    }
+    
+
+    var operation = 
+    {
+        operation: "unplug",
+        objId: obj.id,
+        usedObjId: usedObj.id
+    };
+    lookup.openElement(usedObj);
+    lookup.operationsPush(operation);
+    lookup.hideOmniBox();
 };
 
 lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
@@ -951,29 +1027,49 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
             result = lookup.evaluate(parameterUsage.guidToUse(), localContext);
         }
     }
+    if(typeof(result) === 'undefined')
+    {
+        result = lookup.generateFailToEvaluate();
+    }
     return result;
 };
 
 
-lookup.listOfActiveFunctions = ko.observableArray([]);
-lookup.mapOfOpenFunctions = {};
+lookup.listOfOpenElements = ko.observableArray([]);
+lookup.mapOfOpenElements = {};
 lookup.functionDefinitionIsActive = ko.observable(false);
-lookup.openFunction = function(obj)
+lookup.closeElement = function(obj)
 {
-    if(typeof(lookup.mapOfOpenFunctions[obj.id]) === "undefined")
-    {
-        lookup.listOfActiveFunctions.push(obj);
-        lookup.mapOfOpenFunctions[obj.id] = true;
-    }
-    obj.offsetX(lookup.desiredOffset.x);
-    obj.offsetY(lookup.desiredOffset.y);
+    delete lookup.mapOfOpenElements[obj.id];
+    lookup.listOfOpenElements.remove(obj);
 };
 
-lookup.clearAvoidList = function()
+lookup.openElement = function(obj)
 {
-    lookup.functionsToBeAvoid.removeAll();
-    lookup.mapOfFunctionToAvoid = {};
-
+    lookup.closeElement(obj);
+    lookup.tryRestoreOffsetCoordinates(obj);
+    if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
+    {
+        lookup.listOfOpenElements.push(obj);
+        lookup.mapOfOpenElements[obj.id] = true;
+    }
+    if(typeof(lookup.desiredOffset) !== "undefined")
+    {
+        obj.offsetX(lookup.desiredOffset.x);
+        obj.offsetY(lookup.desiredOffset.y);
+        console.log("set coordinates to desired offset: " + JSON.stringify(lookup.desiredOffset));
+        lookup.desiredOffset = undefined;
+    }
+    else
+    {
+        var foundAnchor = lookup.findAnchor();
+        const newLocalX = -lookup.globalOffsetX() + foundAnchor.offsetLeft;
+        obj.offsetX(newLocalX);
+        const newLocalY = -lookup.globalOffsetY() + foundAnchor.offsetTop;
+        obj.offsetY(newLocalY);
+        console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
+    }
+    console.log("finished openElement");
 };
 
 
@@ -1006,28 +1102,26 @@ lookup.alignOffset = function(point)
     return point;
 };
 
-lookup.moveFunctionsOnCanvasIteration = function()
+lookup.moveElementsOnCanvasIteration = function()
 {
-    console.log("moveFunctionsOnCanvasIteration");
-
-    var functions = lookup.listOfActiveFunctions();
+    var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
-    const margin = anchorWidth * 2 ;
-    for (const [key, value] of Object.entries(functions)) 
+    const margin = anchorWidth ;
+    for (const [key, value] of Object.entries(elements)) 
     {
-        var box = lookup.getUIBoxOfFunction(value.id, margin);
+        var box = lookup.getUIBoxOfElement(value, margin);
         if(typeof(box) === "undefined")
         {
             continue;
         }
         
-        for (const [innerKey, innerValue] of Object.entries(functions, margin)) 
+        for (const [innerKey, innerValue] of Object.entries(elements)) 
         {
             if(value.id == innerValue.id)
             {
                 continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfFunction(innerValue.id);
+            var boxToAvoid = lookup.getUIBoxOfElement(innerValue, margin);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
@@ -1035,7 +1129,7 @@ lookup.moveFunctionsOnCanvasIteration = function()
             
             if(lookup.doBoxesIntersect(box, boxToAvoid))
             {
-                offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, margin);
+                offset = lookup.getMinimalOffsetForBox(box, boxToAvoid, 0);
                 if(lookup.vectorLengthSquared(offset) > 0)
                 {
                     offset = lookup.normalizeVector(offset);
@@ -1053,40 +1147,59 @@ lookup.moveFunctionsOnCanvasIteration = function()
 
 lookup.defineTimerForFunctions = function()
 {
-    lookup.timerForFunctions = setInterval(lookup.moveFunctionsOnCanvasIteration, 30);
+    lookup.timerForFunctions = setInterval(lookup.moveElementsOnCanvasIteration, 30);
 };
 
 
-lookup.omniBoxVisible = ko.observable(false);
-
-lookup.lastOmniBox = undefined;
-
-lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root, useRoot = true) 
+lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root) 
 {
     var foundUI = $("#" + callerId)[0];
     omniBox.visible(true);
     var offsetX = foundUI.offsetLeft;
-    if(useRoot)
-    {
         offsetX += root.offsetX();
-    }
     omniBox.left(offsetX );
     var offsetY = foundUI.offsetTop + foundUI.offsetHeight ;
-    if(useRoot)
-    {
         offsetY += root.offsetY();
-    }
     omniBox.top(offsetY);
-
-    lookup.lastOmniBox = omniBox;
 
     $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
     event.stopPropagation();
 };
 
-lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
+lookup.filloutGlobalOmniBox = function(omniBox, offset) 
 {
+    lookup.focusedObj(undefined);
+    lookup.activeOperation("global-omni-box-activated");
+    var foundAnchor = lookup.findAnchor();
+    omniBox.visible(true);
+    var offsetX = offset.x;
+        offsetX -= lookup.globalOffsetX();
+    omniBox.left(offsetX );
+    var offsetY = offset.y;
+        offsetY -= lookup.globalOffsetY();
+    omniBox.top(offsetY);
+
+    lookup.desiredOffset = {
+        x: offsetX,
+        y: offsetY
+    };
+
+    $("#" + omniBox.id ).focus();
+    lookup.preParseOmniBox();
+    event.stopPropagation();
+};
+
+lookup.openSandbox = function()
+{
+    lookup.openElement(lookup.sandbox());
+    //event.stopPropagation();
+    lookup.hideOmniBox();
+};
+
+lookup.getUIBoxOfElement = function(obj, margin = 0.0)
+{
+    var objId = obj.id
     var foundUI = $("#" + objId)[0];
     if(typeof(foundUI) === "undefined")
     {
@@ -1096,8 +1209,8 @@ lookup.getUIBoxOfFunction = function(objId, margin = 0.0)
     {
         var toReturn = 
         {
-            left: foundUI.offsetLeft - margin,
-            top: foundUI.offsetTop - margin,
+            left: obj.offsetX() - margin,
+            top: obj.offsetY() - margin,
             width: foundUI.offsetWidth + 2 * margin,
             height: foundUI.offsetHeight + 2 * margin
         };
@@ -1143,11 +1256,11 @@ lookup.generateCornersOfTheBox = function(box)
 lookup.doBoxesIntersect = function(firstBox, secondBox)
 {
     var firstCorners = lookup.generateCornersOfTheBox(firstBox);
-    var resultFirst = firstCorners.find(point => lookup.isPointInsideTheBox(point, secondBox));
+    var resultFirst = firstCorners.find(point => lookup.isPointInsideTheBox(point, secondBox, margin=1));
     if(typeof(resultFirst) === "undefined")
     {
         var secondCorners = lookup.generateCornersOfTheBox(secondBox);
-        var resultSecond = secondCorners.find(point => lookup.isPointInsideTheBox(point, firstBox));
+        var resultSecond = secondCorners.find(point => lookup.isPointInsideTheBox(point, firstBox, margin=1));
         if(typeof(resultSecond) === "undefined")
         {
             return false;
@@ -1167,10 +1280,10 @@ lookup.doBoxesIntersect = function(firstBox, secondBox)
 lookup.getVectorsFromBox = function(point, box, margin)
 {
     var result = [
-        lookup.createVector(point, {x: point.x, y: box.top - margin}),
-        lookup.createVector(point, {x: point.x, y: box.top + box.height + margin}),
-        lookup.createVector(point, {x: box.left - margin, y: point.y}),
-        lookup.createVector(point, {x: box.left + box.width + margin, y: point.y})
+        lookup.createVector(point, {x: point.x, y: box.top - margin}), // to Up
+        lookup.createVector(point, {x: point.x, y: box.top + box.height + margin}), // to Bottom
+        lookup.createVector(point, {x: box.left - margin, y: point.y}), // to Left
+        lookup.createVector(point, {x: box.left + box.width + margin, y: point.y}) // to Right
     ];
     return result;
     
@@ -1219,22 +1332,22 @@ lookup.vectorsAreCoAligned = function(bv, obv)
 lookup.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
 {
     var offsets = []; 
-    var firstCorners = lookup.generateCornersOfTheBox(firstBox, margin);
-    for (const [key, point] of Object.entries(firstCorners)) 
+    var firstBoxCorners = lookup.generateCornersOfTheBox(firstBox);
+    for (const [key, pointF] of Object.entries(firstBoxCorners)) 
     {
-        if(lookup.isPointInsideTheBox(point, secondBox, margin))
+        if(lookup.isPointInsideTheBox(pointF, secondBox, margin=2))
         {
-            var boxVectors = lookup.getVectorsFromBox(point, secondBox, margin);
-            var originalBoxVectors = lookup.generateVectors(point, firstCorners);
-            for (const [key, bv] of Object.entries(boxVectors)) 
+            var escapesFromSecondBox = lookup.getVectorsFromBox(pointF, secondBox, margin=2);
+            var firstBoxVectors = lookup.getVectorsFromBox(pointF, firstBox, margin=0);
+            for (const [key, escapeV] of Object.entries(escapesFromSecondBox)) 
             {
-                for (const [key, obv] of Object.entries(originalBoxVectors)) 
+                for (const [key, firstV] of Object.entries(firstBoxVectors)) 
                 {
-                    if(lookup.vectorLengthSquared(obv) > 0)
+                    if(lookup.vectorLengthSquared(firstV) > 0.1)
                     {
-                        if(lookup.vectorsAreCoAligned(bv, obv))
+                        if(lookup.vectorsAreCoAligned(escapeV, firstV))
                         {
-                            offsets.push(bv);
+                            offsets.push(escapeV);
                         }
                     }
                 }
@@ -1288,15 +1401,6 @@ lookup.vectorBetweenBoxes = function(firstBox, secondBox)
 
 };
 
-lookup.openOmniBoxForFunctionInTheList = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.activeOperation("functionInTheListIsSelected");
-    lookup.focusedObj(caller);
-    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + caller.id, lookup.listOfFunctionsOmniBox, "", false);
-    lookup.refreshTheListOfFunctionsScroll();
-};
-
 lookup.omniBoxRenameFunctionAction = function()
 {
     lookup.activeOperation("renameFunction");
@@ -1305,29 +1409,31 @@ lookup.omniBoxRenameFunctionAction = function()
     lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 };
 
-lookup.omniBoxRenameFunctionFromTheListAction = function()
-{
-    lookup.activeOperation("renameFunction");
-    var obj = lookup.focusedObj();
-    lookup.omniBoxTextInput(obj.name());
-    lookup.filloutOmniBoxDataForFunction('function-in-the-list--' + obj.id, lookup.listOfFunctionsOmniBox, "", false);
-};
-
 lookup.desiredOffset = {x: 0, y: 0};
+
+lookup.calledObj = undefined;
+
+lookup.showBorders = ko.observable(false);
+
+lookup.toggleShowBorders = function()
+{
+    lookup.showBorders(!lookup.showBorders());
+};
 
 lookup.openOmniBoxForFunctionUsage = function(caller)
 {
     lookup.hideOmniBox();
+    lookup.calledObj = caller;
     lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
     lookup.activeOperation("functionUsageIsSelected");
 
     var root = lookup.findRoot(caller);
     
-    lookup.filloutOmniBoxDataForFunction(caller.id, lookup.canvasOmniBox, root);
+    lookup.filloutOmniBoxDataForFunction("function-name-" + caller.id, lookup.canvasOmniBox, root);
 
-    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    var foundAnchor = lookup.findAnchor();
 
-    var foundUI = $("#" + caller.id)[0];
+    var foundUI = $("#function-name-" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 
@@ -1352,11 +1458,7 @@ lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 
 lookup.hideOmniBox = function()
 {
-    if(typeof(lookup.lastOmniBox) !== 'undefined' )
-    {
-        lookup.lastOmniBox.visible(false);
-        lookup.lastOmniBox = undefined;
-    }
+    lookup.canvasOmniBox.visible(false);
     lookup.focusedObj(undefined);
     lookup.activeOperation("");
 };
@@ -1368,9 +1470,22 @@ lookup.omniBoxOpenFunctionAction = function()
     lookup.hideMenu();
     lookup.hideOptions();
     event.stopPropagation();
-    lookup.openFunction(functionToOpen);
-    //lookup.clearAvoidList();
-    //lookup.maybeAddToAvoidList(functionToOpen);
+    lookup.openElement(functionToOpen);
+};
+
+lookup.openFunctionDefinitionFromOmniBox = function(obj)
+{
+    event.stopPropagation();
+    lookup.hideOmniBox();
+    var functionToOpen = lookup.customObjects[obj.id];
+    lookup.openElement(functionToOpen);
+};
+
+lookup.openFunctionFromTheListOfFunctions = function(obj)
+{
+    lookup.hideMenu();
+    lookup.hideOptions();
+    lookup.openElement(obj);
 };
 
 lookup.omniBoxClick = function()
@@ -1521,7 +1636,15 @@ lookup.omniBoxInputKeyPress = function(data, event)
             }
             else
             {
-                lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+                if(typeof(lookup.focusedObj()) !== 'undefined')
+                {
+                    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
+                }
+                else
+                {
+                    lookup.hideOmniBox();
+                }
+                
             }
         }
         else
@@ -1623,19 +1746,17 @@ lookup.findRoot = function(obj)
     return currentObj;
 };
 
-lookup.generateOmniBox = function(isGlobal) {
+lookup.defineOmniBox = function() {
     var omniBox = {
         visible: ko.observable(false),
         left: ko.observable(0),
         top: ko.observable(0),
-        isGlobal: ko.observable(isGlobal),
-        id: isGlobal ? 'global--popup-omni-box-input' : 'local--popup-omni-box-input'
+        id: 'global--popup-omni-box-input' 
     };
     return omniBox;
 };
 
-lookup.listOfFunctionsOmniBox = lookup.generateOmniBox(false);
-lookup.canvasOmniBox = lookup.generateOmniBox(true);
+lookup.canvasOmniBox = lookup.defineOmniBox();
 
 function Lisperanto()
 {
@@ -1655,13 +1776,19 @@ lookup.anchorWidth = ko.observable(0);
 
 lookup.findSandboxAnchorPosition = function()
 {
-    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    var foundAnchor = lookup.findAnchor();
 
     lookup.desiredOffset.x = foundAnchor.offsetLeft;
     lookup.desiredOffset.y = foundAnchor.offsetTop;
 
     lookup.anchorWidth(foundAnchor.offsetWidth)
 
+};
+
+lookup.findAnchor = function()
+{
+    var foundAnchor = $(".lisperanto-anchor-sandbox")[0];
+    return foundAnchor;
 };
 
 lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
@@ -1682,11 +1809,30 @@ lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
     lookup.filloutOmniBoxDataForFunction('sandbox-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
 };
 
-lookup.bodyOnClick = function()
+lookup.bodyOnClick = function(e)
 {
-    lookup.hideOmniBox();
-    lookup.hideMenu();
-    lookup.hideOptions();
+    console.log(event);
+    var offset = 
+    {
+        x: event.pageX,
+        y: event.pageY
+    };
+    if(lookup.canvasOmniBox.visible())
+    {
+        lookup.hideOmniBox();
+    }
+    else
+    {
+        if(lookup.menuIsOpen() || lookup.optionsIsOpen())
+        {
+            lookup.hideMenu();
+            lookup.hideOptions();
+        }
+        else
+        {
+            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
+        }
+    }
 };
 
 lookup.theFunctionsListOffsetY = ko.observable(0);
@@ -1721,7 +1867,7 @@ $(document).ready(function()
     lookup.defineListOfPredefinedFunctions();
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
-    lookup.openFunction(lookup.sandbox());
+    lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.refreshTheListOfFunctionsScroll();
     lookup.defineTimerForFunctions();

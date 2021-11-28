@@ -1,0 +1,30 @@
+var guid = lookup.uuidv4();
+
+(let 
+    "guid"
+    (function-call-same-as
+        (get-field
+            "global"
+            "lookup"
+            "uuidv4"
+
+        )
+
+    )
+)
+
+
+// if there is no type field then it is map
+everything is a map
+    map can have fields
+    fields can have translations maybe
+    value of a field is another map
+    like in js arrays are also maps but with fields 0, 1, 2, 3, etc..
+
+seems like i forgot that thinking of an issue upfront is same bad idea as premature optimization
+
+what if there will be a destinction between hosted-code and between Lisperanto-code
+    so I can generate host-code in JS later?
+
+2021-11-27
+i need a dictionary like map

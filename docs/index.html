@@ -36,15 +36,16 @@
                 click: $root.omniBoxClick,
                 style: 
                     { 
-                        left: isGlobal() ? $root.globalOffsetX() + left() : left(), 
-                        top: isGlobal() ? $root.globalOffsetY() + top() : $root.theFunctionsListOffsetY() + top()
+                        left: $root.globalOffsetX() + left(), 
+                        top: $root.globalOffsetY() + top()
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div 
                     data-bind="if: 
                         $root.activeOperation() === 'focusOnParameter' 
                         || $root.activeOperation() === 'renameFunction' 
-                        || $root.activeOperation() === 'addingFunctionParameter' ">
+                        || $root.activeOperation() === 'addingFunctionParameter'
+                        || $root.activeOperation() === 'global-omni-box-activated' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -60,6 +61,20 @@
                                     keypress: $root.omniBoxInputKeyPress,
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
+                </div>
+                <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.createFunction">
+                            create function 
+                    </div>
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.createAndShowRecord">
+                            create record 
+                    </div>
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.openSandbox">
+                            open sandbox 
+                    </div>
                 </div>
                 <div data-bind="if: $root.activeOperation() === 'renameFunction'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
@@ -79,13 +94,8 @@
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                             open definition
                         </div>
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'functionInTheListIsSelected' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            open definition
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionFromTheListAction">
-                            rename
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
+                            unplug
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">
@@ -108,12 +118,38 @@
                             <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
                         </div>
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
+                        <div data-bind="foreach: $root.functionsLookup">
+                            <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </script>
+    <script type="text/html" id="record-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element"
+            data-bind="
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    attr: 
+                    {
+                        id: 'record-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+            </div>
+            <div>
+                Record/Map/Dictionary:
+            </div>
+        </div>
+    </script>
     <script type="text/html" id="function-definition-template">
-        <div class="lisperanto-function-definition lisperanto-ui-object"
+        <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
                 style: 
                 { 
@@ -155,12 +191,12 @@
         </div>
     </script>
     <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-ui-object" 
+        <div class="lisperanto-ui-element" 
             
          data-bind="style: 
             { 
-                left: $root.globalOffsetX() + offsetX(), 
-                top: $root.globalOffsetY() + offsetY() 
+                left: inWorldOffsetX, 
+                top: inWorldOffsetY 
             }, 
             attr: 
             {
@@ -180,7 +216,6 @@
                 <span>
                     <div data-bind="template: { name: 'body-element-template', data: body }">
                     </div>
-                    <div style="height: 3rem;"></div>
                 </span>
             </div>
         </div>
@@ -209,18 +244,25 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <span data-bind="text: '('"></span><span 
-            class="my-function-name" 
+        <div
             data-bind="
-                text: lookup.customObjects[$data.functionGuid].name(), 
-                click: $root.openOmniBoxForFunctionUsage, 
-                attr: {id: $data.id}"
+            attr: {id: $data.id}"
             >
-        </span>
-        <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
-        <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
+            <span data-bind="text: '('"></span><span 
+                class="my-function-name" 
+                data-bind="
+                    text: lookup.customObjects[$data.functionGuid].name(), 
+                    click: $root.openOmniBoxForFunctionUsage, 
+                    attr: {id: 'function-name-' + $data.id}"
+                >
+            </span>
+            <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
+            </div>
+            <span data-bind="text: ')'"></span>
+
         </div>
-        <span data-bind="text: ')'"></span>
+        
     </script>
     <script type="text/html" id="body-element-template">
         <div>
@@ -236,6 +278,34 @@
                 </span>
             </span>
             
+        </div>
+    </script>
+    <script type="text/html" id="ui-element-template">
+        <div class="lisperanto-ui-element"
+            data-bind="
+                style: 
+                { 
+                    left: inWorldOffsetX(), 
+                    top: inWorldOffsetY()
+                }">
+                <div>
+                    <!-- ko if: $data.type === 'constant-int' -->
+                        <!-- ko template: { name: 'constant-int-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'function-usage' -->
+                        <!-- ko template: { name: 'function-usage-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'symbol-usage' -->
+                        <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'record' -->
+                        <!-- ko template: { name: 'record-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                </div>
         </div>
     </script>
 
@@ -269,22 +339,20 @@
                 onwheel="typeof(lookup) !== 'undefined' && lookup.theListOfFunctionsOnWheel()"
                 style="
                     margin-top: 0.5rem;
-                    margin-bottom: 5rem;
+                    margin-bottom: 0.5rem;
                     max-height: 70vh;
                     overflow-y: scroll;
                     ">
                 <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
                     <div>
                         <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openOmniBoxForFunctionInTheList, attr: {id: 'function-in-the-list--' + $data.id}"></span>
+                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openFunctionFromTheListOfFunctions, attr: {id: 'function-in-the-list--' + $data.id}"></span>
                             <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
                         </span>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.listOfFunctionsOmniBox } -->
-        <!-- /ko -->
     </div>
     <div 
         class="webpad-options-absolute-position webpad-options-animate-right" 
@@ -345,6 +413,10 @@
                     onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
                     f - FullScreen
                 </div>
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                    onclick="typeof(lookup) !== 'undefined' && lookup.toggleShowBorders()">
+                    Borders
+                </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
                 <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
@@ -353,7 +425,7 @@
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
                 <div class="webpad-color-orange" style="margin-left: 2rem;">
-                    Pan with [shift + left-mouse-button-click].
+                    Pan with [shift + mouse-move] or for MacBooks - use scroll gesture.
                 </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
@@ -404,30 +476,44 @@
             </div>
         </div>
     </div>
-    <div class="lisperanto-columns-container" 
-        style=
-        "
-            position: absolute;
-            top: 0; 
-            left: 0;
-            width: 100vw;
-            height: 100vh; 
-            max-width: 100vw; 
-            max-height: 100vh; 
-            overflow-x: clip; 
-            overflow-y: clip;" 
-            >
+    <div class="lisperanto-global-container" >
 
-        <!-- ko foreach: $root.listOfActiveFunctions -->
+        <!-- ko foreach: $root.listOfOpenElements -->
 
             <!-- ko if: $data.id === 'sandbox-unique' -->
                 <!-- ko template: { name: 'sandbox-template', data: $data} -->
                 <!-- /ko -->
             <!-- /ko -->
             <!-- ko ifnot: $data.id === 'sandbox-unique' -->
-                <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                <!-- ko if: $data.type === 'function' || $data.type === 'built-in-function' -->
+                    <!-- ko template: { name: 'function-definition-template', data: $data} -->
+                    <!-- /ko -->
                 <!-- /ko -->
+                <!-- ko ifnot: $data.type === 'function' || $data.type === 'built-in-function'-->
+                    <!-- ko template: { name: 'ui-element-template', data: $data } -->
+                    <!-- /ko -->
+                <!-- /ko -->
+                
             <!-- /ko -->
+            <!-- ko if: $root.showBorders -->
+                <div style="
+                    position: absolute;
+                    border: aliceblue;
+                    border-width: 2px;
+                    border-style: dotted;
+                    z-index: 0;
+                    "
+                data-bind="style: 
+                { 
+                    left: box().left, 
+                    top: box().top, 
+                    width: box().width,
+                    height: $data.box().height
+                }," >
+
+                </div>
+            <!-- /ko -->
+            
 
         <!-- /ko -->
 
@@ -439,6 +525,10 @@
         </div>
     </div>
     <div class="text-center lisperanto-tool-bar">
+        <div class="webpad-color-orange" style="margin-left: 2rem;">
+            Pan with [shift + mouse-move] or for MacBooks - use scroll gesture.
+        </div>
+        <br/>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.toggleMenu">
             <span style="font-size: 1rem; vertical-align: middle;">
@@ -453,6 +543,7 @@
             </span>
             o - options
         </div>
+        
     </div>
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
