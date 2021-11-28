@@ -198,8 +198,6 @@ a
 {
     position: absolute;
     display: inline-grid;
-    left: 10vw;
-    top: 33vh;
 }
 
 .lisperanto-sandbox-stripes
@@ -208,24 +206,19 @@ a
   display: inline-block;
 }
 
-.lisperanto-left-column
-{
-    width: 45vw;
-    position: absolute;
-    left: 0rem;
-    top: 0rem;
-    max-width: 45vw;
-    overflow-x: scroll;
-    border: 0px solid red;
-    height: 100vh;
-    max-height: 100vh;
-    overflow-y: scroll;
 
-}
 
-.lisperanto-columns-container
+.lisperanto-global-container
 {
-  
+  position: absolute;
+  top: 0; 
+  left: 0;
+  width: 100vw;
+  height: 100vh; 
+  max-width: 100vw; 
+  max-height: 100vh; 
+  overflow-x: clip; 
+  overflow-y: clip;
 }
 
 .lisperanto-tool-bar

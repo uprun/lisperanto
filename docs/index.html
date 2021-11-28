@@ -281,20 +281,22 @@
                     left: inWorldOffsetX(), 
                     top: inWorldOffsetY()
                 }">
-            
-            <span data-bind='if: $data.type === "constant-int" '>
-                <div data-bind="template: { name: 'constant-int-template', data: $data }"></div>
-            </span>
-            <span data-bind='if: $data.type === "function-usage" '>
-                <div data-bind="template: { name: 'function-usage-template', data: $data }"></div>
-            </span>
-            <span data-bind='if: $data.type === "symbol-usage" '>
-                <div data-bind="template: { name: 'symbol-usage-template', data: $data }"></div>
-            </span>
-            <span data-bind='if: $data.type === "record" '>
-                <div data-bind="template: { name: 'record-template', data: $data }"></div>
-            </span>
-            
+            <!-- ko if: $data.type === 'constant-int' -->
+                <!-- ko template: { name: 'constant-int-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: $data.type === 'function-usage' -->
+                <!-- ko template: { name: 'function-usage-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: $data.type === 'symbol-usage' -->
+                <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: $data.type === 'record' -->
+                <!-- ko template: { name: 'record-template', data: $data} -->
+                <!-- /ko -->
+            <!-- /ko -->
         </div>
     </script>
 
@@ -461,19 +463,7 @@
             </div>
         </div>
     </div>
-    <div class="lisperanto-columns-container" 
-        style=
-        "
-            position: absolute;
-            top: 0; 
-            left: 0;
-            width: 100vw;
-            height: 100vh; 
-            max-width: 100vw; 
-            max-height: 100vh; 
-            overflow-x: clip; 
-            overflow-y: clip;" 
-            >
+    <div class="lisperanto-global-container" >
 
         <!-- ko foreach: $root.listOfOpenElements -->
 
