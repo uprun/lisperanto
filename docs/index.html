@@ -45,6 +45,7 @@
                         $root.activeOperation() === 'focusOnParameter' 
                         || $root.activeOperation() === 'renameFunction' 
                         || $root.activeOperation() === 'addingFunctionParameter'
+                        || $root.activeOperation() === 'addingFieldInRecord'
                         || $root.activeOperation() === 'global-omni-box-activated' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
@@ -82,9 +83,17 @@
                             apply 
                     </div>
                 </div>
-                <div data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.addParameter">
+                            add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFieldInRecord'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.addRecordField">
                             add 
                     </div>
                 </div>
@@ -127,6 +136,12 @@
             </div>
         </div>
     </script>
+    <script type="text/html" id="record-field-template">
+        <div>
+            <strong data-bind="text: lookup.customObjects[$data].recordFieldName"></strong>
+        </div>
+
+    </script>
     <script type="text/html" id="record-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -145,6 +160,14 @@
             </div>
             <div>
                 Record/Map/Dictionary:
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'record-field-template', foreach: fields }">
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.openOmniBoxForAddingFieldInRecord, 
+                        attr: {id: 'add-field-in-record--' + $data.id}">
+                    add field
             </div>
         </div>
     </script>

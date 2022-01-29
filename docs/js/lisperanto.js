@@ -640,6 +640,25 @@ lookup.defineParameter = function(parameter, objId)
     return toAdd.id;
 };
 
+lookup.defineRecordField = function(parameter, objId)
+{
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "record-field";
+    toAdd.recordFieldName = parameter;
+    toAdd.assignedToGuid = objId;
+    
+    var operation = 
+    {
+        operation: "define-record-field",
+        guid: toAdd.id,
+        recordFieldName: parameter,
+        assignedToGuid: objId
+    };
+    lookup.operationsPush(operation);
+    return toAdd.id;
+};
+
 
 lookup.uuidv4 = function() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -780,6 +799,26 @@ lookup.addParameter = function()
     lookup.operationsPush(operation);
     lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
+};
+
+lookup.addRecordField = function()
+{
+    
+
+    var obj = lookup.focusedObj();
+    var toAdd = lookup.defineRecordField(lookup.omniBoxTextInput(), obj.id);
+    obj.fields.push(toAdd);
+    
+    var operation = 
+    {
+        operation: "added-record-field-to-the-record",
+        recordGuid: obj.id,
+        recordFieldGuid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
+
 };
 
 lookup.makeCopyOfContext = function( context)
@@ -1456,6 +1495,17 @@ lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 
 };
 
+lookup.openOmniBoxForAddingFieldInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldInRecord");
+
+    lookup.filloutOmniBoxDataForFunction('add-field-in-record--' + caller.id, lookup.canvasOmniBox, caller);
+
+    
+};
+
 lookup.hideOmniBox = function()
 {
     lookup.canvasOmniBox.visible(false);
@@ -1633,6 +1683,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             else if(lookup.activeOperation() ===  "addingFunctionParameter")
             {
                 lookup.addParameter();
+            }
+            else if(lookup.activeOperation() ===  "addingFieldInRecord")
+            {
+                lookup.addRecordField();
             }
             else
             {
