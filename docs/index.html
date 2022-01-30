@@ -151,12 +151,13 @@
                 }">
             <div 
                 data-bind="
-                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    click: $root.openOmniBoxForRecordHeader,
                     attr: 
                     {
                         id: 'record-header--' + $data.id
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
             </div>
             <div>
                 Record/Map/Dictionary:

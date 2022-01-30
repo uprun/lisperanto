@@ -350,8 +350,8 @@ lookup.clearSandbox = function()
 //this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
 [
-    "Edsger Dijkstra (Dijkstra graph algorithm)",
-    "Alan Turing (Turing machine)",
+    "Edsger Dijkstra",
+    "Alan Mathison Turing",
     "Alan Kay (Smalltalk)",
     "Dan Ingalls (Smalltalk)", 
     "Adele Goldberg (Smalltalk)", 
@@ -372,6 +372,10 @@ lookup.defaultNamesForFunctions =
     "Alain Colmerauer (Prolog)", 
     "Robert Kowalski (Prolog)",
     "Niklaus Wirth (Pascal)",
+    "Leonardo da Vinci",
+    "Donato di Niccolo di Betto Bardi",
+    "Raffaello Sanzio da Urbino",
+    "Michelangelo di Lodovico Buonarroti Simoni",
     "Premature optimization is the root of all evil - Sir Tony Hoare"
 ];
 
@@ -446,7 +450,7 @@ lookup.defineRecord = function()
 {
     var toAdd = lookup.createUIObject();
     toAdd.type = "record";
-    toAdd.name = ko.observable("some new object");
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.fields = ko.observableArray([]);
 
     var operation = 
