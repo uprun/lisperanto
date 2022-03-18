@@ -46,6 +46,8 @@
                         || $root.activeOperation() === 'renameFunction' 
                         || $root.activeOperation() === 'addingFunctionParameter'
                         || $root.activeOperation() === 'addingFieldInRecord'
+                        || $root.activeOperation() === 'addingFieldTypeInRecord'
+                        || $root.activeOperation() === 'addingFieldValueInRecord'
                         || $root.activeOperation() === 'global-omni-box-activated' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
@@ -137,8 +139,23 @@
         </div>
     </script>
     <script type="text/html" id="record-field-template">
-        <div>
-            <strong data-bind="text: lookup.customObjects[$data].recordFieldName"></strong>
+        <div 
+            data-bind="
+                using: lookup.customObjects[$data],
+                attr: {id: $data}">
+            <strong data-bind="text: $data.recordFieldName"></strong>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.openOmniBoxForFieldTypeInRecord, 
+                        attr: {id: 'add-field-type-in-record--' + $data.id}">
+                    + type
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.openOmniBoxForFieldValueInRecord, 
+                        attr: {id: 'add-field-value-in-record--' + $data.id}">
+                    + value
+            </div>
         </div>
 
     </script>
@@ -158,9 +175,6 @@
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
                 <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
-            </div>
-            <div>
-                Record/Map/Dictionary:
             </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'record-field-template', foreach: fields }">
             </div>

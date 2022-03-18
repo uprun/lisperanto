@@ -1510,6 +1510,28 @@ lookup.openOmniBoxForAddingFieldInRecord = function(caller)
     
 };
 
+lookup.openOmniBoxForFieldTypeInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldTypeInRecord");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('add-field-type-in-record--' + caller.id, lookup.canvasOmniBox, root);
+};
+
+lookup.openOmniBoxForFieldValueInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldValueInRecord");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('add-field-value-in-record--' + caller.id, lookup.canvasOmniBox, root);
+};
+
 lookup.hideOmniBox = function()
 {
     lookup.canvasOmniBox.visible(false);
