@@ -130,11 +130,34 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
                 }
+                if(value.type === "record")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreRecord(value);
+                }
+                if(value.type === "record-field")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreRecordField(value);
+                }
                 
             }
         }
     }
     
+};
+
+lookup.tryRestoreRecordField = function(value)
+{
+    value.recordFieldName = ko.observable(value.recordFieldName);
+    value.recordFieldType = ko.observable(value.recordFieldType);
+    value.recordFieldValue = ko.observable(value.recordFieldValue);
+    return value;
+};
+
+lookup.tryRestoreRecord = function(value)
+{
+    value.name = ko.observable(value.name);
+    value.fields = ko.observableArray(value.fields);
+    return value;
 };
 
 lookup.tryRestoreOffsetCoordinates = function(value)
@@ -649,8 +672,10 @@ lookup.defineRecordField = function(parameter, objId)
     var toAdd = lookup.createUIObject();
 
     toAdd.type = "record-field";
-    toAdd.recordFieldName = parameter;
+    toAdd.recordFieldName = ko.observable(parameter);
     toAdd.assignedToGuid = objId;
+    toAdd.recordFieldType = ko.observable();
+    toAdd.recordFieldValue = ko.observable();
     
     var operation = 
     {
@@ -810,7 +835,7 @@ lookup.addRecordField = function()
     
 
     var obj = lookup.focusedObj();
-    var toAdd = lookup.defineRecordField(lookup.omniBoxTextInput(), obj.id);
+    var toAdd = lookup.defineRecordField(lookup.omniBoxTextInput().trim(), obj.id);
     obj.fields.push(toAdd);
     
     var operation = 
@@ -818,6 +843,27 @@ lookup.addRecordField = function()
         operation: "added-record-field-to-the-record",
         recordGuid: obj.id,
         recordFieldGuid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
+
+};
+
+lookup.addRecordFieldType = function()
+{
+    
+
+    var obj = lookup.focusedObj();
+    var type = lookup.omniBoxTextInput().trim();
+    
+    obj.recordFieldType(type);
+    
+    var operation = 
+    {
+        operation: "specify-record-field-type-in-the-record",
+        recordFieldGuid: obj.id,
+        recordFieldType: type
     };
     lookup.operationsPush(operation);
     lookup.omniBoxTextInput("");
@@ -1713,6 +1759,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             else if(lookup.activeOperation() ===  "addingFieldInRecord")
             {
                 lookup.addRecordField();
+            }
+            else if(lookup.activeOperation() ===  "addingFieldTypeInRecord")
+            {
+                lookup.addRecordFieldType();
             }
             else
             {
