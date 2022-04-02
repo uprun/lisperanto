@@ -408,6 +408,7 @@ lookup.getRandomInt = function(max) {
 
 lookup.createFunction = function()
 {
+    lookup.hideOmniWheel();
     var toAdd = lookup.createUIObject();
     toAdd.type = "function";
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
@@ -488,6 +489,7 @@ lookup.defineRecord = function()
 
 lookup.createAndShowRecord = function()
 {
+    lookup.hideOmniWheel();
     var toShow = lookup.defineRecord();
     lookup.openElement(toShow);
     lookup.hideOmniBox();
@@ -1302,6 +1304,7 @@ lookup.showOmniWheel = function(omniWheel, offset)
 
 lookup.openSandbox = function()
 {
+    lookup.hideOmniWheel();
     lookup.openElement(lookup.sandbox());
     //event.stopPropagation();
     lookup.hideOmniBox();
@@ -1984,9 +1987,10 @@ lookup.bodyOnClick = function(e)
         x: event.pageX,
         y: event.pageY
     };
-    if(lookup.canvasOmniBox.visible())
+    if(lookup.canvasOmniBox.visible() || lookup.omniWheel.visible())
     {
         lookup.hideOmniBox();
+        lookup.hideOmniWheel();
     }
     else
     {
@@ -2001,6 +2005,31 @@ lookup.bodyOnClick = function(e)
             //lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
+};
+
+lookup.hideOmniWheel = function()
+{
+    if(lookup.omniWheel.visible())
+    {
+        lookup.toggleOmniWheel();
+    }
+};
+
+lookup.toggleOmniWheel = function()
+{
+    lookup.omniWheel.visible(!lookup.omniWheel.visible());
+};
+
+
+lookup.showOmniBox = function()
+{
+    lookup.hideOmniWheel();
+    var offset = 
+    {
+        x: event.pageX,
+        y: event.pageY
+    };
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
 };
 
 lookup.theFunctionsListOffsetY = ko.observable(0);
