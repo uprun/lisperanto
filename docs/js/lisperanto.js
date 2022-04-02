@@ -1279,6 +1279,27 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
     event.stopPropagation();
 };
 
+lookup.showOmniWheel = function(omniWheel, offset) 
+{
+    lookup.focusedObj(undefined);
+    lookup.activeOperation("global-omni-wheel-activated");
+    
+    omniWheel.visible(true);
+    var offsetX = offset.x;
+        offsetX -= lookup.globalOffsetX();
+    omniWheel.left(offsetX );
+    var offsetY = offset.y;
+        offsetY -= lookup.globalOffsetY();
+    omniWheel.top(offsetY);
+
+    lookup.desiredOffset = {
+        x: offsetX,
+        y: offsetY
+    };
+
+    event.stopPropagation();
+};
+
 lookup.openSandbox = function()
 {
     lookup.openElement(lookup.sandbox());
@@ -1615,6 +1636,11 @@ lookup.omniBoxClick = function()
     event.stopPropagation();
 };
 
+lookup.omniWheelOnClick = function()
+{
+    event.stopPropagation();
+};
+
 lookup.stopPropagation = function()
 {
     event.stopPropagation();
@@ -1886,7 +1912,18 @@ lookup.defineOmniBox = function() {
     return omniBox;
 };
 
+lookup.defineOmniWheel = function() {
+    var omniBox = {
+        visible: ko.observable(false),
+        left: ko.observable(0),
+        top: ko.observable(0),
+        id: 'global--popup-omni-wheel' 
+    };
+    return omniBox;
+};
+
 lookup.canvasOmniBox = lookup.defineOmniBox();
+lookup.omniWheel = lookup.defineOmniWheel();
 
 function Lisperanto()
 {
@@ -1941,7 +1978,7 @@ lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
 
 lookup.bodyOnClick = function(e)
 {
-    console.log(event);
+    //console.log(event);
     var offset = 
     {
         x: event.pageX,
@@ -1960,7 +1997,8 @@ lookup.bodyOnClick = function(e)
         }
         else
         {
-            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
+            lookup.showOmniWheel(lookup.omniWheel, offset);
+            //lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
 };
@@ -1981,9 +2019,15 @@ lookup.refreshTheListOfFunctionsScroll = function() {
 
 lookup.omniBoxOnWheel = function()
 {
+    // i need this to block scroll event, probably
     event.stopPropagation();
 };
 
+lookup.omniWheelOnWheelEvent = function()
+{
+    // i need this to block scroll event, probably
+    event.stopPropagation();
+};
 
 
 
