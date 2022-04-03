@@ -35,6 +35,21 @@ body {
   z-index: 10;
 }
 
+.contextual-omni-wheel
+{
+  position: absolute;
+  width: max-content;
+  top: 1rem;
+  left: 2rem;
+  z-index: 10;
+}
+
+.contextual-omni-wheel--options
+{
+  position: absolute;
+  width: max-content;
+}
+
 .omnibox-options
 {
   max-height: 20rem;
@@ -248,3 +263,9 @@ a
   background-color: inherit;
   display: inline-block;
 }
+
+.w3-animate-opacity
+{
+  animation:opac 0.8s
+}
+@keyframes opac{from{opacity:0} to{opacity:1}}

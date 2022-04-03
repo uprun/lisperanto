@@ -28,6 +28,36 @@
             { 
                 background: $root.backgroundColor() 
             }">
+
+            
+    <script type="text/html" id="contextual-omni-wheel-template">
+        <div class="contextual-omni-wheel"
+            data-bind="
+                visible: visible,
+                click: $root.omniWheelOnClick,
+                style: 
+                    { 
+                        left: $root.globalOffsetX() + left(), 
+                        top: $root.globalOffsetY() + top()
+                    }">
+            <div style="font-size: 1rem; right: 2rem; transform: translate(0, -50%); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
+                data-bind="click: $root.createFunction">
+                    function 
+            </div>
+            <div style="font-size: 1rem; bottom: 2rem; transform: translate(-50%, 0); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
+                data-bind="click: $root.createAndShowRecord">
+                    record 
+            </div>
+            <div style="font-size: 1rem; left: 2rem; transform: translate(0, -50%); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
+                data-bind="click: $root.openSandbox">
+                    sandbox 
+            </div>
+            <div style="font-size: 1rem; top: 2rem; transform: translate(-50%, 0); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
+                data-bind="click: $root.showOmniBox">
+                    command 
+            </div>
+        </div>
+    </script>
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
             onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
@@ -45,6 +75,9 @@
                         $root.activeOperation() === 'focusOnParameter' 
                         || $root.activeOperation() === 'renameFunction' 
                         || $root.activeOperation() === 'addingFunctionParameter'
+                        || $root.activeOperation() === 'addingFieldInRecord'
+                        || $root.activeOperation() === 'addingFieldTypeInRecord'
+                        || $root.activeOperation() === 'addingFieldValueInRecord'
                         || $root.activeOperation() === 'global-omni-box-activated' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
@@ -62,29 +95,23 @@
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
-                <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.createFunction">
-                            create function 
-                    </div>
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.createAndShowRecord">
-                            create record 
-                    </div>
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.openSandbox">
-                            open sandbox 
-                    </div>
-                </div>
                 <div data-bind="if: $root.activeOperation() === 'renameFunction'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.renameFunction">
                             apply 
                     </div>
                 </div>
-                <div data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.addParameter">
+                            add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFieldInRecord'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.addRecordField">
                             add 
                     </div>
                 </div>
@@ -127,6 +154,29 @@
             </div>
         </div>
     </script>
+    <script type="text/html" id="record-field-template">
+        <div 
+            data-bind="
+                using: lookup.customObjects[$data],
+                attr: {id: $data}">
+            <strong data-bind="text: $data.recordFieldName"></strong>
+            <strong data-bind="visible: typeof($data.recordFieldType()) !== 'undefined', text: $data.recordFieldType"></strong>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        visible: typeof($data.recordFieldType()) === 'undefined',
+                        click: $root.openOmniBoxForFieldTypeInRecord, 
+                        attr: {id: 'add-field-type-in-record--' + $data.id}">
+                    + type
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.openOmniBoxForFieldValueInRecord, 
+                        attr: {id: 'add-field-value-in-record--' + $data.id}">
+                    + value
+            </div>
+        </div>
+
+    </script>
     <script type="text/html" id="record-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -136,15 +186,21 @@
                 }">
             <div 
                 data-bind="
-                    click: $root.openOmniBoxForFunctionHeaderDefinition,
+                    click: $root.openOmniBoxForRecordHeader,
                     attr: 
                     {
                         id: 'record-header--' + $data.id
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
             </div>
-            <div>
-                Record/Map/Dictionary:
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'record-field-template', foreach: fields }">
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.openOmniBoxForAddingFieldInRecord, 
+                        attr: {id: 'add-field-in-record--' + $data.id}">
+                    add field
             </div>
         </div>
     </script>
@@ -439,9 +495,6 @@
                     <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
                         Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
                     </div>
-                    <div class="webpad-color-orange">
-                        Lisperanto says hello to search engines.
-                    </div>
                     <div class="webpad-color-coral">
                         Lisperanto is a programming environment and version control system.
                     </div>
@@ -459,6 +512,9 @@
                     </div>
                     <div class="webpad-color-green">
                         Lisperanto was inspired by Lisp.
+                    </div>
+                    <div class="webpad-color-coral">
+                        Lisperanto was  inspired by Smalltalk.
                     </div>
                     <div class="webpad-color-orange">
                         Lisperanto is an AST editor.
@@ -519,6 +575,8 @@
 
         
         <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
+        <!-- /ko -->
+        <!-- ko template: { name: 'contextual-omni-wheel-template', data: $root.omniWheel } -->
         <!-- /ko -->
         <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
 

@@ -130,11 +130,34 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
                 }
+                if(value.type === "record")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreRecord(value);
+                }
+                if(value.type === "record-field")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreRecordField(value);
+                }
                 
             }
         }
     }
     
+};
+
+lookup.tryRestoreRecordField = function(value)
+{
+    value.recordFieldName = ko.observable(value.recordFieldName);
+    value.recordFieldType = ko.observable(value.recordFieldType);
+    value.recordFieldValue = ko.observable(value.recordFieldValue);
+    return value;
+};
+
+lookup.tryRestoreRecord = function(value)
+{
+    value.name = ko.observable(value.name);
+    value.fields = ko.observableArray(value.fields);
+    return value;
 };
 
 lookup.tryRestoreOffsetCoordinates = function(value)
@@ -350,8 +373,8 @@ lookup.clearSandbox = function()
 //this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
 [
-    "Edsger Dijkstra (Dijkstra graph algorithm)",
-    "Alan Turing (Turing machine)",
+    "Edsger Dijkstra",
+    "Alan Mathison Turing",
     "Alan Kay (Smalltalk)",
     "Dan Ingalls (Smalltalk)", 
     "Adele Goldberg (Smalltalk)", 
@@ -372,6 +395,10 @@ lookup.defaultNamesForFunctions =
     "Alain Colmerauer (Prolog)", 
     "Robert Kowalski (Prolog)",
     "Niklaus Wirth (Pascal)",
+    "Leonardo da Vinci",
+    "Donato di Niccolo di Betto Bardi",
+    "Raffaello Sanzio da Urbino",
+    "Michelangelo di Lodovico Buonarroti Simoni",
     "Premature optimization is the root of all evil - Sir Tony Hoare"
 ];
 
@@ -381,6 +408,7 @@ lookup.getRandomInt = function(max) {
 
 lookup.createFunction = function()
 {
+    lookup.hideOmniWheel();
     var toAdd = lookup.createUIObject();
     toAdd.type = "function";
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
@@ -446,7 +474,7 @@ lookup.defineRecord = function()
 {
     var toAdd = lookup.createUIObject();
     toAdd.type = "record";
-    toAdd.name = ko.observable("some new object");
+    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.fields = ko.observableArray([]);
 
     var operation = 
@@ -461,6 +489,7 @@ lookup.defineRecord = function()
 
 lookup.createAndShowRecord = function()
 {
+    lookup.hideOmniWheel();
     var toShow = lookup.defineRecord();
     lookup.openElement(toShow);
     lookup.hideOmniBox();
@@ -640,6 +669,27 @@ lookup.defineParameter = function(parameter, objId)
     return toAdd.id;
 };
 
+lookup.defineRecordField = function(parameter, objId)
+{
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "record-field";
+    toAdd.recordFieldName = ko.observable(parameter);
+    toAdd.assignedToGuid = objId;
+    toAdd.recordFieldType = ko.observable();
+    toAdd.recordFieldValue = ko.observable();
+    
+    var operation = 
+    {
+        operation: "define-record-field",
+        guid: toAdd.id,
+        recordFieldName: parameter,
+        assignedToGuid: objId
+    };
+    lookup.operationsPush(operation);
+    return toAdd.id;
+};
+
 
 lookup.uuidv4 = function() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -780,6 +830,47 @@ lookup.addParameter = function()
     lookup.operationsPush(operation);
     lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
+};
+
+lookup.addRecordField = function()
+{
+    
+
+    var obj = lookup.focusedObj();
+    var toAdd = lookup.defineRecordField(lookup.omniBoxTextInput().trim(), obj.id);
+    obj.fields.push(toAdd);
+    
+    var operation = 
+    {
+        operation: "added-record-field-to-the-record",
+        recordGuid: obj.id,
+        recordFieldGuid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
+
+};
+
+lookup.addRecordFieldType = function()
+{
+    
+
+    var obj = lookup.focusedObj();
+    var type = lookup.omniBoxTextInput().trim();
+    
+    obj.recordFieldType(type);
+    
+    var operation = 
+    {
+        operation: "specify-record-field-type-in-the-record",
+        recordFieldGuid: obj.id,
+        recordFieldType: type
+    };
+    lookup.operationsPush(operation);
+    lookup.omniBoxTextInput("");
+    lookup.hideOmniBox();
+
 };
 
 lookup.makeCopyOfContext = function( context)
@@ -1190,8 +1281,30 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
     event.stopPropagation();
 };
 
+lookup.showOmniWheel = function(omniWheel, offset) 
+{
+    lookup.focusedObj(undefined);
+    lookup.activeOperation("global-omni-wheel-activated");
+    
+    omniWheel.visible(true);
+    var offsetX = offset.x;
+        offsetX -= lookup.globalOffsetX();
+    omniWheel.left(offsetX );
+    var offsetY = offset.y;
+        offsetY -= lookup.globalOffsetY();
+    omniWheel.top(offsetY);
+
+    lookup.desiredOffset = {
+        x: offsetX,
+        y: offsetY
+    };
+
+    event.stopPropagation();
+};
+
 lookup.openSandbox = function()
 {
+    lookup.hideOmniWheel();
     lookup.openElement(lookup.sandbox());
     //event.stopPropagation();
     lookup.hideOmniBox();
@@ -1456,6 +1569,39 @@ lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 
 };
 
+lookup.openOmniBoxForAddingFieldInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldInRecord");
+
+    lookup.filloutOmniBoxDataForFunction('add-field-in-record--' + caller.id, lookup.canvasOmniBox, caller);
+
+    
+};
+
+lookup.openOmniBoxForFieldTypeInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldTypeInRecord");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('add-field-type-in-record--' + caller.id, lookup.canvasOmniBox, root);
+};
+
+lookup.openOmniBoxForFieldValueInRecord = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("addingFieldValueInRecord");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('add-field-value-in-record--' + caller.id, lookup.canvasOmniBox, root);
+};
+
 lookup.hideOmniBox = function()
 {
     lookup.canvasOmniBox.visible(false);
@@ -1489,6 +1635,11 @@ lookup.openFunctionFromTheListOfFunctions = function(obj)
 };
 
 lookup.omniBoxClick = function()
+{
+    event.stopPropagation();
+};
+
+lookup.omniWheelOnClick = function()
 {
     event.stopPropagation();
 };
@@ -1634,6 +1785,14 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 lookup.addParameter();
             }
+            else if(lookup.activeOperation() ===  "addingFieldInRecord")
+            {
+                lookup.addRecordField();
+            }
+            else if(lookup.activeOperation() ===  "addingFieldTypeInRecord")
+            {
+                lookup.addRecordFieldType();
+            }
             else
             {
                 if(typeof(lookup.focusedObj()) !== 'undefined')
@@ -1756,7 +1915,18 @@ lookup.defineOmniBox = function() {
     return omniBox;
 };
 
+lookup.defineOmniWheel = function() {
+    var omniBox = {
+        visible: ko.observable(false),
+        left: ko.observable(0),
+        top: ko.observable(0),
+        id: 'global--popup-omni-wheel' 
+    };
+    return omniBox;
+};
+
 lookup.canvasOmniBox = lookup.defineOmniBox();
+lookup.omniWheel = lookup.defineOmniWheel();
 
 function Lisperanto()
 {
@@ -1811,15 +1981,16 @@ lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
 
 lookup.bodyOnClick = function(e)
 {
-    console.log(event);
+    //console.log(event);
     var offset = 
     {
         x: event.pageX,
         y: event.pageY
     };
-    if(lookup.canvasOmniBox.visible())
+    if(lookup.canvasOmniBox.visible() || lookup.omniWheel.visible())
     {
         lookup.hideOmniBox();
+        lookup.hideOmniWheel();
     }
     else
     {
@@ -1830,9 +2001,35 @@ lookup.bodyOnClick = function(e)
         }
         else
         {
-            lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
+            lookup.showOmniWheel(lookup.omniWheel, offset);
+            //lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
+};
+
+lookup.hideOmniWheel = function()
+{
+    if(lookup.omniWheel.visible())
+    {
+        lookup.toggleOmniWheel();
+    }
+};
+
+lookup.toggleOmniWheel = function()
+{
+    lookup.omniWheel.visible(!lookup.omniWheel.visible());
+};
+
+
+lookup.showOmniBox = function()
+{
+    lookup.hideOmniWheel();
+    var offset = 
+    {
+        x: event.pageX,
+        y: event.pageY
+    };
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
 };
 
 lookup.theFunctionsListOffsetY = ko.observable(0);
@@ -1851,9 +2048,15 @@ lookup.refreshTheListOfFunctionsScroll = function() {
 
 lookup.omniBoxOnWheel = function()
 {
+    // i need this to block scroll event, probably
     event.stopPropagation();
 };
 
+lookup.omniWheelOnWheelEvent = function()
+{
+    // i need this to block scroll event, probably
+    event.stopPropagation();
+};
 
 
 
