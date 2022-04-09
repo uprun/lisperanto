@@ -1607,6 +1607,7 @@ lookup.hideOmniBox = function()
     lookup.canvasOmniBox.visible(false);
     lookup.focusedObj(undefined);
     lookup.activeOperation("");
+    lookup.omniBoxTextInput("");
 };
 
 lookup.omniBoxOpenFunctionAction = function()
