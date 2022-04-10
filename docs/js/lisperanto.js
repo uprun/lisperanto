@@ -1768,6 +1768,23 @@ lookup.tryParseOmniBox = function(toTest, obj)
     lookup.hideOmniBox();
 };
 
+lookup.omniBoxInputKeyDown = function(data, event)
+{
+    //console.log(event.originalEvent);
+    if(event.originalEvent.code == "Tab")
+    {
+        const availableFunctions = lookup.functionsLookup();
+        if(availableFunctions.length === 1)
+        {
+            var autocompleteName = lookup.customObjects[availableFunctions[0].id].name();
+            lookup.omniBoxTextInput(autocompleteName);
+            event.stopPropagation();
+            return false;
+        }
+    }
+    return true;
+};
+
 lookup.omniBoxInputKeyPress = function(data, event) 
 {
     if(event.shiftKey)
