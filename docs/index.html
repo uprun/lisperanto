@@ -313,10 +313,9 @@
                     attr: {id: 'function-name-' + $data.id}"
                 >
             </span>
-            <span class="my-function-result" data-bind="text: '// result: ' + prettyPrintEvaluationResult() "></span>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
             </div>
-            <span data-bind="text: ')'"></span>
+            <span data-bind="text: ')'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
 
         </div>
         
