@@ -16,14 +16,16 @@ lookup.functionsLookup = ko.computed(function()
 {
     var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
     var filtered = [];
+    const availableFunctions = lookup.functionsArray();
 
     if(searchQuery === "")
     {
-        filtered = lookup.functionsArray();
+        
+        filtered = availableFunctions;
     }
     else
     {
-        filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
+        filtered = ko.utils.arrayFilter(availableFunctions, function(item)
         {
             return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
         });
@@ -41,6 +43,34 @@ lookup.functionsLookup = ko.computed(function()
     });
     
 });
+
+lookup.typesArray = ko.observableArray([]);
+lookup.typesLookup = ko.computed(function()
+{
+    var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
+    var filtered = [];
+
+    if(searchQuery === "")
+    {
+        filtered = lookup.typesArray();
+    }
+    else
+    {
+        filtered = ko.utils.arrayFilter(lookup.typesArray(), function(item)
+        {
+            return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
+        });
+
+    }
+     
+    return ko.utils.arrayMap(filtered, function(item) {
+        return { id: item.id, 
+            text: lookup.customObjects[item.id].name()
+        };
+    });
+    
+});
+
 lookup.operations = [];
 
 lookup.operationsPush = function(some)
@@ -97,6 +127,10 @@ lookup.loadFromStorage = function()
                 if(value.type === "built-in-function")
                 {
                     lookup.customObjects[key] = lookup.tryRestoreBuiltInFunction(value);
+                }
+                if(value.type === "built-in-type")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreBuiltInType(value);
                 }
                 if(value.type === "built-in-function-parameter")
                 {
@@ -231,6 +265,24 @@ lookup.restoreFunctionsArray = function()
     }
 };
 
+lookup.restoreTypesArray = function()
+{
+    for (const [key, value] of Object.entries(lookup.customObjects)) 
+    {
+        if(typeof(value.type) !== 'undefined')
+        {
+            if(value.type === "built-in-type" )
+            {
+                lookup.typesArray.push(value);
+            }
+            if(value.type === "type" )
+            {
+                lookup.typesArray.push(value);
+            }
+        }
+    }
+};
+
 
 
 lookup.tryRestoreBuiltInFunction = function(value)
@@ -243,7 +295,7 @@ lookup.tryRestoreBuiltInFunction = function(value)
 
 lookup.defineBuiltInFunction = function (obj) 
 {
-    var parameters_list = obj.parameters
+    var parameters_list = obj.parameters;
     if(typeof(lookup.customObjects[obj.id]) === 'undefined')
     {
         var toAdd ={
@@ -262,6 +314,29 @@ lookup.defineBuiltInFunction = function (obj)
     
 };
 
+
+lookup.tryRestoreBuiltInType = function(value)
+{
+    value.name = ko.observable(value.name);
+    return value;
+};
+
+
+lookup.defineBuiltInType = function (obj) 
+{
+    if(typeof(lookup.customObjects[obj.id]) === 'undefined')
+    {
+        var toAdd ={
+            id: obj.id,
+            type: "built-in-type",
+            name: ko.observable(obj.name),
+        };
+        lookup.customObjects[obj.id] = toAdd;
+    }
+};
+
+
+
 lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
 {
     var id = functionName + "#" +  parameter;
@@ -274,6 +349,21 @@ lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
     lookup.customObjects[id] = toAdd;
     return id;
 };
+
+lookup.builtInTypesArray = [
+    {
+        id: "number",
+        name: "number"
+    },
+    {
+        id: "string",
+        name: "string"
+    },
+    {
+        id: "boolean",
+        name: "boolean"
+    }
+];
 
 lookup.builtInFunctionsArray = [
     {
@@ -319,6 +409,15 @@ lookup.defineListOfPredefinedFunctions = function()
     {
         var obj = lookup.builtInFunctionsArray[k];
         lookup.defineBuiltInFunction(obj);
+    }
+};
+
+lookup.defineListOfPredefinedTypes = function()
+{
+    for( var k = 0; k < lookup.builtInTypesArray.length; k++)
+    {
+        var obj = lookup.builtInTypesArray[k];
+        lookup.defineBuiltInType(obj);
     }
 };
 
@@ -1628,6 +1727,15 @@ lookup.openFunctionDefinitionFromOmniBox = function(obj)
     lookup.openElement(functionToOpen);
 };
 
+lookup.addTypeForFieldInRecordFromOmniBox = function(obj)
+{
+    event.stopPropagation();
+    var fieldToAddTypeTo = lookup.focusedObj();
+    var typeToAdd = lookup.customObjects[obj.id];
+    fieldToAddTypeTo.recordFieldType(typeToAdd.name());
+    lookup.hideOmniBox();
+};
+
 lookup.openFunctionFromTheListOfFunctions = function(obj)
 {
     lookup.hideMenu();
@@ -2096,10 +2204,12 @@ $(document).ready(function()
     lookup.backgroundApplySaved();
     viewModel.ApplyLookupToSelf();
     lookup.defineListOfPredefinedFunctions();
+    lookup.defineListOfPredefinedTypes();
     lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
     lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
+    lookup.restoreTypesArray();
     lookup.refreshTheListOfFunctionsScroll();
     lookup.defineTimerForFunctions();
     

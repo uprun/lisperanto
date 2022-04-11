@@ -151,6 +151,14 @@
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
                         </div>
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
+                        <div data-bind="foreach: $root.typesLookup">
+                            <div data-bind="
+                                text: $data.text,
+                                click: $root.addTypeForFieldInRecordFromOmniBox"
+                             ></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
