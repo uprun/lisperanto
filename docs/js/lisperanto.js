@@ -1811,6 +1811,16 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 lookup.addRecordFieldType();
             }
+            else if(lookup.activeOperation() === "global-omni-box-activated")
+            {
+                const availableFunctions = lookup.functionsLookup();
+                if(availableFunctions.length === 1)
+                {
+                    var functionToOpen = lookup.customObjects[availableFunctions[0].id];
+                    lookup.openElement(functionToOpen);
+                    lookup.hideOmniBox();
+                }
+            }
             else
             {
                 if(typeof(lookup.focusedObj()) !== 'undefined')
