@@ -169,10 +169,12 @@
                 using: lookup.customObjects[$data],
                 attr: {id: $data}">
             <strong data-bind="text: $data.recordFieldName"></strong>
-            <strong data-bind="visible: typeof($data.recordFieldType()) !== 'undefined', text: $data.recordFieldType"></strong>
+            <span data-bind="if: typeof($data.recordFieldTypeGuidToUse()) !== 'undefined' ">
+                <strong data-bind="text: $root.customObjects[$data.recordFieldTypeGuidToUse()].name"></strong>
+            </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
-                        visible: typeof($data.recordFieldType()) === 'undefined',
+                        visible: typeof($data.recordFieldTypeGuidToUse()) === 'undefined',
                         click: $root.openOmniBoxForFieldTypeInRecord, 
                         attr: {id: 'add-field-type-in-record--' + $data.id}">
                     + type

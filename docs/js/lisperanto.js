@@ -132,6 +132,10 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreBuiltInType(value);
                 }
+                if(value.type === "type")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreType(value);
+                }
                 if(value.type === "built-in-function-parameter")
                 {
                     lookup.customObjects[key] = value;
@@ -182,7 +186,7 @@ lookup.loadFromStorage = function()
 lookup.tryRestoreRecordField = function(value)
 {
     value.recordFieldName = ko.observable(value.recordFieldName);
-    value.recordFieldType = ko.observable(value.recordFieldType);
+    value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
     value.recordFieldValue = ko.observable(value.recordFieldValue);
     return value;
 };
@@ -315,6 +319,12 @@ lookup.defineBuiltInFunction = function (obj)
 };
 
 
+lookup.tryRestoreType = function(value)
+{
+    value.name = ko.observable(value.name);
+    return value;
+};
+
 lookup.tryRestoreBuiltInType = function(value)
 {
     value.name = ko.observable(value.name);
@@ -333,6 +343,25 @@ lookup.defineBuiltInType = function (obj)
         };
         lookup.customObjects[obj.id] = toAdd;
     }
+};
+
+lookup.defineType = function (name) 
+{
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "type";
+    toAdd.name = ko.observable(name);
+    toAdd.fields = ko.observableArray([]);
+
+    lookup.typesArray.push(toAdd);
+
+    var operation = 
+    {
+        operation: "define-type",
+        name: name,
+        guid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    return toAdd;
 };
 
 
@@ -775,7 +804,7 @@ lookup.defineRecordField = function(parameter, objId)
     toAdd.type = "record-field";
     toAdd.recordFieldName = ko.observable(parameter);
     toAdd.assignedToGuid = objId;
-    toAdd.recordFieldType = ko.observable();
+    toAdd.recordFieldTypeGuidToUse = ko.observable();
     toAdd.recordFieldValue = ko.observable();
     
     var operation = 
@@ -948,20 +977,40 @@ lookup.addRecordField = function()
 
 };
 
+lookup.findOrCreateTypeForRecordFieldByTypeName = function(typeName)
+{
+    var typeNameInLowerCase = typeName.toLowerCase();
+    var filtered = ko.utils.arrayFilter(lookup.typesArray(), function(item)
+        {
+            return lookup.customObjects[item.id].name().toLowerCase() === typeNameInLowerCase;
+        });
+    if(filtered.length === 1)
+    {
+        return filtered[0];
+    }
+    else
+    {
+        return lookup.defineType(typeName);
+    }
+};
+
 lookup.addRecordFieldType = function()
 {
-    
 
     var obj = lookup.focusedObj();
-    var type = lookup.omniBoxTextInput().trim();
+    var typeName = lookup.omniBoxTextInput().trim();
+
+    var typeObj = lookup.findOrCreateTypeForRecordFieldByTypeName(typeName);
+
+    var guidOfType = typeObj.id;
     
-    obj.recordFieldType(type);
+    obj.recordFieldTypeGuidToUse(guidOfType);
     
     var operation = 
     {
         operation: "specify-record-field-type-in-the-record",
         recordFieldGuid: obj.id,
-        recordFieldType: type
+        recordFieldTypeGuidToUse: guidOfType
     };
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
@@ -1727,8 +1776,7 @@ lookup.addTypeForFieldInRecordFromOmniBox = function(obj)
 {
     event.stopPropagation();
     var fieldToAddTypeTo = lookup.focusedObj();
-    var typeToAdd = lookup.customObjects[obj.id];
-    fieldToAddTypeTo.recordFieldType(typeToAdd.name());
+    fieldToAddTypeTo.recordFieldTypeGuidToUse(obj.id);
     lookup.hideOmniBox();
 };
 
