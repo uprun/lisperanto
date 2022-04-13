@@ -902,7 +902,6 @@ lookup.renameFunction = function()
     };
 
     obj.name(newName);
-    lookup.omniBoxTextInput("");
 
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
@@ -927,7 +926,6 @@ lookup.addParameter = function()
         parameterGuid: toAdd.id
     };
     lookup.operationsPush(operation);
-    lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
 };
 
@@ -946,7 +944,6 @@ lookup.addRecordField = function()
         recordFieldGuid: toAdd.id
     };
     lookup.operationsPush(operation);
-    lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
 
 };
@@ -967,7 +964,6 @@ lookup.addRecordFieldType = function()
         recordFieldType: type
     };
     lookup.operationsPush(operation);
-    lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
 
 };
@@ -1872,7 +1868,6 @@ lookup.tryParseOmniBox = function(toTest, obj)
             }
         }
     }
-    lookup.omniBoxTextInput("");
     lookup.hideOmniBox();
 };
 
