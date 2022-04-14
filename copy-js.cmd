@@ -1,1 +1,0 @@
-cp -R ./docs/js/ ./sources-mirror
