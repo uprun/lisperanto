@@ -152,9 +152,15 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreFunctionUsage(value);
                 }
+                if(value.type === "constant-number")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
+                }
                 if(value.type === "constant-int")
                 {
-                    lookup.customObjects[key] = lookup.tryRestoreConstantInt(value);
+                    //constant-int is deprecated now, so it transfers to constant-number
+                    value.type = "constant-number";
+                    lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
                 }
                 if(value.type === "parameter")
                 {
@@ -627,23 +633,23 @@ lookup.createAndShowRecord = function()
 
 
 
-lookup.defineConstantInt = function(c)
+lookup.defineConstantNumber = function(c)
 {
-    // TODO: replace with parseFloat and rename the function and type
     var toAdd = lookup.createUIObject();
     
-    toAdd.type = "constant-int";
+    toAdd.type = "constant-number";
     toAdd.value = c;
     
     if(typeof(c) !== 'number')
     {
-        toAdd.value = parseInt(c.trim())
+        const preparedToParse = c.trim().replace(",", ".");
+        toAdd.value = parseFloat(preparedToParse);
     }
     
 
     var operation = 
     {
-        operation: "define-constant-int",
+        operation: "define-constant-number",
         guid: toAdd.id,
         constantValue: c
     };
@@ -651,11 +657,11 @@ lookup.defineConstantInt = function(c)
     return toAdd.id;
 };
 
-lookup.tryRestoreConstantInt = function(value)
+lookup.tryRestoreConstantNumber = function(value)
 {
     if(typeof(value.value) !== 'number')
     {
-        value.value = parseInt(value.value.trim())
+        value.value = parseFloat(value.value.trim())
     }
     return value;
 };
@@ -856,7 +862,7 @@ lookup.goBackwardAndEvaluate = function(obj)
 
 lookup.addConstant = function(text, obj)
 {
-    var guid = lookup.defineConstantInt(text);
+    var guid = lookup.defineConstantNumber(text);
     if(lookup.activeOperation() === "focusOnParameter" )
     {
         obj.guidToUse(guid);
@@ -1118,6 +1124,10 @@ lookup.evaluate = function(guid, context)
                         return lookup.generateFailToEvaluate();
                     }
                     
+                }
+                if(toWork.type === 'constant-number')
+                {
+                    return toWork.value;
                 }
                 if(toWork.type === 'constant-int')
                 {
@@ -1833,14 +1843,13 @@ lookup.preParseOmniBox = function()
     else
     {
         var result = "";
-        var intRegExp = new RegExp('^\\d+$');
-        if(intRegExp.test(toTest))
+        var numberRegExp = new RegExp('^\\d+((\\.|,)\\d+|)$');
+        if(numberRegExp.test(toTest))
         {
-            result = "integer";
+            result = "number";
         }
         else
         {
-            //var symbolRegExp = new RegExp('^\\D.*$');
 
             // this is either symbol either function call
             // this can also be command or macros
@@ -1886,8 +1895,8 @@ lookup.tryParseOmniBox = function(toTest, obj)
 {
     if(toTest !== "")
     {
-        var intRegExp = new RegExp('^\\d+$');
-        if(intRegExp.test(toTest))
+        var numberRegExp = new RegExp('^\\d+((\\.|,)\\d+|)$');
+        if(numberRegExp.test(toTest))
         {
             lookup.addConstant(toTest, obj);
         }

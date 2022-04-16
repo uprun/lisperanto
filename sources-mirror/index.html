@@ -325,7 +325,7 @@
             <strong data-bind="text: lookup.customObjects[$data].parameterName"></strong>
         </div>
     </script>
-    <script type="text/html" id="constant-int-template">
+    <script type="text/html" id="constant-number-template">
         <strong data-bind="text: value"></strong>
     </script>
     <script type="text/html" id="symbol-usage-template">
@@ -353,8 +353,8 @@
     </script>
     <script type="text/html" id="body-element-template">
         <span data-bind="if:typeof($data) !== 'undefined' ">
-            <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
-                <span data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></span>
+            <span data-bind='if: lookup.customObjects[$data].type === "constant-number" '>
+                <span data-bind="template: { name: 'constant-number-template', data: lookup.customObjects[$data] }"></span>
             </span>
             <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
                 <span data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></span>
@@ -373,8 +373,8 @@
                     top: inWorldOffsetY()
                 }">
                 <div>
-                    <!-- ko if: $data.type === 'constant-int' -->
-                        <!-- ko template: { name: 'constant-int-template', data: $data} -->
+                    <!-- ko if: $data.type === 'constant-number' -->
+                        <!-- ko template: { name: 'constant-number-template', data: $data} -->
                         <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'function-usage' -->
