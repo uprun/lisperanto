@@ -187,7 +187,7 @@ lookup.tryRestoreRecordField = function(value)
 {
     value.recordFieldName = ko.observable(value.recordFieldName);
     value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
-    value.recordFieldValue = ko.observable(value.recordFieldValue);
+    value.recordFieldValueGuidToUse = ko.observable(value.recordFieldValueGuidToUse);
     return value;
 };
 
@@ -629,6 +629,7 @@ lookup.createAndShowRecord = function()
 
 lookup.defineConstantInt = function(c)
 {
+    // TODO: replace with parseFloat and rename the function and type
     var toAdd = lookup.createUIObject();
     
     toAdd.type = "constant-int";
@@ -805,7 +806,7 @@ lookup.defineRecordField = function(parameter, objId)
     toAdd.recordFieldName = ko.observable(parameter);
     toAdd.assignedToGuid = objId;
     toAdd.recordFieldTypeGuidToUse = ko.observable();
-    toAdd.recordFieldValue = ko.observable();
+    toAdd.recordFieldValueGuidToUse = ko.observable();
     
     var operation = 
     {
@@ -866,11 +867,20 @@ lookup.addConstant = function(text, obj)
             parameterValueGuid: obj.id
         };
         lookup.operationsPush(operation);
+        //if there is a parameter assignment then start evaluation
+        lookup.goBackwardAndEvaluate(obj);
     }
-    lookup.goBackwardAndEvaluate(obj);
-    //if there is a parameter assignment then start evaluation
-    lookup.activeOperation("");
-
+    if(lookup.activeOperation() === "addingFieldValueInRecord" )
+    {
+        obj.recordFieldValueGuidToUse(guid);
+        var operation = 
+        {
+            operation: "add-record-field-value",
+            recordFieldValueGuidToUse: guid,
+            recordFieldGuid: obj.id
+        };
+        lookup.operationsPush(operation);
+    }
 };
 
 
@@ -888,7 +898,6 @@ lookup.addFunction = function(funcObj, obj)
         };
         lookup.operationsPush(operation);
     }
-    lookup.activeOperation("");
     lookup.hideOmniBox();
     lookup.goBackwardAndEvaluate(obj);
     return guid;
@@ -1014,6 +1023,16 @@ lookup.addRecordFieldType = function()
     };
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
+
+};
+
+lookup.addRecordFieldValue = function()
+{
+
+    var obj = lookup.focusedObj();
+    var toParse = lookup.omniBoxTextInput().trim();
+
+    lookup.tryParseOmniBox(toParse, obj);
 
 };
 
@@ -1948,7 +1967,6 @@ lookup.omniBoxInputKeyPress = function(data, event)
             if(lookup.activeOperation() ===  "renameFunction")
             {
                 lookup.renameFunction();
-
             }
             else if(lookup.activeOperation() ===  "addingFunctionParameter")
             {
@@ -1961,6 +1979,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             else if(lookup.activeOperation() ===  "addingFieldTypeInRecord")
             {
                 lookup.addRecordFieldType();
+            }
+            else if(lookup.activeOperation() ===  "addingFieldValueInRecord")
+            {
+                lookup.addRecordFieldValue();
             }
             else if(lookup.activeOperation() === "global-omni-box-activated")
             {

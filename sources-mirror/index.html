@@ -116,6 +116,22 @@
                             add 
                     </div>
                 </div>
+
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.addRecordFieldType">
+                            add 
+                    </div>
+                </div>
+
+                <div 
+                    data-bind="if: $root.activeOperation() === 'addingFieldValueInRecord'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.addRecordFieldValue">
+                            add 
+                    </div>
+                </div>
                 
                 <div class="omnibox-options">
                     <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
@@ -179,8 +195,13 @@
                         attr: {id: 'add-field-type-in-record--' + $data.id}">
                     + type
             </div>
+            <span data-bind="if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined' ">
+                <span data-bind="template: { name: 'body-element-template', data: $data.recordFieldValueGuidToUse() }" >
+                </span>
+            </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
+                    data-bind="
+                        visible: typeof($data.recordFieldValueGuidToUse()) === 'undefined',
                         click: $root.openOmniBoxForFieldValueInRecord, 
                         attr: {id: 'add-field-value-in-record--' + $data.id}">
                     + value
@@ -311,7 +332,7 @@
         <strong data-bind="text: symbolName"></strong>
     </script>
     <script type="text/html" id="function-usage-template">
-        <div
+        <span
             data-bind="
             attr: {id: $data.id}"
             >
@@ -327,24 +348,21 @@
             </div>
             <span data-bind="text: ')'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
 
-        </div>
+        </span>
         
     </script>
     <script type="text/html" id="body-element-template">
-        <div>
-            <span data-bind="if:typeof($data) !== 'undefined' ">
-                <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
-                    <div data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></div>
-                </span>
-                <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
-                    <div data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></div>
-                </span>
-                <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
-                    <div data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></div>
-                </span>
+        <span data-bind="if:typeof($data) !== 'undefined' ">
+            <span data-bind='if: lookup.customObjects[$data].type === "constant-int" '>
+                <span data-bind="template: { name: 'constant-int-template', data: lookup.customObjects[$data] }"></span>
             </span>
-            
-        </div>
+            <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
+                <span data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></span>
+            </span>
+            <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
+                <span data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></span>
+            </span>
+        </span>
     </script>
     <script type="text/html" id="ui-element-template">
         <div class="lisperanto-ui-element"
