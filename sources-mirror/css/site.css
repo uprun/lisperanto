@@ -99,6 +99,15 @@ body {
   color: #ff8f95;
 }
 
+.lisperanto-patreon{
+  background:rgb(255, 66, 77);
+  color:#fff;
+  border-radius: 3rem;
+  padding: 0.5rem;
+  border: 0.2rem solid rgb(255, 66, 77);
+  display: inline-block;
+}
+
 
 
 button

@@ -2053,7 +2053,7 @@ lookup.bodyKeyDown = function( data, event)
         lookup.hideOmniBox();
         lookup.hideMenu();
     }
-    if(event.code === "KeyM" && !lookup.isOmniBoxOpen())
+    if(event.code === "KeyI" && !lookup.isOmniBoxOpen())
     {
         lookup.toggleMenu();
     }
@@ -2217,6 +2217,31 @@ lookup.bodyOnClick = function(e)
     }
 };
 
+lookup.optionsOnClick = function(event)
+{
+    event.stopPropagation();
+};
+
+lookup.infoOnClick = function(event)
+{
+    event.stopPropagation();
+};
+
+lookup.patreonLinkOnClick = function(event)
+{
+    event.stopPropagation();
+};
+
+lookup.emailMeLinkOnClick = function(event)
+{
+    event.stopPropagation();
+};
+
+lookup.githubLinkOnClick = function(event)
+{
+    event.stopPropagation();
+};
+
 lookup.hideOmniWheel = function()
 {
     if(lookup.omniWheel.visible())
@@ -2240,20 +2265,6 @@ lookup.showOmniBox = function()
         y: event.pageY
     };
     lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
-};
-
-lookup.theFunctionsListOffsetY = ko.observable(0);
-
-lookup.theListOfFunctionsOnWheel = function()
-{
-    event.stopPropagation();
-
-    lookup.refreshTheListOfFunctionsScroll();
-};
-
-lookup.refreshTheListOfFunctionsScroll = function() {
-    var foundList = $("#the-functions-list")[0];
-    lookup.theFunctionsListOffsetY(-foundList.parentNode.scrollTop);
 };
 
 lookup.omniBoxOnWheel = function()
@@ -2284,7 +2295,6 @@ $(document).ready(function()
     lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.restoreTypesArray();
-    lookup.refreshTheListOfFunctionsScroll();
     lookup.defineTimerForFunctions();
     
     

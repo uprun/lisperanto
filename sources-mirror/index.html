@@ -184,17 +184,18 @@
             data-bind="
                 using: lookup.customObjects[$data],
                 attr: {id: $data}">
-            <strong data-bind="text: $data.recordFieldName"></strong>
             <span data-bind="if: typeof($data.recordFieldTypeGuidToUse()) !== 'undefined' ">
-                <strong data-bind="text: $root.customObjects[$data.recordFieldTypeGuidToUse()].name"></strong>
+                <strong class="webpad-color-orange" data-bind="text: $root.customObjects[$data.recordFieldTypeGuidToUse()].name"></strong>
             </span>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+            <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
                         visible: typeof($data.recordFieldTypeGuidToUse()) === 'undefined',
                         click: $root.openOmniBoxForFieldTypeInRecord, 
                         attr: {id: 'add-field-type-in-record--' + $data.id}">
                     + type
             </div>
+            <strong data-bind="text: $data.recordFieldName"></strong>
+            <span>=</span>
             <span data-bind="if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined' ">
                 <span data-bind="template: { name: 'body-element-template', data: $data.recordFieldValueGuidToUse() }" >
                 </span>
@@ -401,17 +402,19 @@
             css: { 
                 'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
                 'webpad-menu-animate-fade-back': !$root.menuIsOpen()
-            }">
+            },
+            click: $root.infoOnClick
+            ">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
                 <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
                     Lisperanto
                 </span>
                 <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
-                    : functions
+                    : information
                 </span>
                 <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
-                    : functions
+                    : information
                 </span>
                 <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleMenu">
                     <span style="font-size: 2rem;">
@@ -419,20 +422,84 @@
                     </span>
                 </div>
             </div>
-            <div class="w3-col w3-container s12 m12 l12" 
-                onwheel="typeof(lookup) !== 'undefined' && lookup.theListOfFunctionsOnWheel()"
-                style="
-                    margin-top: 0.5rem;
-                    margin-bottom: 0.5rem;
-                    max-height: 70vh;
-                    overflow-y: scroll;
-                    ">
-                <div id="the-functions-list" class="text-left" style="padding-left: 0.5rem;" data-bind="foreach: functionsArray">
-                    <div>
-                        <span data-bind="if: name !== ''">
-                            <span class="my-function-name" style="font-size: 1.5rem;" data-bind="text: name(), click: $root.openFunctionFromTheListOfFunctions, attr: {id: 'function-in-the-list--' + $data.id}"></span>
-                            <span style="font-size: 1.5rem;" data-bind="text: '('+ parameters().map(x => lookup.customObjects[x].parameterName).join(', ') + ')'"></span>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div class="text-left" style="padding-left: 0.5rem;">
+                    <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
+                    </div>
+                    <div 
+                        class="webpad-color-purple" 
+                        style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                        feel free to e-mail me: <a 
+                            href="mailto:oleksandr.kryvonos.ods.ua@gmail.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onclick="lookup.emailMeLinkOnClick(event)"
+                            >oleksandr.kryvonos.ods.ua@gmail.com</a>
+                    </div>
+                    <div
+                        class="lisperanto-patreon">
+                        <a 
+                            href="https://www.patreon.com/o_kryvonos" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onclick="lookup.patreonLinkOnClick(event)"
+                            >
+                            Support on Patreon
+                        </a>
+
+                    </div>
+
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                        <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                                Source code information:
                         </span>
+                    </div>
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
+                        <div class="webpad-color-light-pink" style="margin-top: 0.5rem;">
+                            Lisperanto is distributed under MIT license.
+                        </div>
+                        <div class="webpad-color-blue">
+                            Lisperanto is an open-source project: <a 
+                                href="https://github.com/uprun/lisperanto" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                onclick="lookup.githubLinkOnClick(event)"
+                                >https://github.com/uprun/lisperanto</a>
+                        </div>
+                    </div>
+
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                        <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                                General information:
+                        </span>
+                    </div>
+
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
+                        <div class="webpad-color-coral">
+                            Lisperanto is a programming environment and version control system.
+                        </div>
+                        <div class="webpad-color-yellow">
+                            Lisperanto is an AST-based version control system.
+                        </div>
+                        <div class="webpad-color-green">
+                            Lisperanto is a projection editor.
+                        </div>
+                        <div class="webpad-color-pink">
+                            Lisperanto is a structure editor.
+                        </div>
+                        <div class="webpad-color-orange">
+                            Lisperanto is a mono-repository.
+                        </div>
+                        <div class="webpad-color-green">
+                            Lisperanto was inspired by Lisp.
+                        </div>
+                        <div class="webpad-color-coral">
+                            Lisperanto was  inspired by Smalltalk.
+                        </div>
+                        <div class="webpad-color-orange">
+                            Lisperanto is an AST editor.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -446,7 +513,8 @@
             css: { 
                 'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
                 'webpad-options-animate-fade-back': !$root.optionsIsOpen()
-            }">
+            },
+            click: $root.optionsOnClick">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
                 <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
@@ -504,58 +572,12 @@
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
                 <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
-                        Info:
+                        Navigation:
                 </span>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
                 <div class="webpad-color-orange" style="margin-left: 2rem;">
                     Pan with [shift + mouse-move] or for MacBooks - use scroll gesture.
-                </div>
-            </div>
-            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
-                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
-                        About:
-                </span>
-            </div>
-            
-            <div class="w3-col w3-container s12 m12 l12">
-                <div class="text-left" style="padding-left: 0.5rem;">
-                    <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
-                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
-                    </div>
-                    <div class="webpad-color-coral">
-                        Lisperanto is a programming environment and version control system.
-                    </div>
-                    <div class="webpad-color-yellow">
-                        Lisperanto is an AST-based version control system.
-                    </div>
-                    <div class="webpad-color-green">
-                        Lisperanto is a projection editor.
-                    </div>
-                    <div class="webpad-color-pink">
-                        Lisperanto is a structure editor.
-                    </div>
-                    <div class="webpad-color-orange">
-                        Lisperanto is a mono-repository.
-                    </div>
-                    <div class="webpad-color-green">
-                        Lisperanto was inspired by Lisp.
-                    </div>
-                    <div class="webpad-color-coral">
-                        Lisperanto was  inspired by Smalltalk.
-                    </div>
-                    <div class="webpad-color-orange">
-                        Lisperanto is an AST editor.
-                    </div>
-                    <div class="webpad-color-light-pink" style="margin-top: 0.5rem;">
-                        Lisperanto is distributed under MIT license.
-                    </div>
-                    <div class="webpad-color-blue">
-                        Lisperanto is an open-source project: <a href="https://github.com/uprun/lisperanto">https://github.com/uprun/lisperanto</a>
-                    </div>
-                    <div class="webpad-color-purple" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                        feel free to e-mail me: <a href="mailto:oleksandr.kryvonos.ods.ua@gmail.com">oleksandr.kryvonos.ods.ua@gmail.com</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -620,7 +642,7 @@
             <span style="font-size: 1rem; vertical-align: middle;">
                 <img src="svg/bars.svg" class="webpad-edit-pencil" alt="toggle menu"/> 
             </span>
-            m - menu
+            i - info
         </div>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.toggleOptions">

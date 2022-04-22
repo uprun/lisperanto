@@ -3,7 +3,6 @@ lookup.menuWasAlreadyOpen=ko.observable(false);
 lookup.toggleMenu = function() 
 {
     event.stopPropagation();
-    lookup.refreshTheListOfFunctionsScroll();
     lookup.menuIsOpen(!lookup.menuIsOpen());
     lookup.menuWasAlreadyOpen(true);
 };
