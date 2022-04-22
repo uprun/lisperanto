@@ -6,6 +6,9 @@ you can check live version https://uprun.github.io/lisperanto/
 this is a project for AST (Abstract Syntax Tree) based development environment 
 plus version control system (in progress)
 
+# support
+you can support me on Patreon https://www.patreon.com/o_kryvonos
+
 # inspiration
 
 inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve
