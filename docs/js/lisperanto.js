@@ -929,6 +929,17 @@ lookup.addSymbol = function(text, obj)
         };
         lookup.operationsPush(operation);
     }
+    if(lookup.activeOperation() === "addingFieldValueInRecord")
+    {
+        obj.recordFieldValueGuidToUse(guid);
+        var operation = 
+        {
+            operation: "add-record-field-value",
+            recordFieldValueGuidToUse: guid,
+            recordFieldGuid: obj.id
+        };
+        lookup.operationsPush(operation);
+    }
     lookup.activeOperation("");
 };
 
