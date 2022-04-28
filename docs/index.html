@@ -196,7 +196,9 @@
             </div>
             <strong data-bind="text: $data.recordFieldName"></strong>
             <span>=</span>
-            <span data-bind="if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined' ">
+            <span data-bind="
+                if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined',
+                ">
                 <span data-bind="template: { name: 'body-element-template', data: $data.recordFieldValueGuidToUse() }" >
                 </span>
             </span>
@@ -206,6 +208,13 @@
                         click: $root.openOmniBoxForFieldValueInRecord, 
                         attr: {id: 'add-field-value-in-record--' + $data.id}">
                     + value
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind="
+                        visible: $data.typeMissmatch,
+                        click: $root.openOmniBoxForFieldValueInRecord, 
+                        attr: {id: 'fix-type-missmatch-in-record-field--' + $data.id}">
+                    type missmatch
             </div>
         </div>
 

@@ -194,6 +194,7 @@ lookup.tryRestoreRecordField = function(value)
     value.recordFieldName = ko.observable(value.recordFieldName);
     value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
     value.recordFieldValueGuidToUse = ko.observable(value.recordFieldValueGuidToUse);
+    lookup.addTypeMissmatchForRecordField(value);
     return value;
 };
 
@@ -813,6 +814,8 @@ lookup.defineRecordField = function(parameter, objId)
     toAdd.assignedToGuid = objId;
     toAdd.recordFieldTypeGuidToUse = ko.observable();
     toAdd.recordFieldValueGuidToUse = ko.observable();
+
+    lookup.addTypeMissmatchForRecordField(toAdd);
     
     var operation = 
     {
@@ -2148,6 +2151,38 @@ lookup.defineOmniWheel = function() {
 
 lookup.canvasOmniBox = lookup.defineOmniBox();
 lookup.omniWheel = lookup.defineOmniWheel();
+
+lookup.addTypeMissmatchForRecordField = function(value) 
+{
+    if (typeof(value.typeMissmatch) === 'undefined')
+    {
+        value.typeMissmatch = ko.computed(function () {
+            if (typeof (value.recordFieldTypeGuidToUse()) !== 'undefined' &&
+                typeof (value.recordFieldValueGuidToUse()) !== 'undefined') {
+                var typeObject = lookup.customObjects[value.recordFieldTypeGuidToUse()];
+                var valueObject = lookup.customObjects[value.recordFieldValueGuidToUse()];
+    
+                if (typeof (valueObject) === 'undefined' || typeof (typeObject) === 'undefined') {
+                    return false;
+                }
+                else {
+                    if (typeObject.name() === 'string' && valueObject.type === 'symbol-usage') {
+                        return true;
+                    }
+    
+                    else {
+                        return false;
+                    }
+                }
+    
+            }
+    
+            else {
+                return false;
+            }
+        });
+    }
+};
 
 function Lisperanto()
 {
