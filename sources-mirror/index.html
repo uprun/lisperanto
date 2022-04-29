@@ -134,6 +134,17 @@
                 </div>
                 
                 <div class="omnibox-options">
+                    <div data-bind="if: $root.activeOperation() === 'RecordFieldTypeMissmatchFix' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.transformSymbolUsageToStringConstant">
+                            temp: transform to string
+                        </div>
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
+                            temp: fix type
+                        </div>
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
+                            temp: unplug
+                        </div>
+                    </div>
                     <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                             open definition
@@ -212,7 +223,7 @@
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="
                         visible: $data.typeMissmatch,
-                        click: $root.openOmniBoxForFieldValueInRecord, 
+                        click: $root.openOmniBoxForRecordFieldTypeMissmatchFix, 
                         attr: {id: 'fix-type-missmatch-in-record-field--' + $data.id}">
                     type missmatch
             </div>
@@ -338,6 +349,9 @@
     <script type="text/html" id="constant-number-template">
         <strong data-bind="text: value"></strong>
     </script>
+    <script type="text/html" id="constant-string-template">
+        "<strong data-bind="text: value"></strong>"
+    </script>
     <script type="text/html" id="symbol-usage-template">
         <strong data-bind="text: symbolName"></strong>
     </script>
@@ -365,6 +379,9 @@
         <span data-bind="if:typeof($data) !== 'undefined' ">
             <span data-bind='if: lookup.customObjects[$data].type === "constant-number" '>
                 <span data-bind="template: { name: 'constant-number-template', data: lookup.customObjects[$data] }"></span>
+            </span>
+            <span data-bind='if: lookup.customObjects[$data].type === "constant-string" '>
+                <span data-bind="template: { name: 'constant-string-template', data: lookup.customObjects[$data] }"></span>
             </span>
             <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
                 <span data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></span>

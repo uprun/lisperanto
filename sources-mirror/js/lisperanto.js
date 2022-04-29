@@ -162,6 +162,10 @@ lookup.loadFromStorage = function()
                     value.type = "constant-number";
                     lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
                 }
+                if(value.type === "constant-string")
+                {
+                    lookup.customObjects[key] = value;
+                }
                 if(value.type === "parameter")
                 {
                     lookup.customObjects[key] = value;
@@ -665,6 +669,23 @@ lookup.tryRestoreConstantNumber = function(value)
         value.value = parseFloat(value.value.trim())
     }
     return value;
+};
+
+lookup.defineConstantString = function(str)
+{
+    var toAdd = lookup.createUIObject();
+    
+    toAdd.type = "constant-string";
+    toAdd.value = str;
+
+    var operation = 
+    {
+        operation: "define-constant-string",
+        guid: toAdd.id,
+        constantValue: toAdd.value
+    };
+    lookup.operationsPush(operation);
+    return toAdd.id;
 };
 
 lookup.defineSymbolUsage = function(symbol)
@@ -1789,6 +1810,40 @@ lookup.openOmniBoxForFieldValueInRecord = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-field-value-in-record--' + caller.id, lookup.canvasOmniBox, root);
 };
 
+lookup.openOmniBoxForRecordFieldTypeMissmatchFix = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("RecordFieldTypeMissmatchFix");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('fix-type-missmatch-in-record-field--' + caller.id, lookup.canvasOmniBox, root);
+};
+
+lookup.transformSymbolUsageToStringConstant = function(caller)
+{
+    var obj = lookup.focusedObj();
+    const previousGuid = obj.recordFieldValueGuidToUse();
+    var valueObj = lookup.customObjects[previousGuid];
+    if(valueObj.type === 'symbol-usage')
+    {
+        var guid = lookup.defineConstantString(valueObj.symbolName);
+        obj.recordFieldValueGuidToUse(guid);
+
+        var operation = 
+        {
+            operation: "replace-record-field-value",
+            recordFieldGuid: obj.id,
+            newGuid: guid,
+            previousGuid: previousGuid
+        };
+        lookup.operationsPush(operation);
+
+    }
+
+};
+
 lookup.hideOmniBox = function()
 {
     lookup.canvasOmniBox.visible(false);
@@ -2166,7 +2221,7 @@ lookup.addTypeMissmatchForRecordField = function(value)
                     return false;
                 }
                 else {
-                    if (typeObject.name() === 'string' && valueObject.type === 'symbol-usage') {
+                    if (typeObject.id === 'string' && valueObject.type === 'symbol-usage') {
                         return true;
                     }
     
