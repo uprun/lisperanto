@@ -6,8 +6,19 @@ you can check live version https://uprun.github.io/lisperanto/
 this is a project for AST (Abstract Syntax Tree) based development environment 
 plus version control system (in progress)
 
-# support
-you can support me on Patreon https://www.patreon.com/o_kryvonos
+
+# Support me on Patreon
+
+https://www.patreon.com/o_kryvonos
+
+
+# Join Discord server 
+
+https://discord.gg/W5HFSKVXgc
+
+# Follow me on Twitter
+
+https://twitter.com/o_kryvonos
 
 # inspiration
 
