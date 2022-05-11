@@ -12,20 +12,21 @@ lookup.omniBoxTextInput
     });
 
 lookup.functionsArray = ko.observableArray([]);
+lookup.recordsArray = ko.observableArray([]);
+
 lookup.functionsLookup = ko.computed(function()
 {
     var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
     var filtered = [];
-    const availableFunctions = lookup.functionsArray();
+    const availableEntries = lookup.functionsArray().concat(lookup.recordsArray());
 
     if(searchQuery === "")
     {
-        
-        filtered = availableFunctions;
+        filtered = availableEntries;
     }
     else
     {
-        filtered = ko.utils.arrayFilter(availableFunctions, function(item)
+        filtered = ko.utils.arrayFilter(availableEntries, function(item)
         {
             return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
         });
@@ -33,13 +34,26 @@ lookup.functionsLookup = ko.computed(function()
     }
      
     return ko.utils.arrayMap(filtered, function(item) {
-        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+        if (item.type === "record")
         {
-            return lookup.customObjects[item].parameterName;
-        });
-        return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
-        };
+            return { 
+                id: item.id, 
+                text: item.name()
+            };
+
+        }
+        else
+        {
+            var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+            {
+                return lookup.customObjects[item].parameterName;
+            });
+            return { id: item.id, 
+                text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
+            };
+
+        }
+        
     });
     
 });
@@ -298,6 +312,20 @@ lookup.restoreTypesArray = function()
     }
 };
 
+lookup.restoreRecordsArray = function()
+{
+    for (const [key, value] of Object.entries(lookup.customObjects)) 
+    {
+        if(typeof(value.type) !== 'undefined')
+        {
+            if(value.type === "record" )
+            {
+                lookup.recordsArray.push(value);
+            }
+        }
+    }
+};
+
 
 
 lookup.tryRestoreBuiltInFunction = function(value)
@@ -440,6 +468,16 @@ lookup.builtInFunctionsArray = [
         id: "code-block",
         name: "code-block",
         parameters: ["next"]
+    },
+    {
+        id: "define-variable",
+        name: "define-variable",
+        parameters: ["name", "type"]
+    },
+    {
+        id: "set-variable-value",
+        name: "set-variable-value",
+        parameters: ["name", "value"]
     }
 ];
 
@@ -1316,7 +1354,8 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     return a / b;
 };
 
-lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext) {
+lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext)
+{
     var result = undefined;
     for(var k = 0; k < toWork.parameters().length; k++)
     {
@@ -1331,6 +1370,36 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
         result = lookup.generateFailToEvaluate();
     }
     return result;
+};
+
+lookup.evaluateBuiltInDefineVariable = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var result = lookup.generateFailToEvaluate();
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        previousContext[nameParameterValue.symbolName] = result;
+    }
+    return result;
+};
+
+lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
+        var value = lookup.evaluate(valueParameter.guidToUse(), localContext);
+        previousContext[nameParameterValue.symbolName] = value;
+        return value;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+    
 };
 
 
@@ -2164,6 +2233,8 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
     localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+    localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
+    localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
@@ -2396,6 +2467,7 @@ $(document).ready(function()
     lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.restoreTypesArray();
+    lookup.restoreRecordsArray();
     lookup.defineTimerForFunctions();
     
     
