@@ -22,7 +22,17 @@ https://twitter.com/o_kryvonos
 
 # inspiration
 
-inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve, Envision, Lamdu, Sapling
+inspired by:
+1. Lisp, 
+1. Haxe, 
+1. Smalltalk, 
+1. Dion systems, 
+1. Hazel, 
+1. Scratch, 
+1. Eve, 
+1. Envision : https://github.com/dimitar-asenov/Envision
+1. Lamdu : https://github.com/lamdu/lamdu
+1. Sapling
 
 also i was inspired by "The future of programming" talk by Bret Victor
 
