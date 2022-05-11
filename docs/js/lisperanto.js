@@ -12,20 +12,21 @@ lookup.omniBoxTextInput
     });
 
 lookup.functionsArray = ko.observableArray([]);
+lookup.recordsArray = ko.observableArray([]);
+
 lookup.functionsLookup = ko.computed(function()
 {
     var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
     var filtered = [];
-    const availableFunctions = lookup.functionsArray();
+    const availableEntries = lookup.functionsArray().concat(lookup.recordsArray());
 
     if(searchQuery === "")
     {
-        
-        filtered = availableFunctions;
+        filtered = availableEntries;
     }
     else
     {
-        filtered = ko.utils.arrayFilter(availableFunctions, function(item)
+        filtered = ko.utils.arrayFilter(availableEntries, function(item)
         {
             return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
         });
@@ -33,13 +34,26 @@ lookup.functionsLookup = ko.computed(function()
     }
      
     return ko.utils.arrayMap(filtered, function(item) {
-        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+        if (item.type === "record")
         {
-            return lookup.customObjects[item].parameterName;
-        });
-        return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
-        };
+            return { 
+                id: item.id, 
+                text: item.name()
+            };
+
+        }
+        else
+        {
+            var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+            {
+                return lookup.customObjects[item].parameterName;
+            });
+            return { id: item.id, 
+                text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
+            };
+
+        }
+        
     });
     
 });
@@ -293,6 +307,20 @@ lookup.restoreTypesArray = function()
             if(value.type === "type" )
             {
                 lookup.typesArray.push(value);
+            }
+        }
+    }
+};
+
+lookup.restoreRecordsArray = function()
+{
+    for (const [key, value] of Object.entries(lookup.customObjects)) 
+    {
+        if(typeof(value.type) !== 'undefined')
+        {
+            if(value.type === "record" )
+            {
+                lookup.recordsArray.push(value);
             }
         }
     }
@@ -2396,6 +2424,7 @@ $(document).ready(function()
     lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.restoreTypesArray();
+    lookup.restoreRecordsArray();
     lookup.defineTimerForFunctions();
     
     
