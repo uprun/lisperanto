@@ -468,6 +468,16 @@ lookup.builtInFunctionsArray = [
         id: "code-block",
         name: "code-block",
         parameters: ["next"]
+    },
+    {
+        id: "define-variable",
+        name: "define-variable",
+        parameters: ["name", "type"]
+    },
+    {
+        id: "set-variable-value",
+        name: "set-variable-value",
+        parameters: ["name", "value"]
     }
 ];
 
@@ -1344,7 +1354,8 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     return a / b;
 };
 
-lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext) {
+lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext)
+{
     var result = undefined;
     for(var k = 0; k < toWork.parameters().length; k++)
     {
@@ -1359,6 +1370,36 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
         result = lookup.generateFailToEvaluate();
     }
     return result;
+};
+
+lookup.evaluateBuiltInDefineVariable = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var result = lookup.generateFailToEvaluate();
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        previousContext[nameParameterValue.symbolName] = result;
+    }
+    return result;
+};
+
+lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
+        var value = lookup.evaluate(valueParameter.guidToUse(), localContext);
+        previousContext[nameParameterValue.symbolName] = value;
+        return value;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+    
 };
 
 
@@ -2192,6 +2233,8 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
     localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+    localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
+    localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
