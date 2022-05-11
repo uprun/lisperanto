@@ -22,7 +22,7 @@ https://twitter.com/o_kryvonos
 
 # inspiration
 
-inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve
+inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve, Envision
 
 also i was inspired by "The future of programming" talk by Bret Victor
 
