@@ -12,20 +12,21 @@ lookup.omniBoxTextInput
     });
 
 lookup.functionsArray = ko.observableArray([]);
+lookup.recordsArray = ko.observableArray([]);
+
 lookup.functionsLookup = ko.computed(function()
 {
     var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
     var filtered = [];
-    const availableFunctions = lookup.functionsArray();
+    const availableEntries = lookup.functionsArray().concat(lookup.recordsArray());
 
     if(searchQuery === "")
     {
-        
-        filtered = availableFunctions;
+        filtered = availableEntries;
     }
     else
     {
-        filtered = ko.utils.arrayFilter(availableFunctions, function(item)
+        filtered = ko.utils.arrayFilter(availableEntries, function(item)
         {
             return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
         });
@@ -33,13 +34,26 @@ lookup.functionsLookup = ko.computed(function()
     }
      
     return ko.utils.arrayMap(filtered, function(item) {
-        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+        if (item.type === "record")
         {
-            return lookup.customObjects[item].parameterName;
-        });
-        return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
-        };
+            return { 
+                id: item.id, 
+                text: item.name()
+            };
+
+        }
+        else
+        {
+            var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
+            {
+                return lookup.customObjects[item].parameterName;
+            });
+            return { id: item.id, 
+                text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
+            };
+
+        }
+        
     });
     
 });
@@ -162,6 +176,10 @@ lookup.loadFromStorage = function()
                     value.type = "constant-number";
                     lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
                 }
+                if(value.type === "constant-string")
+                {
+                    lookup.customObjects[key] = value;
+                }
                 if(value.type === "parameter")
                 {
                     lookup.customObjects[key] = value;
@@ -194,6 +212,7 @@ lookup.tryRestoreRecordField = function(value)
     value.recordFieldName = ko.observable(value.recordFieldName);
     value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
     value.recordFieldValueGuidToUse = ko.observable(value.recordFieldValueGuidToUse);
+    lookup.addTypeMissmatchForRecordField(value);
     return value;
 };
 
@@ -288,6 +307,20 @@ lookup.restoreTypesArray = function()
             if(value.type === "type" )
             {
                 lookup.typesArray.push(value);
+            }
+        }
+    }
+};
+
+lookup.restoreRecordsArray = function()
+{
+    for (const [key, value] of Object.entries(lookup.customObjects)) 
+    {
+        if(typeof(value.type) !== 'undefined')
+        {
+            if(value.type === "record" )
+            {
+                lookup.recordsArray.push(value);
             }
         }
     }
@@ -435,6 +468,16 @@ lookup.builtInFunctionsArray = [
         id: "code-block",
         name: "code-block",
         parameters: ["next"]
+    },
+    {
+        id: "define-variable",
+        name: "define-variable",
+        parameters: ["name", "type"]
+    },
+    {
+        id: "set-variable-value",
+        name: "set-variable-value",
+        parameters: ["name", "value"]
     }
 ];
 
@@ -574,16 +617,24 @@ lookup.tryRestoreFunction = function(value)
 
 lookup.addEvaluationVariables = function(obj)
 {
-    obj.evaluationResult = ko.observable("");
+    obj.evaluationResult = ko.observable(lookup.generateFailToEvaluatePlusMessage("not-computed-yet"));
     obj.prettyPrintEvaluationResult = ko.computed(function()
         {
-            if( lookup.isFailToEvaluate(obj.evaluationResult()) )
+            const result = obj.evaluationResult();
+            if( lookup.isFailToEvaluate(result) )
             {
-                return "[failed to evaluate]";
+                if ( lookup.isFieldPresent(result, "message"))
+                {
+                    return "[failed to evaluate] : " + result.message;
+                }
+                else
+                {
+                    return "[failed to evaluate]";
+                }
             }
             else
             {
-                return obj.evaluationResult();
+                return result.value + " [" + result.type + "]";
             }
         }
     );
@@ -664,6 +715,23 @@ lookup.tryRestoreConstantNumber = function(value)
         value.value = parseFloat(value.value.trim())
     }
     return value;
+};
+
+lookup.defineConstantString = function(str)
+{
+    var toAdd = lookup.createUIObject();
+    
+    toAdd.type = "constant-string";
+    toAdd.value = str;
+
+    var operation = 
+    {
+        operation: "define-constant-string",
+        guid: toAdd.id,
+        constantValue: toAdd.value
+    };
+    lookup.operationsPush(operation);
+    return toAdd.id;
 };
 
 lookup.defineSymbolUsage = function(symbol)
@@ -813,6 +881,8 @@ lookup.defineRecordField = function(parameter, objId)
     toAdd.assignedToGuid = objId;
     toAdd.recordFieldTypeGuidToUse = ko.observable();
     toAdd.recordFieldValueGuidToUse = ko.observable();
+
+    lookup.addTypeMissmatchForRecordField(toAdd);
     
     var operation = 
     {
@@ -926,6 +996,17 @@ lookup.addSymbol = function(text, obj)
             operation: "set-parameter-value",
             guidToUse: guid,
             parameterValueGuid: obj.id
+        };
+        lookup.operationsPush(operation);
+    }
+    if(lookup.activeOperation() === "addingFieldValueInRecord")
+    {
+        obj.recordFieldValueGuidToUse(guid);
+        var operation = 
+        {
+            operation: "add-record-field-value",
+            recordFieldValueGuidToUse: guid,
+            recordFieldGuid: obj.id
         };
         lookup.operationsPush(operation);
     }
@@ -1127,11 +1208,18 @@ lookup.evaluate = function(guid, context)
                 }
                 if(toWork.type === 'constant-number')
                 {
-                    return toWork.value;
+                    var result = {};
+                    result.value = toWork.value;
+                    result.type = "number";
+                    return result;
                 }
                 if(toWork.type === 'constant-int')
                 {
-                    return toWork.value;
+                    // just remember that 'constant-int' is deprecated already as of some time before
+                    var result = {};
+                    result.value = toWork.value;
+                    result.type = "number"; // yep type is number, because there will be no ints
+                    return result;
                 }
             }
         }
@@ -1167,14 +1255,10 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
 
     if
     ( 
-        lookup.isFailToEvaluate(check)
+        check.type === "boolean"
     )
     {
-        return lookup.generateFailToEvaluate();
-    }
-    else
-    {
-        if(check)
+        if(check.value === "true")
         {
             var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
             return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
@@ -1185,6 +1269,10 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
             return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
         }
     }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
 };
 
 
@@ -1193,15 +1281,14 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value + b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a + b;
 };
 
 lookup.generateFailToEvaluate = function()
@@ -1211,6 +1298,29 @@ lookup.generateFailToEvaluate = function()
     };
     return obj;
 };
+
+lookup.generateFailToEvaluatePlusMessage = function(message)
+{
+    var result = lookup.generateFailToEvaluate();
+    result.message = message;
+    return result;
+};
+
+lookup.generateRecordWithType = function(type)
+{
+    var obj = 
+    {
+        type: type
+    };
+    return obj;
+};
+
+lookup.generateRecordNumber = function(value)
+{
+    var toReturn = lookup.generateRecordWithType("number");
+    toReturn["value"] = value;
+    return toReturn;
+}
 
 lookup.isFailToEvaluate = function(obj)
 {
@@ -1222,15 +1332,24 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value <= b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a <= b;
 };
 
 lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
@@ -1238,15 +1357,14 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value - b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a - b;
 };
 
 lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localContext) {
@@ -1254,15 +1372,14 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value * b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a * b;
 };
 
 lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext) {
@@ -1270,18 +1387,25 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        if (b.value == 0)
+        {
+            return lookup.generateFailToEvaluatePlusMessage("error--division-by-zero");
+        }
+        else
+        {
+            return lookup.generateRecordNumber(a.value / b.value);
+        }
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a / b;
 };
 
-lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext) {
+lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext)
+{
     var result = undefined;
     for(var k = 0; k < toWork.parameters().length; k++)
     {
@@ -1296,6 +1420,36 @@ lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localCont
         result = lookup.generateFailToEvaluate();
     }
     return result;
+};
+
+lookup.evaluateBuiltInDefineVariable = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var result = lookup.generateFailToEvaluate();
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        previousContext[nameParameterValue.symbolName] = result;
+    }
+    return result;
+};
+
+lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
+    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
+    if (nameParameterValue.type === "symbol-usage")
+    {
+        var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
+        var value = lookup.evaluate(valueParameter.guidToUse(), localContext);
+        previousContext[nameParameterValue.symbolName] = value;
+        return value;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+    
 };
 
 
@@ -1775,6 +1929,40 @@ lookup.openOmniBoxForFieldValueInRecord = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-field-value-in-record--' + caller.id, lookup.canvasOmniBox, root);
 };
 
+lookup.openOmniBoxForRecordFieldTypeMissmatchFix = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("RecordFieldTypeMissmatchFix");
+
+    var root = lookup.findRoot(caller);
+
+    lookup.filloutOmniBoxDataForFunction('fix-type-missmatch-in-record-field--' + caller.id, lookup.canvasOmniBox, root);
+};
+
+lookup.transformSymbolUsageToStringConstant = function(caller)
+{
+    var obj = lookup.focusedObj();
+    const previousGuid = obj.recordFieldValueGuidToUse();
+    var valueObj = lookup.customObjects[previousGuid];
+    if(valueObj.type === 'symbol-usage')
+    {
+        var guid = lookup.defineConstantString(valueObj.symbolName);
+        obj.recordFieldValueGuidToUse(guid);
+
+        var operation = 
+        {
+            operation: "replace-record-field-value",
+            recordFieldGuid: obj.id,
+            newGuid: guid,
+            previousGuid: previousGuid
+        };
+        lookup.operationsPush(operation);
+
+    }
+
+};
+
 lookup.hideOmniBox = function()
 {
     lookup.canvasOmniBox.visible(false);
@@ -2095,6 +2283,8 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
     localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
+    localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
+    localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
@@ -2137,6 +2327,38 @@ lookup.defineOmniWheel = function() {
 
 lookup.canvasOmniBox = lookup.defineOmniBox();
 lookup.omniWheel = lookup.defineOmniWheel();
+
+lookup.addTypeMissmatchForRecordField = function(value) 
+{
+    if (typeof(value.typeMissmatch) === 'undefined')
+    {
+        value.typeMissmatch = ko.computed(function () {
+            if (typeof (value.recordFieldTypeGuidToUse()) !== 'undefined' &&
+                typeof (value.recordFieldValueGuidToUse()) !== 'undefined') {
+                var typeObject = lookup.customObjects[value.recordFieldTypeGuidToUse()];
+                var valueObject = lookup.customObjects[value.recordFieldValueGuidToUse()];
+    
+                if (typeof (valueObject) === 'undefined' || typeof (typeObject) === 'undefined') {
+                    return false;
+                }
+                else {
+                    if (typeObject.id === 'string' && valueObject.type === 'symbol-usage') {
+                        return true;
+                    }
+    
+                    else {
+                        return false;
+                    }
+                }
+    
+            }
+    
+            else {
+                return false;
+            }
+        });
+    }
+};
 
 function Lisperanto()
 {
@@ -2295,6 +2517,7 @@ $(document).ready(function()
     lookup.openElement(lookup.sandbox());
     lookup.restoreFunctionsArray();
     lookup.restoreTypesArray();
+    lookup.restoreRecordsArray();
     lookup.defineTimerForFunctions();
     
     
