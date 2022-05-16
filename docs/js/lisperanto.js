@@ -465,6 +465,31 @@ lookup.builtInFunctionsArray = [
         parameters: ["a", "b"]
     },
     {
+        id: "less",
+        name: "<",
+        parameters: ["a", "b"]
+    },
+    {
+        id: "more",
+        name: ">",
+        parameters: ["a", "b"]
+    },
+    {
+        id: "more-or-equal",
+        name: ">=",
+        parameters: ["a", "b"]
+    },
+    {
+        id: "not-equal",
+        name: "<>",
+        parameters: ["a", "b"]
+    },
+    {
+        id: "equal",
+        name: "=",
+        parameters: ["a", "b"]
+    },
+    {
         id: "code-block",
         name: "code-block",
         parameters: ["next"]
@@ -1337,6 +1362,131 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     {
         var result = lookup.generateRecordWithType("boolean");
         if (a.value <= b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+};
+
+lookup.evaluateBuiltInLess = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value < b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+};
+
+lookup.evaluateBuiltInMore = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value > b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+};
+
+lookup.evaluateBuiltInMoreOrEqual = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value >= b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+};
+
+lookup.evaluateBuiltInNotEqual = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value != b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+};
+
+lookup.evaluateBuiltInEqual = function(toWork, functionDefinition, localContext) {
+    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
+    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
+    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
+    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value == b.value)
         {
             result.value = "true";
         }
@@ -2280,6 +2430,11 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["plus"] = () => lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
     localDictionary["minus"] = () => lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
     localDictionary["less-or-equal"] = () => lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
+    localDictionary["less"] = () => lookup.evaluateBuiltInLess(toWork, functionDefinition, localContext);
+    localDictionary["more"] = () => lookup.evaluateBuiltInMore(toWork, functionDefinition, localContext);
+    localDictionary["more-or-equal"] = () => lookup.evaluateBuiltInMoreOrEqual(toWork, functionDefinition, localContext);
+    localDictionary["not-equal"] = () => lookup.evaluateBuiltInNotEqual(toWork, functionDefinition, localContext);
+    localDictionary["equal"] = () => lookup.evaluateBuiltInEqual(toWork, functionDefinition, localContext);
     localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
     localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
