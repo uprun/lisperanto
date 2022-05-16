@@ -617,16 +617,24 @@ lookup.tryRestoreFunction = function(value)
 
 lookup.addEvaluationVariables = function(obj)
 {
-    obj.evaluationResult = ko.observable("");
+    obj.evaluationResult = ko.observable(lookup.generateFailToEvaluatePlusMessage("not-computed-yet"));
     obj.prettyPrintEvaluationResult = ko.computed(function()
         {
-            if( lookup.isFailToEvaluate(obj.evaluationResult()) )
+            const result = obj.evaluationResult();
+            if( lookup.isFailToEvaluate(result) )
             {
-                return "[failed to evaluate]";
+                if ( lookup.isFieldPresent(result, "message"))
+                {
+                    return "[failed to evaluate] : " + result.message;
+                }
+                else
+                {
+                    return "[failed to evaluate]";
+                }
             }
             else
             {
-                return obj.evaluationResult();
+                return result.value + " [" + result.type + "]";
             }
         }
     );
@@ -1200,11 +1208,18 @@ lookup.evaluate = function(guid, context)
                 }
                 if(toWork.type === 'constant-number')
                 {
-                    return toWork.value;
+                    var result = {};
+                    result.value = toWork.value;
+                    result.type = "number";
+                    return result;
                 }
                 if(toWork.type === 'constant-int')
                 {
-                    return toWork.value;
+                    // just remember that 'constant-int' is deprecated already as of some time before
+                    var result = {};
+                    result.value = toWork.value;
+                    result.type = "number"; // yep type is number, because there will be no ints
+                    return result;
                 }
             }
         }
@@ -1240,14 +1255,10 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
 
     if
     ( 
-        lookup.isFailToEvaluate(check)
+        check.type === "boolean"
     )
     {
-        return lookup.generateFailToEvaluate();
-    }
-    else
-    {
-        if(check)
+        if(check.value === "true")
         {
             var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
             return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
@@ -1258,6 +1269,10 @@ lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
             return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
         }
     }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
 };
 
 
@@ -1266,15 +1281,14 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value + b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a + b;
 };
 
 lookup.generateFailToEvaluate = function()
@@ -1284,6 +1298,29 @@ lookup.generateFailToEvaluate = function()
     };
     return obj;
 };
+
+lookup.generateFailToEvaluatePlusMessage = function(message)
+{
+    var result = lookup.generateFailToEvaluate();
+    result.message = message;
+    return result;
+};
+
+lookup.generateRecordWithType = function(type)
+{
+    var obj = 
+    {
+        type: type
+    };
+    return obj;
+};
+
+lookup.generateRecordNumber = function(value)
+{
+    var toReturn = lookup.generateRecordWithType("number");
+    toReturn["value"] = value;
+    return toReturn;
+}
 
 lookup.isFailToEvaluate = function(obj)
 {
@@ -1295,15 +1332,24 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+
+    if (a.type === "number" && b.type === "number")
+    {
+        var result = lookup.generateRecordWithType("boolean");
+        if (a.value <= b.value)
+        {
+            result.value = "true";
+        }
+        else
+        {
+            result.value = "false";
+        }
+        return result;
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a <= b;
 };
 
 lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
@@ -1311,15 +1357,14 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value - b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a - b;
 };
 
 lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localContext) {
@@ -1327,15 +1372,14 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        return lookup.generateRecordNumber(a.value * b.value);
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a * b;
 };
 
 lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext) {
@@ -1343,15 +1387,21 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     var a = lookup.evaluate(aParameter.guidToUse(), localContext);
     var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if
-    ( 
-        lookup.isFailToEvaluate(a)
-        || lookup.isFailToEvaluate(b)
-    )
+    if (a.type === "number" && b.type === "number")
+    {
+        if (b.value == 0)
+        {
+            return lookup.generateFailToEvaluatePlusMessage("error--division-by-zero");
+        }
+        else
+        {
+            return lookup.generateRecordNumber(a.value / b.value);
+        }
+    }
+    else
     {
         return lookup.generateFailToEvaluate();
     }
-    return a / b;
 };
 
 lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext)
