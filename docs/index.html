@@ -331,6 +331,7 @@
     </script>
     <script type="text/html" id="parameter-value-template">
         <div>
+            <!-- <span data-bind="text: lookup.customObjects[$data].guidToUse" ></span> -->
             <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
             </div>
             <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined", attr: {id: $data} '>
@@ -375,8 +376,25 @@
         </span>
         
     </script>
+    <script type="text/html" id="record-reference-template">
+        <span
+            data-bind="
+            attr: {id: $data.id}"
+            >
+            <span data-bind="text: 'record-reference: ['"></span><span 
+                class="my-function-name" 
+                data-bind="
+                    text: lookup.customObjects[$data.recordGuid].name(), 
+                    click: $root.openOmniBoxForRecordReference, 
+                    attr: {id: 'record-reference--name-' + $data.id}"
+                >
+            </span><span data-bind="text: ']'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
+
+        </span>
+        
+    </script>
     <script type="text/html" id="body-element-template">
-        <span data-bind="if:typeof($data) !== 'undefined' ">
+        <span data-bind="if:typeof($data) !== 'undefined' && typeof(lookup.customObjects[$data]) !== 'undefined' ">
             <span data-bind='if: lookup.customObjects[$data].type === "constant-number" '>
                 <span data-bind="template: { name: 'constant-number-template', data: lookup.customObjects[$data] }"></span>
             </span>
@@ -388,6 +406,9 @@
             </span>
             <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                 <span data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></span>
+            </span>
+            <span data-bind='if: lookup.customObjects[$data].type === "record-reference" '>
+                <span data-bind="template: { name: 'record-reference-template', data: lookup.customObjects[$data] }"></span>
             </span>
         </span>
     </script>
