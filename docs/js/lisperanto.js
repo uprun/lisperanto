@@ -200,6 +200,10 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreRecordField(value);
                 }
+                if(value.type === "record-reference")
+                {
+                    lookup.customObjects[key] = lookup.tryRestoreRecordReference(value);
+                }
                 
             }
         }
@@ -213,6 +217,12 @@ lookup.tryRestoreRecordField = function(value)
     value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
     value.recordFieldValueGuidToUse = ko.observable(value.recordFieldValueGuidToUse);
     lookup.addTypeMissmatchForRecordField(value);
+    return value;
+};
+
+lookup.tryRestoreRecordReference = function(value)
+{
+    lookup.addEvaluationVariables(value);
     return value;
 };
 
@@ -503,7 +513,13 @@ lookup.builtInFunctionsArray = [
         id: "set-variable-value",
         name: "set-variable-value",
         parameters: ["name", "value"]
-    }
+    },
+    {
+        id: "get-field-value-from-record",
+        name: "get-field-value-from-record",
+        parameters: ["record", "field"]
+    },
+
 ];
 
 lookup.defineListOfPredefinedFunctions = function()
@@ -803,7 +819,7 @@ lookup.tryRestoreParameterValue = function(value)
 lookup.defineFunctionCall = function( functionGuid, objId)
 {
     var toWorkWith = lookup.customObjects[functionGuid];
-    var functionToCallName = toWorkWith.name
+    var functionToCallName = toWorkWith.name;
     var toAdd = lookup.createUIObject();
 
     toAdd.type = "function-usage";
@@ -826,6 +842,35 @@ lookup.defineFunctionCall = function( functionGuid, objId)
         guid: toAdd.id,
         functionName: functionToCallName,
         functionGuid: functionGuid
+    };
+    lookup.operationsPush(operation);
+
+    return toAdd.id;
+};
+
+
+lookup.defineRecordReference = function( recordGuid, objId)
+{
+    var toWorkWith = lookup.customObjects[recordGuid];
+    var recordReferenceName = toWorkWith.name;
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "record-reference";
+    toAdd.recordName = recordReferenceName;
+    toAdd.recordGuid = recordGuid;
+    lookup.addEvaluationVariables(toAdd);
+    toAdd.assignedToGuid = objId;
+
+
+    var operation = 
+    {
+        type: "operation",
+        operation: toAdd.type,
+        guid: toAdd.id,
+        recordName: recordReferenceName,
+        recordGuid: recordGuid,
+        assignedToGuid: toAdd.assignedToGuid
+        // should it be just extra field with serialized state of the record?
     };
     lookup.operationsPush(operation);
 
@@ -1005,9 +1050,36 @@ lookup.addFunction = function(funcObj, obj)
 
 };
 
+lookup.addRecordReference = function(funcObj, obj)
+{
+    var guid = lookup.defineRecordReference(funcObj.id, obj.id);
+    if(lookup.activeOperation() === "focusOnParameter" )
+    {
+        obj.guidToUse(guid);
+        var operation = 
+        {
+            operation: "set-parameter-value",
+            guidToUse: guid,
+            parameterValueGuid: obj.id
+        };
+        lookup.operationsPush(operation);
+    }
+    lookup.hideOmniBox();
+    lookup.goBackwardAndEvaluate(obj);
+    return guid;
+};
+
 lookup.addFunctionByClick = function(funcObj)
 {
-    lookup.addFunction(funcObj, lookup.focusedObj());
+    const type = lookup.customObjects[funcObj.id]["type"];
+    var map = {};
+    map["function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
+    map["built-in-function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
+    map["record"] = () => lookup.addRecordReference(funcObj, lookup.focusedObj());
+    if( lookup.isFieldPresent(map, type))
+    {
+        map[type]();
+    }
 };
 
 lookup.addSymbol = function(text, obj)
@@ -1246,6 +1318,14 @@ lookup.evaluate = function(guid, context)
                     result.type = "number"; // yep type is number, because there will be no ints
                     return result;
                 }
+                if (toWork.type === 'record-reference')
+                {
+                    var result = lookup.generateRecordWithType("record-reference");
+                    result.value = "ok";
+                    toWork.evaluationResult(result);
+                    return result;
+                }
+                return lookup.generateFailToEvaluate();
             }
         }
     }
@@ -2024,6 +2104,32 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     var foundAnchor = lookup.findAnchor();
 
     var foundUI = $("#function-name-" + caller.id)[0];
+    
+    lookup.desiredOffset = 
+    { 
+        x : foundAnchor.offsetWidth,
+        y : foundUI.offsetTop
+    };
+    
+    var foundRoot = $("#" + root.id)[0];
+    lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
+    lookup.desiredOffset.y += root.offsetY();
+};
+
+lookup.openOmniBoxForRecordReference = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.calledObj = caller;
+    lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
+    lookup.activeOperation("record-reference-IsSelected");
+
+    var root = lookup.findRoot(caller);
+    
+    lookup.filloutOmniBoxDataForFunction("record-reference--name-" + caller.id, lookup.canvasOmniBox, root);
+
+    var foundAnchor = lookup.findAnchor();
+
+    var foundUI = $("#record-reference--name-" + caller.id)[0];
     
     lookup.desiredOffset = 
     { 
