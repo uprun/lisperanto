@@ -658,24 +658,26 @@ lookup.tryRestoreFunction = function(value)
 
 lookup.addEvaluationVariables = function(obj)
 {
-    obj.evaluationResult = ko.observable(lookup.generateFailToEvaluatePlusMessage("not-computed-yet"));
+    obj.evaluationResult = ko.observable(lookup.generateRecordWithType("not-computed-yet"));
     obj.prettyPrintEvaluationResult = ko.computed(function()
         {
             const result = obj.evaluationResult();
-            if( lookup.isFailToEvaluate(result) )
+            var map = {};
+            map["fail-to-evaluate"] = () => "[failed to evaluate]";
+            map["record-reference"] = () => "[record-reference]";
+            map["not-computed-yet"] = () => "not-computed-yet";
+            map["error--division-by-zero"] = () => "error--division-by-zero";
+            map["boolean"] = () => result.value + " [" + result.type + "]";
+            map["number"] = () => result.value + " [" + result.type + "]";
+            map["string"] = () => result.value + " [" + result.type + "]";
+
+            if( lookup.isFieldPresent(result, "type") && lookup.isFieldPresent(map, result.type))
             {
-                if ( lookup.isFieldPresent(result, "message"))
-                {
-                    return "[failed to evaluate] : " + result.message;
-                }
-                else
-                {
-                    return "[failed to evaluate]";
-                }
+                return map[result.type]();
             }
             else
             {
-                return result.value + " [" + result.type + "]";
+                return "unexpected";
             }
         }
     );
@@ -1320,9 +1322,14 @@ lookup.evaluate = function(guid, context)
                 }
                 if (toWork.type === 'record-reference')
                 {
-                    var result = lookup.generateRecordWithType("record-reference");
-                    result.value = "ok";
-                    toWork.evaluationResult(result);
+                    toWork.evaluationResult(toWork);
+                    return toWork;
+                }
+                if(toWork.type === 'constant-string')
+                {
+                    var result = {};
+                    result.value = toWork.value;
+                    result.type = "string";
                     return result;
                 }
                 return lookup.generateFailToEvaluate();
@@ -1402,13 +1409,6 @@ lookup.generateFailToEvaluate = function()
         type: "fail-to-evaluate"
     };
     return obj;
-};
-
-lookup.generateFailToEvaluatePlusMessage = function(message)
-{
-    var result = lookup.generateFailToEvaluate();
-    result.message = message;
-    return result;
 };
 
 lookup.generateRecordWithType = function(type)
@@ -1621,7 +1621,7 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     {
         if (b.value == 0)
         {
-            return lookup.generateFailToEvaluatePlusMessage("error--division-by-zero");
+            return lookup.generateRecordWithType("error--division-by-zero");
         }
         else
         {
@@ -1681,6 +1681,51 @@ lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, lo
     }
     
 };
+
+lookup.evaluateBuiltInGetFieldValueFromRecord = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var recordParameter = lookup.findBuiltInParameterById(toWork.parameters, "record", functionDefinition);
+    var recordParameterValue = lookup.evaluate(recordParameter.guidToUse(), localContext);
+    var fieldParameter = lookup.findBuiltInParameterById(toWork.parameters, "field", functionDefinition);
+    //var nameParameterValue = lookup.evaluate(nameParameter.guidToUse(), localContext);
+    var fieldParameterValue = lookup.customObjects[fieldParameter.guidToUse()];
+
+    if (recordParameterValue.type === "record-reference" 
+        && typeof(fieldParameterValue) !== "undefined" 
+        && fieldParameterValue.type === "symbol-usage")
+    {
+        var recordEntry = lookup.customObjects[recordParameterValue.recordGuid];
+        var symbol = fieldParameterValue.symbolName;
+        var result = recordEntry.fields()
+            .find(fieldGuid => { 
+                const newLocal = lookup.customObjects[fieldGuid];
+                return newLocal.recordFieldName() === symbol;
+            });
+        if (typeof(result) === "undefined")
+        {
+            return lookup.generateFailToEvaluate();
+        }
+        else
+        {
+            var fieldObj = lookup.customObjects[result];
+            if (typeof(fieldObj) === "undefined")
+            {
+                return lookup.generateFailToEvaluate();
+            }
+            else
+            {
+                var result = lookup.evaluate(fieldObj.recordFieldValueGuidToUse(), localContext);
+                return result;
+            }
+        }
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+    
+};
+
 
 
 lookup.listOfOpenElements = ko.observableArray([]);
@@ -2546,6 +2591,7 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
     localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
     localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
+    localDictionary["get-field-value-from-record"] = () => lookup.evaluateBuiltInGetFieldValueFromRecord(toWork, functionDefinition, localContext, context);
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
