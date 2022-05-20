@@ -519,6 +519,11 @@ lookup.builtInFunctionsArray = [
         name: "get-field-value-from-record",
         parameters: ["record", "field"]
     },
+    {
+        id: "set-field-value-in-record",
+        name: "set-field-value-in-record",
+        parameters: ["record", "field", "value"] // what to do when there is no field present?
+    },
 
 ];
 
@@ -667,6 +672,7 @@ lookup.addEvaluationVariables = function(obj)
             map["record-reference"] = () => "[record-reference]";
             map["not-computed-yet"] = () => "not-computed-yet";
             map["error--division-by-zero"] = () => "error--division-by-zero";
+            map["successful-set-of-record-field"] = () => "successful-set-of-record-field";
             map["boolean"] = () => result.value + " [" + result.type + "]";
             map["number"] = () => result.value + " [" + result.type + "]";
             map["string"] = () => result.value + " [" + result.type + "]";
@@ -1158,7 +1164,8 @@ lookup.addRecordField = function()
     
 
     var obj = lookup.focusedObj();
-    var toAdd = lookup.defineRecordField(lookup.omniBoxTextInput().trim(), obj.id);
+    const fieldName = lookup.omniBoxTextInput().trim();
+    var toAdd = lookup.defineRecordField(fieldName, obj.id);
     obj.fields.push(toAdd);
     
     var operation = 
@@ -1429,7 +1436,11 @@ lookup.generateRecordNumber = function(value)
 
 lookup.isFailToEvaluate = function(obj)
 {
-    return lookup.isFieldPresent(obj, "type") && obj.type === "fail-to-evaluate";
+    var map = {};
+    map["fail-to-evaluate"] = true;
+    map["error--division-by-zero"] = true;
+    map["not-computed-yet"] = true;
+    return lookup.isFieldPresent(obj, "type") &&  lookup.isFieldPresent(map, obj.type);
 };
 
 lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
@@ -1696,11 +1707,7 @@ lookup.evaluateBuiltInGetFieldValueFromRecord = function(toWork, functionDefinit
     {
         var recordEntry = lookup.customObjects[recordParameterValue.recordGuid];
         var symbol = fieldParameterValue.symbolName;
-        var result = recordEntry.fields()
-            .find(fieldGuid => { 
-                const newLocal = lookup.customObjects[fieldGuid];
-                return newLocal.recordFieldName() === symbol;
-            });
+        var result = lookup.findRecordFieldByName(recordEntry, symbol);
         if (typeof(result) === "undefined")
         {
             return lookup.generateFailToEvaluate();
@@ -1716,6 +1723,60 @@ lookup.evaluateBuiltInGetFieldValueFromRecord = function(toWork, functionDefinit
             {
                 var result = lookup.evaluate(fieldObj.recordFieldValueGuidToUse(), localContext);
                 return result;
+            }
+        }
+    }
+    else
+    {
+        return lookup.generateFailToEvaluate();
+    }
+    
+};
+
+lookup.findRecordFieldByName = function(recordEntry, name)
+{
+    return recordEntry.fields()
+        .find(fieldGuid => { 
+            const newLocal = lookup.customObjects[fieldGuid];
+            return newLocal.recordFieldName() === name;
+        });
+};
+
+
+lookup.evaluateBuiltInSetFieldValueInRecord = function(toWork, functionDefinition, localContext, previousContext)
+{
+    var recordParameter = lookup.findBuiltInParameterById(toWork.parameters, "record", functionDefinition);
+    var recordParameterValue = lookup.evaluate(recordParameter.guidToUse(), localContext);
+    var fieldParameter = lookup.findBuiltInParameterById(toWork.parameters, "field", functionDefinition);
+    //var nameParameterValue = lookup.evaluate(nameParameter.guidToUse(), localContext);
+    var fieldParameterValue = lookup.customObjects[fieldParameter.guidToUse()];
+
+    var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
+    var valueParameterValue = lookup.evaluate(valueParameter.guidToUse(), localContext);
+
+    if (recordParameterValue.type === "record-reference" 
+        && typeof(fieldParameterValue) !== "undefined" 
+        && fieldParameterValue.type === "symbol-usage"
+        && lookup.isFailToEvaluate(valueParameterValue) === false)
+    {
+        var recordEntry = lookup.customObjects[recordParameterValue.recordGuid];
+        var symbol = fieldParameterValue.symbolName;
+        var result = lookup.findRecordFieldByName(recordEntry, symbol);
+        if (typeof(result) === "undefined")
+        {
+            return lookup.generateFailToEvaluate();
+        }
+        else
+        {
+            var fieldObj = lookup.customObjects[result];
+            if (typeof(fieldObj) === "undefined")
+            {
+                return lookup.generateFailToEvaluate();
+            }
+            else
+            {
+                lookup.replaceValueInRecordField(fieldObj, valueParameter.guidToUse())
+                return lookup.generateRecordWithType("successful-set-of-record-field");
             }
         }
     }
@@ -2249,16 +2310,7 @@ lookup.transformSymbolUsageToStringConstant = function(caller)
     if(valueObj.type === 'symbol-usage')
     {
         var guid = lookup.defineConstantString(valueObj.symbolName);
-        obj.recordFieldValueGuidToUse(guid);
-
-        var operation = 
-        {
-            operation: "replace-record-field-value",
-            recordFieldGuid: obj.id,
-            newGuid: guid,
-            previousGuid: previousGuid
-        };
-        lookup.operationsPush(operation);
+        lookup.replaceValueInRecordField(obj, guid);
 
     }
 
@@ -2592,6 +2644,8 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
     localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
     localDictionary["get-field-value-from-record"] = () => lookup.evaluateBuiltInGetFieldValueFromRecord(toWork, functionDefinition, localContext, context);
+    localDictionary["set-field-value-in-record"] = () => lookup.evaluateBuiltInSetFieldValueInRecord(toWork, functionDefinition, localContext, context);
+    
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
@@ -2666,6 +2720,19 @@ lookup.addTypeMissmatchForRecordField = function(value)
         });
     }
 };
+
+lookup.replaceValueInRecordField = function(obj, guid) {
+    var previousGuid = obj.recordFieldValueGuidToUse();
+    obj.recordFieldValueGuidToUse(guid);
+
+    var operation = {
+        operation: "replace-record-field-value",
+        recordFieldGuid: obj.id,
+        newGuid: guid,
+        previousGuid: previousGuid
+    };
+    lookup.operationsPush(operation);
+}
 
 function Lisperanto()
 {
