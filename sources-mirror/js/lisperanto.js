@@ -706,6 +706,9 @@ lookup.createUIObject = function()
 
 lookup.defineRecord = function()
 {
+    // everything will be described by RDF [Resource Descriptive Framework] from now, 2022-06-03 17:45 GMT+3, Odesa, Ukraine
+    // inspired by many times hearing about semantic web and by re-watching Rich Hickey video about Clojure 
+    // 
     var toAdd = lookup.createUIObject();
     toAdd.type = "record";
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
@@ -1420,16 +1423,19 @@ lookup.generateFailToEvaluate = function()
 
 lookup.generateRecordWithType = function(type)
 {
-    var obj = 
-    {
-        type: type
-    };
+    var obj = lookup.defineRecord();
+    var typeField = lookup.defineRecordField("type", obj.id);
+    
+    lookup.addTypeForFieldInRecordFromOmniBox
+    
+    lookup.operationsPush(operation);
     return obj;
 };
 
 lookup.generateRecordNumber = function(value)
 {
     var toReturn = lookup.generateRecordWithType("number");
+    lookup.
     toReturn["value"] = value;
     return toReturn;
 }
@@ -1775,7 +1781,7 @@ lookup.evaluateBuiltInSetFieldValueInRecord = function(toWork, functionDefinitio
             }
             else
             {
-                lookup.replaceValueInRecordField(fieldObj, valueParameter.guidToUse())
+                lookup.replaceValueInRecordField(fieldObj, valueParameter.guidToUse()); // I will need to return records as a result of the evaluation and use them here instead of evaluation result
                 return lookup.generateRecordWithType("successful-set-of-record-field");
             }
         }
@@ -2344,6 +2350,7 @@ lookup.openFunctionDefinitionFromOmniBox = function(obj)
 
 lookup.addTypeForFieldInRecordFromOmniBox = function(obj)
 {
+    // bad code?
     event.stopPropagation();
     var fieldToAddTypeTo = lookup.focusedObj();
     fieldToAddTypeTo.recordFieldTypeGuidToUse(obj.id);
