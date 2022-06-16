@@ -661,9 +661,18 @@ lookup.tryRestoreFunction = function(value)
     return value;
 };
 
+var not_computed = {
+    type: "not-computed-yet"
+};
+
+lookup.getNotComputedSingletonRecord = function()
+{
+    return not_computed;
+};
+
 lookup.addEvaluationVariables = function(obj)
 {
-    obj.evaluationResult = ko.observable(lookup.generateRecordWithType("not-computed-yet"));
+    obj.evaluationResult = ko.observable(lookup.getNotComputedSingletonRecord());
     obj.prettyPrintEvaluationResult = ko.computed(function()
         {
             const result = obj.evaluationResult();
@@ -708,11 +717,24 @@ lookup.defineRecord = function()
 {
     // everything will be described by RDF [Resource Descriptive Framework] from now, 2022-06-03 17:45 GMT+3, Odesa, Ukraine
     // inspired by many times hearing about semantic web and by re-watching Rich Hickey video about Clojure 
-    // 
+    // Jhon[object-13123123] lives-in[predicate-155133] some-place[obj-6755]
+    // some-place[]
+    var info = {
+        id: "local-id",
+        object: "id",
+        predicate: "another-id",
+        subject: "third-id",
+        "created-by": "user-id",
+        "creation-time": "time-object-id",
+        "previous-known-statement": "previous-statement-id",
+        "signed-rsa-public-part": "signed-to-show-authenticy"
+    };
     var toAdd = lookup.createUIObject();
     toAdd.type = "record";
     toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
     toAdd.fields = ko.observableArray([]);
+
+    
 
     var operation = 
     {
@@ -723,11 +745,42 @@ lookup.defineRecord = function()
     return toAdd;
 };
 
+lookup.create_RDF_Entry = function()
+{
+    var toAdd = lookup.createUIObject();
+    toAdd.type = "rdf-entry";
+
+    var operation = 
+    {
+        operation: "create-rdf-entry",
+        guid: toAdd.id
+    };
+    lookup.operationsPush(operation);
+    return toAdd;
+
+
+    lookup.addPredicate(
+        {
+            "object-id": toAdd.id,
+            "predicate": "has-type",
+            "subject": "record"
+        }
+    );
+};
+
 
 lookup.createAndShowRecord = function()
 {
     lookup.hideOmniWheel();
     var toShow = lookup.defineRecord();
+    lookup.openElement(toShow);
+    lookup.hideOmniBox();
+};
+
+lookup.create_and_show_RDF_entry = function()
+{
+    lookup.hideOmniWheel();
+    var toShow = lookup.create_RDF_Entry();
     lookup.openElement(toShow);
     lookup.hideOmniBox();
 };

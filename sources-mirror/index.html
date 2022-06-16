@@ -45,8 +45,8 @@
                     function 
             </div>
             <div style="font-size: 1rem; bottom: 2rem; transform: translate(-50%, 0); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
-                data-bind="click: $root.createAndShowRecord">
-                    record 
+                data-bind="click: $root.create_and_show_RDF_entry">
+                    RDF-entry 
             </div>
             <div style="font-size: 1rem; left: 2rem; transform: translate(0, -50%); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
                 data-bind="click: $root.openSandbox">
@@ -257,6 +257,27 @@
             </div>
         </div>
     </script>
+
+    <script type="text/html" id="rdf-entry-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element"
+            data-bind="
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    attr: 
+                    {
+                        id: 'rdf-entry-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: id"></span>
+            </div>
+        </div>
+    </script>
+
+    
     <script type="text/html" id="function-definition-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -435,6 +456,10 @@
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'record' -->
                         <!-- ko template: { name: 'record-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'rdf-entry' -->
+                        <!-- ko template: { name: 'rdf-entry-template', data: $data} -->
                         <!-- /ko -->
                     <!-- /ko -->
                 </div>
