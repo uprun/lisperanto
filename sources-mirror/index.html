@@ -78,7 +78,9 @@
                         || $root.activeOperation() === 'addingFieldInRecord'
                         || $root.activeOperation() === 'addingFieldTypeInRecord'
                         || $root.activeOperation() === 'addingFieldValueInRecord'
-                        || $root.activeOperation() === 'global-omni-box-activated' ">
+                        || $root.activeOperation() === 'global-omni-box-activated'
+                        || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
+                        || $root.activeOperation() === 'add_RDF_subject_in_statement' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -116,6 +118,24 @@
                             add 
                     </div>
                 </div>
+
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_statement_predicate_to_rdf_entry">
+                            add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add_RDF_subject_in_statement'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_maybe_existing_RDF_subject_in_statement">
+                            add 
+                    </div>
+                </div>
+
+                
+                
 
                 <div 
                     data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
@@ -159,6 +179,18 @@
                         </div>
                         
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-predicate-in-statement' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_predicate_definition_from_statement">
+                            open definition
+                        </div>
+                    </div>
+
+                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-subject-in-statement' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_subject_definition_from_statement">
+                            open definition
+                        </div>
+                    </div>
+
                     <div data-bind="if: $root.activeOperation() === 'focusOnSandboxHeaderDefinition' ">
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.clearSandbox">
                             clear
@@ -190,6 +222,36 @@
             </div>
         </div>
     </script>
+    <script type="text/html" id="rdf-statement-template">
+        <div 
+            data-bind="
+                using: lookup.customObjects[$data],
+                attr: {id: 'rdf-statement--' + $data}">
+            <strong data-bind="
+                click: $root.open_OmniBox_for_RDF_predicate_in_statement,
+                text: $root.customObjects[$data.predicate_id()].name,
+                attr: {id: 'rdf-predicate-in-statement--' + $data.id}"></strong>
+            <span class="webpad-color-orange">:</span>
+            <span data-bind="
+                if: typeof($data.subject_id()) !== 'undefined'
+                ">
+                <strong data-bind="
+                    click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
+                    text: $root.customObjects[$data.subject_id()].name,
+                    attr: {id: 'rdf-subject-in-statement--' + $data.id}"></strong>
+            </span>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind="
+                        visible: typeof($data.subject_id()) === 'undefined',
+                        click: $root.open_OmniBox_for_RDF_subject_in_statement, 
+                        attr: {id: 'add-RDF-subject-in-statement--' + $data.id}">
+                    + subject
+            </div>
+        </div>
+
+    </script>
+
+
     <script type="text/html" id="record-field-template">
         <div 
             data-bind="
@@ -273,6 +335,44 @@
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
                 <span class="my-function-name" style="font-size: 1rem;" data-bind="text: id"></span>
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                data-bind=" 
+                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
+                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
+                    + statement
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="rdf-predicate-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element"
+            data-bind="
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    attr: 
+                    {
+                        id: 'rdf-predicate-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
+            </div>
+            <div style="margin-left: 2rem; font-size: 1rem;" >
+                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: id"></span>
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                data-bind=" 
+                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
+                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
+                    + statement
             </div>
         </div>
     </script>
@@ -460,6 +560,10 @@
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'rdf-entry' -->
                         <!-- ko template: { name: 'rdf-entry-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'rdf-predicate' -->
+                        <!-- ko template: { name: 'rdf-predicate-template', data: $data} -->
                         <!-- /ko -->
                     <!-- /ko -->
                 </div>
