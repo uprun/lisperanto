@@ -334,7 +334,45 @@
                         id: 'rdf-entry-header--' + $data.id
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: id"></span>
+            </div>
+            <div
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-entry-id-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'id',
+                    attr: {id: 'rdf-entry-id-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span>
+                    <span 
+                        style="font-size: 1rem;"
+                        class="my-function-name"
+                        data-bind="
+                            text: $data.id,
+                            attr: {id: 'rdf-entry-id-value--' + $data.id}"></span>
+                </span>
+            </div>
+            <div 
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-entry-name-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'name',
+                    attr: {id: 'rdf-entry-name-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span data-bind="
+                    if: typeof($data.name()) !== 'undefined'
+                    ">
+                    <strong data-bind="
+                        text: $data.name,
+                        attr: {id: 'rdf-entry-name-value--' + $data.id}"></strong>
+                </span>
+                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="
+                            visible: typeof($data.name()) === 'undefined',
+                            attr: {id: 'add-rdf-entry-name-value--' + $data.id}">
+                        + name
+                </div>
             </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
             </div>
