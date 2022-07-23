@@ -400,6 +400,70 @@
         </div>
     </script>
 
+    <script type="text/html" id="rdf-real-statement-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element"
+            data-bind="
+                attr: 
+                {
+                    id: $data.id
+                }">
+            <div 
+                data-bind="
+                    attr: 
+                    {
+                        id: 'rdf-real-statement-header--' + $data.id
+                    }" >
+                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
+            </div>
+            <div
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-real-statement-id-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'id',
+                    attr: {id: 'rdf-real-statement-id-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span>
+                    <span 
+                        style="font-size: 1rem;"
+                        class="my-function-name"
+                        data-bind="
+                            text: $data.id,
+                            attr: {id: 'rdf-real-statement-id-value--' + $data.id}"></span>
+                </span>
+            </div>
+            <div 
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-real-statement-object_id-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'object_id',
+                    attr: {id: 'rdf-real-statement-object_id-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span data-bind="
+                    if: typeof($data.object_id) !== 'undefined'
+                    ">
+                    <strong data-bind="
+                        text: $data.object_id,
+                        attr: {id: 'rdf-statement-object_id-value--' + $data.object_id}"></strong>
+                </span>
+            </div>
+            <div 
+                style="margin-left: 2rem;"
+                class="webpad-color-light-pink">
+                Statements:
+            </div>
+            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
+            </div>
+            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                data-bind=" 
+                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
+                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
+                    + statement
+            </div>
+        </div>
+    </script>
+
     <script type="text/html" id="rdf-predicate-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -657,6 +721,10 @@
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'rdf-predicate' -->
                         <!-- ko template: { name: 'rdf-predicate-template', data: $data} -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.type === 'rdf-statement' -->
+                        <!-- ko template: { name: 'rdf-real-statement-template', data: $data} -->
                         <!-- /ko -->
                     <!-- /ko -->
                 </div>

@@ -1435,6 +1435,13 @@ lookup.add_statement_predicate_to_rdf_entry = function()
     const predicateName = lookup.omniBoxTextInput().trim();
     var toAdd_id = lookup.define_rdf_statement(predicateName, obj.id);
     obj.statements.push(toAdd_id);
+    var operation = 
+    {
+        operation: "add-rdf-statement-to-rdf-entry",
+        statement_id: toAdd_id,
+        object_id: obj.id
+    };
+    lookup.operationsPush(operation);
     lookup.hideOmniBox();
 
 };
