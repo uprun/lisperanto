@@ -710,7 +710,8 @@ lookup.defaultNamesForFunctions =
     "Donato di Niccolo di Betto Bardi",
     "Raffaello Sanzio da Urbino",
     "Michelangelo di Lodovico Buonarroti Simoni",
-    "Premature optimization is the root of all evil - Sir Tony Hoare"
+    "Premature optimization is the root of all evil - Sir Tony Hoare",
+    "Do not think without examples - Oleksandr Kryvonos"
 ];
 
 lookup.getRandomInt = function(max) {
