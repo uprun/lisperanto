@@ -765,7 +765,7 @@ lookup.try_restore_RDF_entry = function(value)
 
 lookup.try_restore_RDF_statement = function(value)
 {
-    value.predicate_id = ko.observable(value.subject_id);
+    value.predicate_id = ko.observable(value.predicate_id);
     value.subject_id = ko.observable(value.subject_id);
     value.statements = ko.observableArray(value.statements);
     return value;
