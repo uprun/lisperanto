@@ -245,7 +245,7 @@
                         visible: typeof($data.subject_id()) === 'undefined',
                         click: $root.open_OmniBox_for_RDF_subject_in_statement, 
                         attr: {id: 'add-RDF-subject-in-statement--' + $data.id}">
-                    + subject
+                    + rdf-subject
             </div>
         </div>
 
@@ -374,6 +374,11 @@
                         + name
                 </div>
             </div>
+            <div 
+                style="margin-left: 2rem;"
+                class="webpad-color-light-pink">
+                Statements:
+            </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
             </div>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
@@ -399,10 +404,50 @@
                         id: 'rdf-predicate-header--' + $data.id
                     }" >
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
             </div>
-            <div style="margin-left: 2rem; font-size: 1rem;" >
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: id"></span>
+            <div
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-predicate-id-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'id',
+                    attr: {id: 'rdf-predicate-id-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span>
+                    <span 
+                        style="font-size: 1rem;"
+                        class="my-function-name"
+                        data-bind="
+                            text: $data.id,
+                            attr: {id: 'rdf-predicate-id-value--' + $data.id}"></span>
+                </span>
+            </div>
+            <div 
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-predicate-name-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'name',
+                    attr: {id: 'rdf-predicate-name-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span data-bind="
+                    if: typeof($data.name()) !== 'undefined'
+                    ">
+                    <strong data-bind="
+                        text: $data.name,
+                        attr: {id: 'rdf-predicate-name-value--' + $data.id}"></strong>
+                </span>
+                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="
+                            visible: typeof($data.name()) === 'undefined',
+                            attr: {id: 'add-rdf-predicate-name-value--' + $data.id}">
+                        + name
+                </div>
+            </div>
+            <div 
+                style="margin-left: 2rem;"
+                class="webpad-color-light-pink">
+                Statements:
             </div>
             <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
             </div>
