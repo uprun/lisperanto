@@ -58,6 +58,53 @@ lookup.functionsLookup = ko.computed(function()
     
 });
 
+
+lookup.somethingChanged = ko.observable(0);
+
+lookup.filteredSearch = ko.computed(
+    function()
+    {
+        var changeOccured = lookup.somethingChanged();
+        var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
+        var filtered = [];
+        const availableKeys = Object.keys(lookup.customObjects);
+
+        const mapped = ko.utils.arrayMap(availableKeys, function(key) {
+            const obj = lookup.customObjects[key];
+            var name = "";
+            if(lookup.isFieldPresent(obj, "name"))
+            {
+                name = obj["name"]();
+            }
+            if(typeof(name) === "undefined" || name === "")
+            {
+                name = "no-name " + obj.id;
+            }
+            name = obj.type + " " + name;
+            
+            return { 
+                id: key, 
+                text: name
+            };
+            
+        });
+
+        if(searchQuery === "")
+        {
+            filtered = mapped;
+        }
+        else
+        {
+            filtered = ko.utils.arrayFilter(mapped, function(item)
+            {
+                return item.text.toLowerCase().indexOf(searchQuery) >= 0;
+            });
+        }
+
+        return filtered;
+    }
+);
+
 lookup.typesArray = ko.observableArray([]);
 lookup.typesLookup = ko.computed(function()
 {
@@ -84,6 +131,8 @@ lookup.typesLookup = ko.computed(function()
     });
     
 });
+
+
 
 lookup.operations = [];
 
@@ -121,6 +170,7 @@ lookup.operationsPush = function(some)
     }
     var data = JSON.stringify(toSerialize);
     localStorage.setItem('customObjects', data);
+    lookup.somethingChanged(lookup.somethingChanged() + 1);
     // TODO: refresh functionsArray
     // on load refresh functions array
     // on load first  load data because there might not be any saved data then set default functions then if there are not present
@@ -212,9 +262,20 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.try_restore_RDF_predicate(value);
                 }
+                if(value.type === "rdf-entry") 
+                {
+                    lookup.customObjects[key] = lookup.try_restore_RDF_entry(value);
+                }
+                if(value.type === "rdf-statement") 
+                {
+                    lookup.customObjects[key] = lookup.try_restore_RDF_statement(value);
+                }
+
+                
                 
                 
             }
+            lookup.somethingChanged(lookup.somethingChanged() + 1);
         }
     }
     
@@ -691,7 +752,22 @@ lookup.tryRestoreFunction = function(value)
 lookup.try_restore_RDF_predicate = function(value)
 {
     value.name = ko.observable(value.name);
-    value.statements = ko.observable(value.statements);
+    value.statements = ko.observableArray(value.statements);
+    return value;
+};
+
+lookup.try_restore_RDF_entry = function(value)
+{
+    value.name = ko.observable(value.name);
+    value.statements = ko.observableArray(value.statements);
+    return value;
+};
+
+lookup.try_restore_RDF_statement = function(value)
+{
+    value.predicate_id = ko.observable(value.subject_id);
+    value.subject_id = ko.observable(value.subject_id);
+    value.statements = ko.observableArray(value.statements);
     return value;
 };
 
@@ -1377,6 +1453,28 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
             statement_id: obj.id,
             subject_id: subject_id,
             subject_name: rdf_name
+        };
+        lookup.operationsPush(operation);
+    }
+
+
+    lookup.hideOmniBox();
+
+};
+
+
+lookup.add_name_to_rdf_entry = function()
+{
+    var obj = lookup.focusedObj();
+    const rdf_name = lookup.omniBoxTextInput().trim();
+    if ( typeof(obj.name()) === 'undefined')
+    {
+        obj.name(rdf_name);
+        var operation = 
+        {
+            operation: "add-name-to-rdf-entry",
+            object_id: obj.id,
+            object_name: rdf_name
         };
         lookup.operationsPush(operation);
     }
@@ -2490,6 +2588,15 @@ lookup.open_OmniBox_for_adding_statement_to_rdf_entry = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-statement-to-rdf-entry--' + caller.id, lookup.canvasOmniBox, caller);
 };
 
+lookup.open_OmniBox_for_adding_name_to_rdf_entry = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("add-name-to-rdf-entry");
+
+    lookup.filloutOmniBoxDataForFunction('add-rdf-entry-name-value--' + caller.id, lookup.canvasOmniBox, caller);
+};
+
 lookup.openOmniBoxForFieldTypeInRecord = function(caller)
 {
     lookup.hideOmniBox();
@@ -2799,6 +2906,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             else if(lookup.activeOperation() === "add_RDF_subject_in_statement") 
             {
                 lookup.add_maybe_existing_RDF_subject_in_statement();
+            }
+            else if(lookup.activeOperation() === "add-name-to-rdf-entry")
+            {
+                lookup.add_name_to_rdf_entry();
             }
             else if(lookup.activeOperation() === "global-omni-box-activated")
             {
