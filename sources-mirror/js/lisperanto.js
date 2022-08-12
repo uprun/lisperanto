@@ -69,7 +69,13 @@ lookup.filteredSearch = ko.computed(
         var filtered = [];
         const availableKeys = Object.keys(lookup.customObjects);
 
-        const mapped = ko.utils.arrayMap(availableKeys, function(key) {
+        const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
+            {
+                const obj = lookup.customObjects[key];
+                return obj.type !== "rdf-statement";
+            });
+
+        const mapped = ko.utils.arrayMap(non_statements, function(key) {
             const obj = lookup.customObjects[key];
             var name = "";
             if(lookup.isFieldPresent(obj, "name"))
@@ -80,7 +86,6 @@ lookup.filteredSearch = ko.computed(
             {
                 name = "no-name " + obj.id;
             }
-            name = obj.type + " " + name;
             
             return { 
                 id: key, 
