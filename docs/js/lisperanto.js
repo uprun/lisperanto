@@ -882,10 +882,10 @@ lookup.createAndShowRecord = function()
     lookup.hideOmniBox();
 };
 
-lookup.create_and_show_RDF_entry = function()
+lookup.create_and_show_RDF_entry = function(name)
 {
     lookup.hideOmniWheel();
-    var toShow = lookup.create_RDF_Entry();
+    var toShow = lookup.create_RDF_Entry(name);
     lookup.openElement(toShow);
     lookup.hideOmniBox();
 };
@@ -2259,7 +2259,7 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
 
     $("#" + omniBox.id ).focus();
     lookup.preParseOmniBox();
-    event.stopPropagation();
+    event && event.stopPropagation();
 };
 
 lookup.showOmniWheel = function(omniWheel, offset) 
@@ -2878,6 +2878,16 @@ lookup.omniBoxInputKeyDown = function(data, event)
     return true;
 };
 
+lookup.create_RDF_entry_with_name_from_omnibox = function()
+{
+
+    const name = lookup.omniBoxTextInput().trim();
+    if(name.length === 0)
+        return;
+
+    lookup.create_and_show_RDF_entry(name);
+};
+
 lookup.omniBoxInputKeyPress = function(data, event) 
 {
     if(event.shiftKey)
@@ -2921,12 +2931,16 @@ lookup.omniBoxInputKeyPress = function(data, event)
             }
             else if(lookup.activeOperation() === "global-omni-box-activated")
             {
-                const availableFunctions = lookup.functionsLookup();
-                if(availableFunctions.length === 1)
+                const availableFunctions = lookup.filteredSearch();
+                if(availableFunctions.length > 0)
                 {
                     var functionToOpen = lookup.customObjects[availableFunctions[0].id];
                     lookup.openElement(functionToOpen);
                     lookup.hideOmniBox();
+                }
+                else
+                {
+                    lookup.create_RDF_entry_with_name_from_omnibox();
                 }
             }
             else
@@ -3325,19 +3339,20 @@ $(document).ready(function()
     lookup.loadFromStorage();
     lookup.backgroundApplySaved();
     viewModel.ApplyLookupToSelf();
-    lookup.defineListOfPredefinedFunctions();
-    lookup.defineListOfPredefinedTypes();
-    lookup.defineSandbox();
+    //lookup.defineListOfPredefinedFunctions();
+    //lookup.defineListOfPredefinedTypes();
+    //lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
-    lookup.openElement(lookup.sandbox());
-    lookup.restoreFunctionsArray();
-    lookup.restoreTypesArray();
-    lookup.restoreRecordsArray();
+    //lookup.openElement(lookup.sandbox());
+    //lookup.restoreFunctionsArray();
+    //lookup.restoreTypesArray();
+    //lookup.restoreRecordsArray();
     lookup.restore_RDF_predicates_array();
     lookup.defineTimerForFunctions();
     
-    
     ko.applyBindings(viewModel);
+
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: 0, y: 0});
 });
 
 
