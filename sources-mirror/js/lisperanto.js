@@ -3247,7 +3247,8 @@ lookup.bodyOnClick = function(e)
         }
         else
         {
-            lookup.showOmniWheel(lookup.omniWheel, offset);
+            //lookup.showOmniWheel(lookup.omniWheel, offset);
+            lookup.showOmniBox();
             //lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
