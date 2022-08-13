@@ -112,13 +112,6 @@
                             add 
                     </div>
                 </div>
-                <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldInRecord'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordField">
-                            add 
-                    </div>
-                </div>
 
                 <div 
                     data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
@@ -141,31 +134,11 @@
                             add 
                     </div>
                 </div>
-                
-
-                
-                
-
-                <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordFieldType">
-                            add 
-                    </div>
-                </div>
 
                 <div 
                     data-bind="if: $root.activeOperation() === 'global-omni-box-activated' && $root.omniBoxTextInput().trim().length != 0">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.create_RDF_entry_with_name_from_omnibox">
-                            add 
-                    </div>
-                </div>
-
-                <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldValueInRecord'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordFieldValue">
                             add 
                     </div>
                 </div>
