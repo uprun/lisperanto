@@ -187,8 +187,8 @@
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
-                        <div data-bind="foreach: $root.filteredSearch">
-                            <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_from_omnibox"></div>
                         </div>
                     </div>
                 </div>

@@ -947,8 +947,32 @@ lookup.define_rdf_statement = function(predicate, objId)
 
 lookup.rdf_predicates_Array = ko.observableArray([]);
 
-lookup.filtered_rdf_predicates_Array = ko.computed(function(){
+lookup.filtered_rdf_predicates_Array = ko.computed(function()
+{
+    var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
+    var filtered = [];
 
+    const mapped = ko.utils.arrayMap(lookup.rdf_predicates_Array(), function(obj) {
+        var name = obj["name"]();
+        return { 
+            id: obj.id, 
+            text: name
+        };
+    });
+
+    if(searchQuery === "")
+    {
+        filtered = mapped;
+    }
+    else
+    {
+        filtered = ko.utils.arrayFilter(mapped, function(item)
+        {
+            return item.text.toLowerCase().indexOf(searchQuery) >= 0;
+        });
+    }
+
+    return filtered;
 });
 
 lookup.find_or_create_rdf_predicate = function(predicate)
@@ -1156,13 +1180,15 @@ lookup.addParameter = function()
 };
 
 
-lookup.add_statement_predicate_to_rdf_entry = function()
+lookup.add_statement_predicate_to_rdf_entry = function(name)
 {
     // [lives-in] [Odesa]
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field
 
     var obj = lookup.focusedObj();
-    const predicateName = lookup.omniBoxTextInput().trim();
+    const predicateName = name || lookup.omniBoxTextInput().trim();
+    if(predicateName === "")
+        return;
     var toAdd_id = lookup.define_rdf_statement(predicateName, obj.id);
     obj.statements.push(toAdd_id);
     var operation = 
@@ -2221,6 +2247,13 @@ lookup.openFunctionDefinitionFromOmniBox = function(obj)
     lookup.hideOmniBox();
     var functionToOpen = lookup.customObjects[obj.id];
     lookup.openElement(functionToOpen);
+};
+
+lookup.add_existing_RDF_predicate_from_omnibox = function(obj)
+{
+    event.stopPropagation();
+    lookup.add_statement_predicate_to_rdf_entry(obj.text);
+    lookup.hideOmniBox();
 };
 
 lookup.openFunctionFromTheListOfFunctions = function(obj)
