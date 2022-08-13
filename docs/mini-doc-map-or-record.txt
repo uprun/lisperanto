@@ -28,3 +28,21 @@ what if there will be a destinction between hosted-code and between Lisperanto-c
 
 2021-11-27
 i need a dictionary like map
+
+
+
+RDF
+// everything will be described by RDF [Resource Descriptive Framework] from now, 2022-06-03 17:45 GMT+3, Odesa, Ukraine
+    // inspired by many times hearing about semantic web and by re-watching Rich Hickey video about Clojure 
+    // Jhon[object-13123123] lives-in[predicate-155133] some-place[obj-6755]
+    // some-place[]
+    var info = {
+        id: "local-id",
+        object: "id",
+        predicate: "another-id",
+        subject: "third-id",
+        "created-by": "user-id",
+        "creation-time": "time-object-id",
+        "previous-known-statement": "previous-statement-id",
+        "signed-rsa-public-part": "signed-to-show-authenticy"
+    };

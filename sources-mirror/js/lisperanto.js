@@ -12,13 +12,12 @@ lookup.omniBoxTextInput
     });
 
 lookup.functionsArray = ko.observableArray([]);
-lookup.recordsArray = ko.observableArray([]);
 
 lookup.functionsLookup = ko.computed(function()
 {
     var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
     var filtered = [];
-    const availableEntries = lookup.functionsArray().concat(lookup.recordsArray());
+    const availableEntries = lookup.functionsArray();
 
     if(searchQuery === "")
     {
@@ -34,26 +33,13 @@ lookup.functionsLookup = ko.computed(function()
     }
      
     return ko.utils.arrayMap(filtered, function(item) {
-        if (item.type === "record")
+        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
         {
-            return { 
-                id: item.id, 
-                text: item.name()
-            };
-
-        }
-        else
-        {
-            var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
-            {
-                return lookup.customObjects[item].parameterName;
-            });
-            return { id: item.id, 
-                text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
-            };
-
-        }
-        
+            return lookup.customObjects[item].parameterName;
+        });
+        return { id: item.id, 
+            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
+        };
     });
     
 });
@@ -109,33 +95,6 @@ lookup.filteredSearch = ko.computed(
         return filtered;
     }
 );
-
-lookup.typesArray = ko.observableArray([]);
-lookup.typesLookup = ko.computed(function()
-{
-    var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
-    var filtered = [];
-
-    if(searchQuery === "")
-    {
-        filtered = lookup.typesArray();
-    }
-    else
-    {
-        filtered = ko.utils.arrayFilter(lookup.typesArray(), function(item)
-        {
-            return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
-        });
-
-    }
-     
-    return ko.utils.arrayMap(filtered, function(item) {
-        return { id: item.id, 
-            text: lookup.customObjects[item.id].name()
-        };
-    });
-    
-});
 
 
 
@@ -247,18 +206,6 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
                 }
-                if(value.type === "record")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreRecord(value);
-                }
-                if(value.type === "record-field")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreRecordField(value);
-                }
-                if(value.type === "record-reference")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreRecordReference(value);
-                }
                 if(value.type === "rdf-predicate") 
                 {
                     lookup.customObjects[key] = lookup.try_restore_RDF_predicate(value);
@@ -284,28 +231,6 @@ lookup.loadFromStorage = function()
         }
     }
     
-};
-
-lookup.tryRestoreRecordField = function(value)
-{
-    value.recordFieldName = ko.observable(value.recordFieldName);
-    value.recordFieldTypeGuidToUse = ko.observable(value.recordFieldTypeGuidToUse);
-    value.recordFieldValueGuidToUse = ko.observable(value.recordFieldValueGuidToUse);
-    lookup.addTypeMissmatchForRecordField(value);
-    return value;
-};
-
-lookup.tryRestoreRecordReference = function(value)
-{
-    lookup.addEvaluationVariables(value);
-    return value;
-};
-
-lookup.tryRestoreRecord = function(value)
-{
-    value.name = ko.observable(value.name);
-    value.fields = ko.observableArray(value.fields);
-    return value;
 };
 
 lookup.tryRestoreOffsetCoordinates = function(value)
@@ -379,24 +304,6 @@ lookup.restoreFunctionsArray = function()
     }
 };
 
-lookup.restoreTypesArray = function()
-{
-    for (const [key, value] of Object.entries(lookup.customObjects)) 
-    {
-        if(typeof(value.type) !== 'undefined')
-        {
-            if(value.type === "built-in-type" )
-            {
-                lookup.typesArray.push(value);
-            }
-            if(value.type === "type" )
-            {
-                lookup.typesArray.push(value);
-            }
-        }
-    }
-};
-
 lookup.restore_RDF_predicates_array = function()
 {
     for (const [key, value] of Object.entries(lookup.customObjects)) 
@@ -410,20 +317,6 @@ lookup.restore_RDF_predicates_array = function()
             if(value.type === "rdf-predicate" )
             {
                 lookup.rdf_predicates_Array.push(value);
-            }
-        }
-    }
-};
-
-lookup.restoreRecordsArray = function()
-{
-    for (const [key, value] of Object.entries(lookup.customObjects)) 
-    {
-        if(typeof(value.type) !== 'undefined')
-        {
-            if(value.type === "record" )
-            {
-                lookup.recordsArray.push(value);
             }
         }
     }
@@ -607,17 +500,6 @@ lookup.builtInFunctionsArray = [
         name: "set-variable-value",
         parameters: ["name", "value"]
     },
-    {
-        id: "get-field-value-from-record",
-        name: "get-field-value-from-record",
-        parameters: ["record", "field"]
-    },
-    {
-        id: "set-field-value-in-record",
-        name: "set-field-value-in-record",
-        parameters: ["record", "field", "value"] // what to do when there is no field present?
-    },
-
 ];
 
 lookup.defineListOfPredefinedFunctions = function()
@@ -781,23 +663,16 @@ var not_computed = {
     type: "not-computed-yet"
 };
 
-lookup.getNotComputedSingletonRecord = function()
-{
-    return not_computed;
-};
-
 lookup.addEvaluationVariables = function(obj)
 {
-    obj.evaluationResult = ko.observable(lookup.getNotComputedSingletonRecord());
+    obj.evaluationResult = ko.observable(not_computed);
     obj.prettyPrintEvaluationResult = ko.computed(function()
         {
             const result = obj.evaluationResult();
             var map = {};
             map["fail-to-evaluate"] = () => "[failed to evaluate]";
-            map["record-reference"] = () => "[record-reference]";
             map["not-computed-yet"] = () => "not-computed-yet";
             map["error--division-by-zero"] = () => "error--division-by-zero";
-            map["successful-set-of-record-field"] = () => "successful-set-of-record-field";
             map["boolean"] = () => result.value + " [" + result.type + "]";
             map["number"] = () => result.value + " [" + result.type + "]";
             map["string"] = () => result.value + " [" + result.type + "]";
@@ -829,38 +704,6 @@ lookup.createUIObject = function()
 };
 
 
-lookup.defineRecord = function()
-{
-    // everything will be described by RDF [Resource Descriptive Framework] from now, 2022-06-03 17:45 GMT+3, Odesa, Ukraine
-    // inspired by many times hearing about semantic web and by re-watching Rich Hickey video about Clojure 
-    // Jhon[object-13123123] lives-in[predicate-155133] some-place[obj-6755]
-    // some-place[]
-    var info = {
-        id: "local-id",
-        object: "id",
-        predicate: "another-id",
-        subject: "third-id",
-        "created-by": "user-id",
-        "creation-time": "time-object-id",
-        "previous-known-statement": "previous-statement-id",
-        "signed-rsa-public-part": "signed-to-show-authenticy"
-    };
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "record";
-    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
-    toAdd.fields = ko.observableArray([]);
-
-    
-
-    var operation = 
-    {
-        operation: "define-record",
-        guid: toAdd.id
-    };
-    lookup.operationsPush(operation);
-    return toAdd;
-};
-
 lookup.create_RDF_Entry = function(name)
 {
     var toAdd = lookup.createUIObject();
@@ -876,15 +719,6 @@ lookup.create_RDF_Entry = function(name)
     };
     lookup.operationsPush(operation);
     return toAdd;
-};
-
-
-lookup.createAndShowRecord = function()
-{
-    lookup.hideOmniWheel();
-    var toShow = lookup.defineRecord();
-    lookup.openElement(toShow);
-    lookup.hideOmniBox();
 };
 
 lookup.create_and_show_RDF_entry = function(name)
@@ -1022,35 +856,6 @@ lookup.defineFunctionCall = function( functionGuid, objId)
     return toAdd.id;
 };
 
-
-lookup.defineRecordReference = function( recordGuid, objId)
-{
-    var toWorkWith = lookup.customObjects[recordGuid];
-    var recordReferenceName = toWorkWith.name;
-    var toAdd = lookup.createUIObject();
-
-    toAdd.type = "record-reference";
-    toAdd.recordName = recordReferenceName;
-    toAdd.recordGuid = recordGuid;
-    lookup.addEvaluationVariables(toAdd);
-    toAdd.assignedToGuid = objId;
-
-
-    var operation = 
-    {
-        type: "operation",
-        operation: toAdd.type,
-        guid: toAdd.id,
-        recordName: recordReferenceName,
-        recordGuid: recordGuid,
-        assignedToGuid: toAdd.assignedToGuid
-        // should it be just extra field with serialized state of the record?
-    };
-    lookup.operationsPush(operation);
-
-    return toAdd.id;
-};
-
 lookup.unplug = function()
 {
     var usedObj = lookup.calledObj;
@@ -1116,29 +921,6 @@ lookup.defineParameter = function(parameter, objId)
     return toAdd.id;
 };
 
-lookup.defineRecordField = function(parameter, objId)
-{
-    var toAdd = lookup.createUIObject();
-
-    toAdd.type = "record-field";
-    toAdd.recordFieldName = ko.observable(parameter);
-    toAdd.assignedToGuid = objId;
-    toAdd.recordFieldTypeGuidToUse = ko.observable();
-    toAdd.recordFieldValueGuidToUse = ko.observable();
-
-    lookup.addTypeMissmatchForRecordField(toAdd);
-    
-    var operation = 
-    {
-        operation: "define-record-field",
-        guid: toAdd.id,
-        recordFieldName: parameter,
-        assignedToGuid: objId
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
-};
-
 lookup.define_rdf_statement = function(predicate, objId)
 {
     var toAdd = lookup.createUIObject();
@@ -1164,6 +946,10 @@ lookup.define_rdf_statement = function(predicate, objId)
 
 
 lookup.rdf_predicates_Array = ko.observableArray([]);
+
+lookup.filtered_rdf_predicates_Array = ko.computed(function(){
+
+});
 
 lookup.find_or_create_rdf_predicate = function(predicate)
 {
@@ -1276,17 +1062,6 @@ lookup.addConstant = function(text, obj)
         //if there is a parameter assignment then start evaluation
         lookup.goBackwardAndEvaluate(obj);
     }
-    if(lookup.activeOperation() === "addingFieldValueInRecord" )
-    {
-        obj.recordFieldValueGuidToUse(guid);
-        var operation = 
-        {
-            operation: "add-record-field-value",
-            recordFieldValueGuidToUse: guid,
-            recordFieldGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
 };
 
 
@@ -1310,32 +1085,12 @@ lookup.addFunction = function(funcObj, obj)
 
 };
 
-lookup.addRecordReference = function(funcObj, obj)
-{
-    var guid = lookup.defineRecordReference(funcObj.id, obj.id);
-    if(lookup.activeOperation() === "focusOnParameter" )
-    {
-        obj.guidToUse(guid);
-        var operation = 
-        {
-            operation: "set-parameter-value",
-            guidToUse: guid,
-            parameterValueGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
-    lookup.hideOmniBox();
-    lookup.goBackwardAndEvaluate(obj);
-    return guid;
-};
-
 lookup.addFunctionByClick = function(funcObj)
 {
     const type = lookup.customObjects[funcObj.id]["type"];
     var map = {};
     map["function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
     map["built-in-function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
-    map["record"] = () => lookup.addRecordReference(funcObj, lookup.focusedObj());
     if( lookup.isFieldPresent(map, type))
     {
         map[type]();
@@ -1353,17 +1108,6 @@ lookup.addSymbol = function(text, obj)
             operation: "set-parameter-value",
             guidToUse: guid,
             parameterValueGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
-    if(lookup.activeOperation() === "addingFieldValueInRecord")
-    {
-        obj.recordFieldValueGuidToUse(guid);
-        var operation = 
-        {
-            operation: "add-record-field-value",
-            recordFieldValueGuidToUse: guid,
-            recordFieldGuid: obj.id
         };
         lookup.operationsPush(operation);
     }
@@ -1409,26 +1153,6 @@ lookup.addParameter = function()
     };
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
-};
-
-lookup.addRecordField = function()
-{
-    
-
-    var obj = lookup.focusedObj();
-    const fieldName = lookup.omniBoxTextInput().trim();
-    var toAdd_id = lookup.defineRecordField(fieldName, obj.id);
-    obj.fields.push(toAdd_id);
-    
-    var operation = 
-    {
-        operation: "added-record-field-to-the-record",
-        recordGuid: obj.id,
-        recordFieldGuid: toAdd_id
-    };
-    lookup.operationsPush(operation);
-    lookup.hideOmniBox();
-
 };
 
 
@@ -1497,57 +1221,6 @@ lookup.add_name_to_rdf_entry = function()
 
 };
 
-
-
-lookup.findOrCreateTypeForRecordFieldByTypeName = function(typeName)
-{
-    var typeNameInLowerCase = typeName.toLowerCase();
-    var filtered = ko.utils.arrayFilter(lookup.typesArray(), function(item)
-        {
-            return lookup.customObjects[item.id].name().toLowerCase() === typeNameInLowerCase;
-        });
-    if(filtered.length === 1)
-    {
-        return filtered[0];
-    }
-    else
-    {
-        return lookup.defineType(typeName);
-    }
-};
-
-lookup.addRecordFieldType = function()
-{
-
-    var obj = lookup.focusedObj();
-    var typeName = lookup.omniBoxTextInput().trim();
-
-    var typeObj = lookup.findOrCreateTypeForRecordFieldByTypeName(typeName);
-
-    var guidOfType = typeObj.id;
-    
-    obj.recordFieldTypeGuidToUse(guidOfType);
-    
-    var operation = 
-    {
-        operation: "specify-record-field-type-in-the-record",
-        recordFieldGuid: obj.id,
-        recordFieldTypeGuidToUse: guidOfType
-    };
-    lookup.operationsPush(operation);
-    lookup.hideOmniBox();
-
-};
-
-lookup.addRecordFieldValue = function()
-{
-
-    var obj = lookup.focusedObj();
-    var toParse = lookup.omniBoxTextInput().trim();
-
-    lookup.tryParseOmniBox(toParse, obj);
-
-};
 
 lookup.makeCopyOfContext = function( context)
 {
@@ -1647,11 +1320,6 @@ lookup.evaluate = function(guid, context)
                     result.type = "number"; // yep type is number, because there will be no ints
                     return result;
                 }
-                if (toWork.type === 'record-reference')
-                {
-                    toWork.evaluationResult(toWork);
-                    return toWork;
-                }
                 if(toWork.type === 'constant-string')
                 {
                     var result = {};
@@ -1722,7 +1390,7 @@ lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) 
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     if (a.type === "number" && b.type === "number")
     {
-        return lookup.generateRecordNumber(a.value + b.value);
+        return lookup.generateNumber(a.value + b.value);
     }
     else
     {
@@ -1738,24 +1406,38 @@ lookup.generateFailToEvaluate = function()
     return obj;
 };
 
-lookup.generateRecordWithType = function(type)
+lookup.generateNumber = function(value)
 {
-    var obj = lookup.defineRecord();
-    var typeField = lookup.defineRecordField("type", obj.id);
-    
-    lookup.addTypeForFieldInRecordFromOmniBox
-    
-    lookup.operationsPush(operation);
-    return obj;
+    var toReturn = 
+    {
+        type: "rdf-entry", 
+        statements: 
+        [
+            {
+                "type": "number",
+                "value": value
+            }
+        ]
+    };
+    return toReturn;
 };
 
-lookup.generateRecordNumber = function(value)
+lookup.generateBoolean = function()
 {
-    var toReturn = lookup.generateRecordWithType("number");
-    lookup.
-    toReturn["value"] = value;
+    var toReturn = 
+    {
+        type: "rdf-entry", 
+        statements: 
+        [
+            {
+                "type": "boolean",
+            }
+        ]
+    };
     return toReturn;
-}
+};
+
+
 
 lookup.isFailToEvaluate = function(obj)
 {
@@ -1774,7 +1456,7 @@ lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localCo
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value <= b.value)
         {
             result.value = "true";
@@ -1799,7 +1481,7 @@ lookup.evaluateBuiltInLess = function(toWork, functionDefinition, localContext) 
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value < b.value)
         {
             result.value = "true";
@@ -1824,7 +1506,7 @@ lookup.evaluateBuiltInMore = function(toWork, functionDefinition, localContext) 
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value > b.value)
         {
             result.value = "true";
@@ -1849,7 +1531,7 @@ lookup.evaluateBuiltInMoreOrEqual = function(toWork, functionDefinition, localCo
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value >= b.value)
         {
             result.value = "true";
@@ -1874,7 +1556,7 @@ lookup.evaluateBuiltInNotEqual = function(toWork, functionDefinition, localConte
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value != b.value)
         {
             result.value = "true";
@@ -1899,7 +1581,7 @@ lookup.evaluateBuiltInEqual = function(toWork, functionDefinition, localContext)
 
     if (a.type === "number" && b.type === "number")
     {
-        var result = lookup.generateRecordWithType("boolean");
+        var result = lookup.generateBoolean();
         if (a.value == b.value)
         {
             result.value = "true";
@@ -1923,7 +1605,7 @@ lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext)
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     if (a.type === "number" && b.type === "number")
     {
-        return lookup.generateRecordNumber(a.value - b.value);
+        return lookup.generateNumber(a.value - b.value);
     }
     else
     {
@@ -1938,7 +1620,7 @@ lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localConte
     var b = lookup.evaluate(bParameter.guidToUse(), localContext);
     if (a.type === "number" && b.type === "number")
     {
-        return lookup.generateRecordNumber(a.value * b.value);
+        return lookup.generateNumber(a.value * b.value);
     }
     else
     {
@@ -1955,11 +1637,11 @@ lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext
     {
         if (b.value == 0)
         {
-            return lookup.generateRecordWithType("error--division-by-zero");
+            return { type: "error--division-by-zero" };
         }
         else
         {
-            return lookup.generateRecordNumber(a.value / b.value);
+            return lookup.generateNumber(a.value / b.value);
         }
     }
     else
@@ -2008,100 +1690,6 @@ lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, lo
         var value = lookup.evaluate(valueParameter.guidToUse(), localContext);
         previousContext[nameParameterValue.symbolName] = value;
         return value;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-    
-};
-
-lookup.evaluateBuiltInGetFieldValueFromRecord = function(toWork, functionDefinition, localContext, previousContext)
-{
-    var recordParameter = lookup.findBuiltInParameterById(toWork.parameters, "record", functionDefinition);
-    var recordParameterValue = lookup.evaluate(recordParameter.guidToUse(), localContext);
-    var fieldParameter = lookup.findBuiltInParameterById(toWork.parameters, "field", functionDefinition);
-    //var nameParameterValue = lookup.evaluate(nameParameter.guidToUse(), localContext);
-    var fieldParameterValue = lookup.customObjects[fieldParameter.guidToUse()];
-
-    if (recordParameterValue.type === "record-reference" 
-        && typeof(fieldParameterValue) !== "undefined" 
-        && fieldParameterValue.type === "symbol-usage")
-    {
-        var recordEntry = lookup.customObjects[recordParameterValue.recordGuid];
-        var symbol = fieldParameterValue.symbolName;
-        var result = lookup.findRecordFieldByName(recordEntry, symbol);
-        if (typeof(result) === "undefined")
-        {
-            return lookup.generateFailToEvaluate();
-        }
-        else
-        {
-            var fieldObj = lookup.customObjects[result];
-            if (typeof(fieldObj) === "undefined")
-            {
-                return lookup.generateFailToEvaluate();
-            }
-            else
-            {
-                var result = lookup.evaluate(fieldObj.recordFieldValueGuidToUse(), localContext);
-                return result;
-            }
-        }
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-    
-};
-
-lookup.findRecordFieldByName = function(recordEntry, name)
-{
-    return recordEntry.fields()
-        .find(fieldGuid => { 
-            const newLocal = lookup.customObjects[fieldGuid];
-            return newLocal.recordFieldName() === name;
-        });
-};
-
-
-lookup.evaluateBuiltInSetFieldValueInRecord = function(toWork, functionDefinition, localContext, previousContext)
-{
-    var recordParameter = lookup.findBuiltInParameterById(toWork.parameters, "record", functionDefinition);
-    var recordParameterValue = lookup.evaluate(recordParameter.guidToUse(), localContext);
-    var fieldParameter = lookup.findBuiltInParameterById(toWork.parameters, "field", functionDefinition);
-    //var nameParameterValue = lookup.evaluate(nameParameter.guidToUse(), localContext);
-    var fieldParameterValue = lookup.customObjects[fieldParameter.guidToUse()];
-
-    var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
-    var valueParameterValue = lookup.evaluate(valueParameter.guidToUse(), localContext);
-
-    if (recordParameterValue.type === "record-reference" 
-        && typeof(fieldParameterValue) !== "undefined" 
-        && fieldParameterValue.type === "symbol-usage"
-        && lookup.isFailToEvaluate(valueParameterValue) === false)
-    {
-        var recordEntry = lookup.customObjects[recordParameterValue.recordGuid];
-        var symbol = fieldParameterValue.symbolName;
-        var result = lookup.findRecordFieldByName(recordEntry, symbol);
-        if (typeof(result) === "undefined")
-        {
-            return lookup.generateFailToEvaluate();
-        }
-        else
-        {
-            var fieldObj = lookup.customObjects[result];
-            if (typeof(fieldObj) === "undefined")
-            {
-                return lookup.generateFailToEvaluate();
-            }
-            else
-            {
-                lookup.replaceValueInRecordField(fieldObj, valueParameter.guidToUse()); // I will need to return records as a result of the evaluation and use them here instead of evaluation result
-                return lookup.generateRecordWithType("successful-set-of-record-field");
-            }
-        }
     }
     else
     {
@@ -2545,32 +2133,6 @@ lookup.openOmniBoxForFunctionUsage = function(caller)
     lookup.desiredOffset.y += root.offsetY();
 };
 
-lookup.openOmniBoxForRecordReference = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.calledObj = caller;
-    lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
-    lookup.activeOperation("record-reference-IsSelected");
-
-    var root = lookup.findRoot(caller);
-    
-    lookup.filloutOmniBoxDataForFunction("record-reference--name-" + caller.id, lookup.canvasOmniBox, root);
-
-    var foundAnchor = lookup.findAnchor();
-
-    var foundUI = $("#record-reference--name-" + caller.id)[0];
-    
-    lookup.desiredOffset = 
-    { 
-        x : foundAnchor.offsetWidth,
-        y : foundUI.offsetTop
-    };
-    
-    var foundRoot = $("#" + root.id)[0];
-    lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
-    lookup.desiredOffset.y += root.offsetY();
-};
-
 lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 {
     lookup.hideOmniBox();
@@ -2579,17 +2141,6 @@ lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
 
     lookup.filloutOmniBoxDataForFunction('add-function-parameter--' + caller.id, lookup.canvasOmniBox, caller);
 
-};
-
-lookup.openOmniBoxForAddingFieldInRecord = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(caller);
-    lookup.activeOperation("addingFieldInRecord");
-
-    lookup.filloutOmniBoxDataForFunction('add-field-in-record--' + caller.id, lookup.canvasOmniBox, caller);
-
-    
 };
 
 lookup.open_OmniBox_for_adding_statement_to_rdf_entry = function(caller)
@@ -2610,39 +2161,6 @@ lookup.open_OmniBox_for_adding_name_to_rdf_entry = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-rdf-entry-name-value--' + caller.id, lookup.canvasOmniBox, caller);
 };
 
-lookup.openOmniBoxForFieldTypeInRecord = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(caller);
-    lookup.activeOperation("addingFieldTypeInRecord");
-
-    var root = lookup.findRoot(caller);
-
-    lookup.filloutOmniBoxDataForFunction('add-field-type-in-record--' + caller.id, lookup.canvasOmniBox, root);
-};
-
-lookup.openOmniBoxForFieldValueInRecord = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(caller);
-    lookup.activeOperation("addingFieldValueInRecord");
-
-    var root = lookup.findRoot(caller);
-
-    lookup.filloutOmniBoxDataForFunction('add-field-value-in-record--' + caller.id, lookup.canvasOmniBox, root);
-};
-
-lookup.openOmniBoxForRecordFieldTypeMissmatchFix = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(caller);
-    lookup.activeOperation("RecordFieldTypeMissmatchFix");
-
-    var root = lookup.findRoot(caller);
-
-    lookup.filloutOmniBoxDataForFunction('fix-type-missmatch-in-record-field--' + caller.id, lookup.canvasOmniBox, root);
-};
-
 lookup.open_OmniBox_for_RDF_subject_in_statement = function(caller)
 {
     lookup.hideOmniBox();
@@ -2652,20 +2170,6 @@ lookup.open_OmniBox_for_RDF_subject_in_statement = function(caller)
     var root = lookup.findRoot(caller);
 
     lookup.filloutOmniBoxDataForFunction('add-RDF-subject-in-statement--' + caller.id, lookup.canvasOmniBox, root);
-
-};
-
-lookup.transformSymbolUsageToStringConstant = function(caller)
-{
-    var obj = lookup.focusedObj();
-    const previousGuid = obj.recordFieldValueGuidToUse();
-    var valueObj = lookup.customObjects[previousGuid];
-    if(valueObj.type === 'symbol-usage')
-    {
-        var guid = lookup.defineConstantString(valueObj.symbolName);
-        lookup.replaceValueInRecordField(obj, guid);
-
-    }
 
 };
 
@@ -2717,15 +2221,6 @@ lookup.openFunctionDefinitionFromOmniBox = function(obj)
     lookup.hideOmniBox();
     var functionToOpen = lookup.customObjects[obj.id];
     lookup.openElement(functionToOpen);
-};
-
-lookup.addTypeForFieldInRecordFromOmniBox = function(obj)
-{
-    // bad code?
-    event.stopPropagation();
-    var fieldToAddTypeTo = lookup.focusedObj();
-    fieldToAddTypeTo.recordFieldTypeGuidToUse(obj.id);
-    lookup.hideOmniBox();
 };
 
 lookup.openFunctionFromTheListOfFunctions = function(obj)
@@ -2910,18 +2405,6 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 lookup.addParameter();
             }
-            else if(lookup.activeOperation() ===  "addingFieldInRecord")
-            {
-                lookup.addRecordField();
-            }
-            else if(lookup.activeOperation() ===  "addingFieldTypeInRecord")
-            {
-                lookup.addRecordFieldType();
-            }
-            else if(lookup.activeOperation() ===  "addingFieldValueInRecord")
-            {
-                lookup.addRecordFieldValue();
-            }
             else if(lookup.activeOperation() === "add-statement-predicate-to-rdf-entry")
             {
                 lookup.add_statement_predicate_to_rdf_entry();
@@ -3047,9 +2530,6 @@ lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, 
     localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
     localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
     localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
-    localDictionary["get-field-value-from-record"] = () => lookup.evaluateBuiltInGetFieldValueFromRecord(toWork, functionDefinition, localContext, context);
-    localDictionary["set-field-value-in-record"] = () => lookup.evaluateBuiltInSetFieldValueInRecord(toWork, functionDefinition, localContext, context);
-    
 
     if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
     {
@@ -3092,51 +2572,6 @@ lookup.defineOmniWheel = function() {
 
 lookup.canvasOmniBox = lookup.defineOmniBox();
 lookup.omniWheel = lookup.defineOmniWheel();
-
-lookup.addTypeMissmatchForRecordField = function(value) 
-{
-    if (typeof(value.typeMissmatch) === 'undefined')
-    {
-        value.typeMissmatch = ko.computed(function () {
-            if (typeof (value.recordFieldTypeGuidToUse()) !== 'undefined' &&
-                typeof (value.recordFieldValueGuidToUse()) !== 'undefined') {
-                var typeObject = lookup.customObjects[value.recordFieldTypeGuidToUse()];
-                var valueObject = lookup.customObjects[value.recordFieldValueGuidToUse()];
-    
-                if (typeof (valueObject) === 'undefined' || typeof (typeObject) === 'undefined') {
-                    return false;
-                }
-                else {
-                    if (typeObject.id === 'string' && valueObject.type === 'symbol-usage') {
-                        return true;
-                    }
-    
-                    else {
-                        return false;
-                    }
-                }
-    
-            }
-    
-            else {
-                return false;
-            }
-        });
-    }
-};
-
-lookup.replaceValueInRecordField = function(obj, guid) {
-    var previousGuid = obj.recordFieldValueGuidToUse();
-    obj.recordFieldValueGuidToUse(guid);
-
-    var operation = {
-        operation: "replace-record-field-value",
-        recordFieldGuid: obj.id,
-        newGuid: guid,
-        previousGuid: previousGuid
-    };
-    lookup.operationsPush(operation);
-}
 
 function Lisperanto()
 {
@@ -3350,8 +2785,6 @@ $(document).ready(function()
     lookup.findSandboxAnchorPosition();
     //lookup.openElement(lookup.sandbox());
     //lookup.restoreFunctionsArray();
-    //lookup.restoreTypesArray();
-    //lookup.restoreRecordsArray();
     lookup.restore_RDF_predicates_array();
     lookup.defineTimerForFunctions();
     

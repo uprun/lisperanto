@@ -75,9 +75,6 @@
                         $root.activeOperation() === 'focusOnParameter' 
                         || $root.activeOperation() === 'renameFunction' 
                         || $root.activeOperation() === 'addingFunctionParameter'
-                        || $root.activeOperation() === 'addingFieldInRecord'
-                        || $root.activeOperation() === 'addingFieldTypeInRecord'
-                        || $root.activeOperation() === 'addingFieldValueInRecord'
                         || $root.activeOperation() === 'global-omni-box-activated'
                         || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
                         || $root.activeOperation() === 'add_RDF_subject_in_statement'
@@ -189,6 +186,11 @@
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
                         </div>
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
+                        <div data-bind="foreach: $root.filteredSearch">
+                            <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,75 +222,6 @@
             </div>
         </div>
 
-    </script>
-
-
-    <script type="text/html" id="record-field-template">
-        <div 
-            data-bind="
-                using: lookup.customObjects[$data],
-                attr: {id: $data}">
-            <span data-bind="if: typeof($data.recordFieldTypeGuidToUse()) !== 'undefined' ">
-                <strong class="webpad-color-orange" data-bind="text: $root.customObjects[$data.recordFieldTypeGuidToUse()].name"></strong>
-            </span>
-            <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
-                        visible: typeof($data.recordFieldTypeGuidToUse()) === 'undefined',
-                        click: $root.openOmniBoxForFieldTypeInRecord, 
-                        attr: {id: 'add-field-type-in-record--' + $data.id}">
-                    + type
-            </div>
-            <strong data-bind="text: $data.recordFieldName"></strong>
-            <span>=</span>
-            <span data-bind="
-                if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined',
-                ">
-                <span data-bind="template: { name: 'body-element-template', data: $data.recordFieldValueGuidToUse() }" >
-                </span>
-            </span>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind="
-                        visible: typeof($data.recordFieldValueGuidToUse()) === 'undefined',
-                        click: $root.openOmniBoxForFieldValueInRecord, 
-                        attr: {id: 'add-field-value-in-record--' + $data.id}">
-                    + value
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind="
-                        visible: $data.typeMissmatch,
-                        click: $root.openOmniBoxForRecordFieldTypeMissmatchFix, 
-                        attr: {id: 'fix-type-missmatch-in-record-field--' + $data.id}">
-                    type missmatch
-            </div>
-        </div>
-
-    </script>
-    <script type="text/html" id="record-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
-            <div 
-                data-bind="
-                    click: $root.openOmniBoxForRecordHeader,
-                    attr: 
-                    {
-                        id: 'record-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'record-field-template', foreach: fields }">
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
-                        click: $root.openOmniBoxForAddingFieldInRecord, 
-                        attr: {id: 'add-field-in-record--' + $data.id}">
-                    add field
-            </div>
-        </div>
     </script>
 
     <script type="text/html" id="rdf-entry-template">
@@ -616,23 +549,6 @@
         </span>
         
     </script>
-    <script type="text/html" id="record-reference-template">
-        <span
-            data-bind="
-            attr: {id: $data.id}"
-            >
-            <span data-bind="text: 'record-reference: ['"></span><span 
-                class="my-function-name" 
-                data-bind="
-                    text: lookup.customObjects[$data.recordGuid].name(), 
-                    click: $root.openOmniBoxForRecordReference, 
-                    attr: {id: 'record-reference--name-' + $data.id}"
-                >
-            </span><span data-bind="text: ']'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
-
-        </span>
-        
-    </script>
     <script type="text/html" id="body-element-template">
         <span data-bind="if:typeof($data) !== 'undefined' && typeof(lookup.customObjects[$data]) !== 'undefined' ">
             <span data-bind='if: lookup.customObjects[$data].type === "constant-number" '>
@@ -646,9 +562,6 @@
             </span>
             <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
                 <span data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "record-reference" '>
-                <span data-bind="template: { name: 'record-reference-template', data: lookup.customObjects[$data] }"></span>
             </span>
         </span>
     </script>
@@ -671,10 +584,6 @@
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'symbol-usage' -->
                         <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'record' -->
-                        <!-- ko template: { name: 'record-template', data: $data} -->
                         <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko if: $data.type === 'rdf-entry' -->
