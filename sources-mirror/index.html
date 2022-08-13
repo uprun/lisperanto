@@ -144,17 +144,6 @@
                 </div>
                 
                 <div class="omnibox-options">
-                    <div data-bind="if: $root.activeOperation() === 'RecordFieldTypeMissmatchFix' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.transformSymbolUsageToStringConstant">
-                            temp: transform to string
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            temp: fix type
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
-                            temp: unplug
-                        </div>
-                    </div>
                     <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
                         <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
                             open definition
@@ -198,14 +187,6 @@
                     <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
                         <div data-bind="foreach: $root.filteredSearch">
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
-                        </div>
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
-                        <div data-bind="foreach: $root.typesLookup">
-                            <div data-bind="
-                                text: $data.text,
-                                click: $root.addTypeForFieldInRecordFromOmniBox"
-                             ></div>
                         </div>
                     </div>
                 </div>
