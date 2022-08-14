@@ -220,6 +220,11 @@ a
     display: inline-grid;
 }
 
+.lisperanto-rdf
+{
+    max-width: 40rem;
+}
+
 .lisperanto-sandbox-stripes
 {
   background: inherit;

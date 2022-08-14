@@ -996,17 +996,19 @@ lookup.find_or_create_rdf_predicate = function(predicate)
 lookup.find_or_create_rdf_entry_with_name = function(entry_name)
 {
     const nameInLowerCase = entry_name.toLowerCase();
-    var filtered = ko.utils.arrayFilter(lookup.customObjects, function(item)
+    const objects = Object.entries(lookup.customObjects);
+    var filtered = objects.filter(function(entry)
     {
-        return item.name().toLowerCase() === predicateNameInLowerCase 
-            &&  (
+        const item = entry[1];
+        return  (
                         item.type === "rdf-entry" 
                     ||  item.type === "rdf-predicate"
-                );
+                ) &&
+                item.name().toLowerCase() === nameInLowerCase;
     });
-    if(filtered.length === 1)
+    if(filtered.length > 0)
     {
-        return filtered[0].id;
+        return filtered[0][1].id;
     }
     else
     {
@@ -1224,6 +1226,27 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
     lookup.hideOmniBox();
 
 };
+
+lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filtered_rdf_entry)
+{
+    var obj = lookup.focusedObj();
+    if ( typeof(obj.subject_id()) === 'undefined')
+    {
+        const subject_id = filtered_rdf_entry.id;
+        obj.subject_id(subject_id);
+        var operation = 
+        {
+            operation: "complete-rdf-statement-with-previously-missing-subject",
+            statement_id: obj.id,
+            subject_id: subject_id,
+            subject_name: filtered_rdf_entry.text
+        };
+        lookup.operationsPush(operation);
+    }
+
+
+    lookup.hideOmniBox();
+}
 
 
 lookup.add_name_to_rdf_entry = function()
@@ -2423,8 +2446,13 @@ lookup.create_RDF_entry_with_name_from_omnibox = function()
 
 lookup.omniBoxInputKeyPress = function(data, event) 
 {
-    if(event.shiftKey)
+    if(event.shiftKey && event.keyCode === 13)
     {
+        if(lookup.activeOperation() === "global-omni-box-activated")
+        {
+            lookup.create_RDF_entry_with_name_from_omnibox();
+        }
+
     }
     else
     {
@@ -2452,10 +2480,18 @@ lookup.omniBoxInputKeyPress = function(data, event)
             }
             else if(lookup.activeOperation() === "global-omni-box-activated")
             {
-                const availableFunctions = lookup.filteredSearch();
-                if(availableFunctions.length > 0)
+                const availableEntries = lookup.filteredSearch();
+                var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
+                const exactMatch = availableEntries.filter(entry => entry.text === searchQuery);
+                if(exactMatch.length > 0)
                 {
-                    var functionToOpen = lookup.customObjects[availableFunctions[0].id];
+                    var functionToOpen = lookup.customObjects[exactMatch[0].id];
+                    lookup.openElement(functionToOpen);
+                    lookup.hideOmniBox();
+                }
+                else if(availableEntries.length === 1)
+                {
+                    var functionToOpen = lookup.customObjects[availableEntries[0].id];
                     lookup.openElement(functionToOpen);
                     lookup.hideOmniBox();
                 }

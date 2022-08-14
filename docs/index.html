@@ -121,7 +121,7 @@
                     data-bind="if: $root.activeOperation() === 'add_RDF_subject_in_statement'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.add_maybe_existing_RDF_subject_in_statement">
-                            add 
+                            reuse existing 
                     </div>
                 </div>
                 <div 
@@ -136,7 +136,7 @@
                     data-bind="if: $root.activeOperation() === 'global-omni-box-activated' && $root.omniBoxTextInput().trim().length != 0">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.create_RDF_entry_with_name_from_omnibox">
-                            add 
+                            add [Shift + &#9166;]
                     </div>
                 </div>
                 
@@ -186,6 +186,11 @@
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
                         </div>
                     </div>
+                    <div data-bind="if: $root.activeOperation() === 'add_RDF_subject_in_statement'">
+                        <div data-bind="foreach: $root.filteredSearch">
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_subject_to_statement_from_omnibox_list"></div>
+                        </div>
+                    </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
                         <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
                             <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_from_omnibox"></div>
@@ -225,7 +230,7 @@
     </script>
 
     <script type="text/html" id="rdf-entry-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
+        <div class="lisperanto-function-definition lisperanto-ui-element lisperanto-rdf"
             data-bind="
                 attr: 
                 {
