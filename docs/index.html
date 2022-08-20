@@ -261,6 +261,21 @@
                         text: $data.id,
                         attr: {id: 'rdf-entry-id-value--' + $data.id}"></span>
             </div>
+            <div
+                class="lisperanto-rdf-key"
+                style="margin-left: 2rem;"
+                data-bind="
+                    attr: {id: 'rdf-entry-creation_time-statement--' + $data.id}">
+                <strong data-bind="
+                    text: 'creation_time',
+                    attr: {id: 'rdf-entry-creation_time-predicate--' + $data.id}"></strong>
+                <span class="webpad-color-orange">:</span>
+                <span
+                    class="my-function-name lisperanto-rdf-value"
+                    data-bind="
+                        text: $data.creation_time,
+                        attr: {id: 'rdf-entry-creation_time-value--' + $data.id}"></span>
+            </div>
             <div 
                 style="margin-left: 2rem;"
                 data-bind="

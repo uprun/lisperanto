@@ -689,12 +689,37 @@ lookup.addEvaluationVariables = function(obj)
     );
 };
 
+lookup.getCurrentDateTimeString = function()
+{
+    var currentdate = new Date(); 
+    const timeZone = currentdate.getTimezoneOffset()/(-60);
+    var timeZoneString = "";
+    if(timeZone > 0)
+    {
+        timeZoneString = " (+" + timeZone + ")";
+    }
+    if(timeZone < 0)
+    {
+        timeZoneString = " (-" + timeZone + ")";
+    }
+    var datetime = 
+        currentdate.getFullYear() + "-"
+        + (currentdate.getMonth()+1) + "-"
+        + currentdate.getDate() + " "
+        + currentdate.getHours() + ":"  
+        + currentdate.getMinutes() + ":" 
+        + currentdate.getSeconds()
+        + timeZoneString;
+    return datetime;
+};
+
 lookup.createUIObject = function()
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
-        id: guid
+        id: guid,
+        creation_time: lookup.getCurrentDateTimeString()
     };
     lookup.addEvaluationVariables(toAdd);
     lookup.tryRestoreOffsetCoordinates(toAdd);
