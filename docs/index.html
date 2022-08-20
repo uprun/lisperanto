@@ -205,25 +205,27 @@
             data-bind="
                 using: lookup.customObjects[$data],
                 attr: {id: 'rdf-statement--' + $data}">
-            <strong data-bind="
-                click: $root.open_OmniBox_for_RDF_predicate_in_statement,
-                text: $root.customObjects[$data.predicate_id()].name,
-                attr: {id: 'rdf-predicate-in-statement--' + $data.id}"></strong>
+            <strong 
+                class="lisperanto-rdf-key"
+                data-bind="
+                    click: $root.open_OmniBox_for_RDF_predicate_in_statement,
+                    text: $root.customObjects[$data.predicate_id()].name,
+                    attr: {id: 'rdf-predicate-in-statement--' + $data.id}"></strong>
             <span class="webpad-color-orange">:</span>
             <span data-bind="
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
-                <strong data-bind="
+                <span class="lisperanto-rdf-value" data-bind="
                     click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                     text: $root.customObjects[$data.subject_id()].name,
-                    attr: {id: 'rdf-subject-in-statement--' + $data.id}"></strong>
+                    attr: {id: 'rdf-subject-in-statement--' + $data.id}"></span>
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="
                         visible: typeof($data.subject_id()) === 'undefined',
                         click: $root.open_OmniBox_for_RDF_subject_in_statement, 
                         attr: {id: 'add-RDF-subject-in-statement--' + $data.id}">
-                    + rdf-subject
+                    + rdf-value
             </div>
         </div>
 
@@ -236,7 +238,7 @@
                 {
                     id: $data.id
                 }">
-            <div 
+            <div
                 data-bind="
                     attr: 
                     {
@@ -245,6 +247,7 @@
                 <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
             </div>
             <div
+                class="lisperanto-rdf-key"
                 style="margin-left: 2rem;"
                 data-bind="
                     attr: {id: 'rdf-entry-id-statement--' + $data.id}">
@@ -252,29 +255,29 @@
                     text: 'id',
                     attr: {id: 'rdf-entry-id-predicate--' + $data.id}"></strong>
                 <span class="webpad-color-orange">:</span>
-                <span>
-                    <span 
-                        style="font-size: 1rem;"
-                        class="my-function-name"
-                        data-bind="
-                            text: $data.id,
-                            attr: {id: 'rdf-entry-id-value--' + $data.id}"></span>
-                </span>
+                <span
+                    class="my-function-name lisperanto-rdf-value"
+                    data-bind="
+                        text: $data.id,
+                        attr: {id: 'rdf-entry-id-value--' + $data.id}"></span>
             </div>
             <div 
                 style="margin-left: 2rem;"
                 data-bind="
                     attr: {id: 'rdf-entry-name-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'name',
-                    attr: {id: 'rdf-entry-name-predicate--' + $data.id}"></strong>
+                <strong 
+                    class="lisperanto-rdf-key"
+                    data-bind="
+                        text: 'name',
+                        attr: {id: 'rdf-entry-name-predicate--' + $data.id}"></strong>
                 <span class="webpad-color-orange">:</span>
                 <span data-bind="
                     if: typeof($data.name()) !== 'undefined'
                     ">
-                    <strong data-bind="
+                    <span class="lisperanto-rdf-value" 
+                        data-bind="
                         text: $data.name,
-                        attr: {id: 'rdf-entry-name-value--' + $data.id}"></strong>
+                        attr: {id: 'rdf-entry-name-value--' + $data.id}"></span>
                 </span>
                 <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="

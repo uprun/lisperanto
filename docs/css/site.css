@@ -225,6 +225,18 @@ a
     max-width: 40rem;
 }
 
+.lisperanto-rdf-value
+{
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+}
+
+.lisperanto-rdf-key
+{
+    font-size: 0.8rem;
+}
+
+
 .lisperanto-sandbox-stripes
 {
   background: inherit;

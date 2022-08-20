@@ -1182,12 +1182,12 @@ lookup.addParameter = function()
 };
 
 
-lookup.add_statement_predicate_to_rdf_entry = function(name)
+lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus)
 {
     // [lives-in] [Odesa]
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field
 
-    var obj = lookup.focusedObj();
+    var obj = rdf_object_in_focus || lookup.focusedObj();
     const predicateName = name || lookup.omniBoxTextInput().trim();
     if(predicateName === "")
         return;
@@ -1201,6 +1201,7 @@ lookup.add_statement_predicate_to_rdf_entry = function(name)
     };
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
+    return toAdd_id;
 
 };
 
@@ -1227,9 +1228,9 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
 
 };
 
-lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filtered_rdf_entry)
+lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filtered_rdf_entry, rdf_statemnt_object_in_focus)
 {
-    var obj = lookup.focusedObj();
+    var obj = rdf_statemnt_object_in_focus || lookup.focusedObj();
     if ( typeof(obj.subject_id()) === 'undefined')
     {
         const subject_id = filtered_rdf_entry.id;
@@ -2839,6 +2840,49 @@ lookup.omniWheelOnWheelEvent = function()
     event.stopPropagation();
 };
 
+lookup.add_key_and_value = function(created_rdf_object, predicate_name, subject_name_or_value) 
+{
+    var predicate_id = lookup.find_or_create_rdf_predicate(predicate_name);
+    var value_id = lookup.find_or_create_rdf_entry_with_name(subject_name_or_value);
+    for( var k = 0; k < created_rdf_object.statements().length; k++)
+    {
+        var statement_id = created_rdf_object.statements()[k];
+        var statement_object = lookup.customObjects[statement_id];
+        if (statement_object.predicate_id() === predicate_id && statement_object.subject_id() === value_id)
+        {
+            return;
+        }
+    }
+
+    var statement_id = lookup.add_statement_predicate_to_rdf_entry(predicate_name, created_rdf_object);
+    
+    var statement_object = lookup.customObjects[statement_id];
+    var subject_object = lookup.customObjects[value_id];
+    lookup.add_existing_RDF_subject_to_statement_from_omnibox_list(subject_object, statement_object);
+};
+
+
+lookup.print_all_functions_from_lookup = function()
+{
+    for(var key_name in lookup)
+    {
+        console.log(key_name);
+        const rdf_entry_name = key_name;
+        var created_rdf_object_id = lookup.find_or_create_rdf_entry_with_name(rdf_entry_name);
+        var created_rdf_object = lookup.customObjects[created_rdf_object_id];
+        const predicate_name = "type";
+        const entry_in_lookup = lookup[key_name];
+        const type_of_entry = typeof(entry_in_lookup);
+        lookup.add_key_and_value(created_rdf_object, predicate_name, type_of_entry);
+        if(type_of_entry === "function")
+        {
+            lookup.add_key_and_value(created_rdf_object, "definition", entry_in_lookup.toString());
+        }
+        lookup.add_key_and_value(created_rdf_object, "project", "lisperanto");
+        lookup.add_key_and_value(created_rdf_object, "namespace", "lookup");
+    }
+};
+
 
 
 
@@ -2860,7 +2904,6 @@ $(document).ready(function()
     ko.applyBindings(viewModel);
 
     lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: 0, y: 0});
+
+    lookup.print_all_functions_from_lookup();
 });
-
-
-  
