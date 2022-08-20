@@ -200,6 +200,16 @@
             </div>
         </div>
     </script>
+
+    <script type="text/html" id="rdf-word-template">
+        <span style="white-space: pre; font-size: 0.8rem;" 
+            data-bind="
+                text: $data,
+                css: { 
+                    'my-function-name': $root.names_lookup[$data],
+                },"></span>
+    </script>
+
     <script type="text/html" id="rdf-statement-template">
         <div 
             data-bind="
@@ -217,10 +227,9 @@
                 ">
                 <span style="white-space: normal; font-size: 0;" class="lisperanto-rdf-value" 
                     data-bind="
-                        foreach: $root.customObjects[$data.subject_id()].splitted,
+                        template: { name: 'rdf-word-template', foreach: $root.customObjects[$data.subject_id()].splitted },
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                         attr: {id: 'rdf-subject-in-statement--' + $data.id}">
-                    <span style="white-space: pre; font-size: 0.8rem;" data-bind="text: $data"></span>
                 </span>
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 

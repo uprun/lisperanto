@@ -648,6 +648,7 @@ lookup.try_restore_RDF_entry = function(value)
 {
     value.name = ko.observable(value.name);
     value.statements = ko.observableArray(value.statements);
+    lookup.names_lookup[value.name()] = true;
     return value;
 };
 
@@ -728,6 +729,8 @@ lookup.createUIObject = function()
     return toAdd;
 };
 
+lookup.names_lookup = {};
+
 
 lookup.create_RDF_Entry = function(name)
 {
@@ -752,6 +755,7 @@ lookup.create_RDF_Entry = function(name)
         id: toAdd.id,
         name: name
     };
+    lookup.names_lookup[name] = true;
     lookup.operationsPush(operation);
     return toAdd;
 };
