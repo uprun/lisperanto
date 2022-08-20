@@ -215,10 +215,13 @@
             <span data-bind="
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
-                <span class="lisperanto-rdf-value" data-bind="
-                    click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
-                    text: $root.customObjects[$data.subject_id()].name,
-                    attr: {id: 'rdf-subject-in-statement--' + $data.id}"></span>
+                <span style="white-space: normal; font-size: 0;" class="lisperanto-rdf-value" 
+                    data-bind="
+                        foreach: $root.customObjects[$data.subject_id()].splitted,
+                        click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
+                        attr: {id: 'rdf-subject-in-statement--' + $data.id}">
+                    <span style="white-space: pre; font-size: 0.8rem;" data-bind="text: $data"></span>
+                </span>
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="

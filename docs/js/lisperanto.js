@@ -736,6 +736,16 @@ lookup.create_RDF_Entry = function(name)
     toAdd.name = ko.observable(name);
     toAdd.statements = ko.observableArray([]);
 
+    var newRejoined = lookup.rejoin_many([name], " ");
+    var newRejoined = lookup.rejoin_many(newRejoined, "(");
+    var newRejoined = lookup.rejoin_many(newRejoined, ")");
+    var newRejoined = lookup.rejoin_many(newRejoined, ",");
+    var newRejoined = lookup.rejoin_many(newRejoined, "[");
+    var newRejoined = lookup.rejoin_many(newRejoined, "]");
+    var newRejoined = lookup.rejoin_many(newRejoined, ".");
+    toAdd.splitted = newRejoined;
+    
+
     var operation = 
     {
         operation: "create-rdf-entry",
@@ -2667,6 +2677,40 @@ lookup.defineOmniWheel = function() {
 
 lookup.canvasOmniBox = lookup.defineOmniBox();
 lookup.omniWheel = lookup.defineOmniWheel();
+
+lookup.rejoin = function(name, splitBy) {
+    var result = [];
+    while(name != "")
+    {
+        const index = name.indexOf(splitBy);
+        if(index < 0 )
+        {
+            result.push(name);
+            break;
+        }
+
+        if(index > 0)
+        {
+            var toAdd = name.substring(0, index);
+            result.push(toAdd);
+        }
+        var middle = name.substring(index, index + splitBy.length);
+        result.push(middle);
+        name = name.substring(index + splitBy.length);
+    }
+    return result;
+};
+
+lookup.rejoin_many = function(newRejoined, splitBy)
+{
+    var result = [];
+    for (var k = 0; k < newRejoined.length; k++) {
+        var sub_name = newRejoined[k];
+        var sub_array = lookup.rejoin(sub_name, splitBy);
+        result = result.concat(sub_array);
+    }
+    return result;
+};
 
 function Lisperanto()
 {
