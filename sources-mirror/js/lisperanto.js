@@ -102,21 +102,6 @@ lookup.operations = [];
 
 lookup.operationsPush = function(some)
 {
-    if(some.operation === "set-parameter-value")
-    {
-        var parameterValueObj = lookup.customObjects[some.parameterValueGuid];
-        var functionCallObj = lookup.customObjects[parameterValueObj.assignedToGuid];
-        if(functionCallObj.functionGuid === "code-block")
-        {
-            const lastParameterId = functionCallObj.parameters().length - 1;
-            var lastParameterGuid = functionCallObj.parameters()[lastParameterId];
-            var lastParameterObj = lookup.customObjects[lastParameterGuid];
-            if( typeof(lastParameterObj.guidToUse()) !== "undefined" )
-            {
-                lookup.addParameterValueByNumber(functionCallObj, functionCallObj.functionGuid, 0);
-            }
-        }
-    }
     lookup.operations.push(some);
     var toSerialize = {};
     for (const [key, value] of Object.entries(lookup.customObjects)) {
@@ -703,10 +688,20 @@ lookup.getCurrentDateTimeString = function()
     {
         timeZoneString = " (-" + timeZone + ")";
     }
+    var day = currentdate.getDate();
+    if(day < 10)
+    {
+        day = "0" + day;
+    }
+    var month = currentdate.getMonth() + 1;
+    if(month < 10)
+    {
+        month = "0" + month;
+    }
     var datetime = 
         currentdate.getFullYear() + "-"
-        + (currentdate.getMonth()+1) + "-"
-        + currentdate.getDate() + " "
+        + month + "-"
+        + day + " "
         + currentdate.getHours() + ":"  
         + currentdate.getMinutes() + ":" 
         + currentdate.getSeconds()
@@ -742,11 +737,52 @@ lookup.create_RDF_Entry = function(name)
     var newRejoined = lookup.rejoin_many([name], " ");
     var newRejoined = lookup.rejoin_many(newRejoined, "(");
     var newRejoined = lookup.rejoin_many(newRejoined, ")");
+    var newRejoined = lookup.rejoin_many(newRejoined, "{");
+    var newRejoined = lookup.rejoin_many(newRejoined, "}");
     var newRejoined = lookup.rejoin_many(newRejoined, ",");
     var newRejoined = lookup.rejoin_many(newRejoined, "[");
     var newRejoined = lookup.rejoin_many(newRejoined, "]");
     var newRejoined = lookup.rejoin_many(newRejoined, ".");
+    var newRejoined = lookup.rejoin_many(newRejoined, ";");
+    var newRejoined = lookup.rejoin_many(newRejoined, "'");
+    var newRejoined = lookup.rejoin_many(newRejoined, '"');
+    var newRejoined = lookup.rejoin_many(newRejoined, '//');
     toAdd.splitted = newRejoined;
+    toAdd.local_lookup = {};
+    toAdd.reserved_lookup = {
+        "if": true,
+        "var": true,
+        "const": true,
+        "while": true,
+        "for": true,
+        "return": true,
+        ".": true,
+        "(": true,
+        ")": true,
+        "[": true,
+        "]": true,
+        "break": true,
+        ";": true,
+        "'": true,
+        '"': true,
+        '//': true,
+        '{': true,
+        '}': true,
+    };
+    toAdd.splitted.forEach(element => {
+        if(typeof(toAdd.reserved_lookup[element]) === "undefined")
+        {
+            const value = toAdd.local_lookup[element];
+            if(typeof(value) === "undefined")
+            {
+                toAdd.local_lookup[element] = 1;
+            }
+            else
+            {
+                toAdd.local_lookup[element] = value + 1;
+            }
+        }
+    });
     
 
     var operation = 

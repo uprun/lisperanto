@@ -202,12 +202,23 @@
     </script>
 
     <script type="text/html" id="rdf-word-template">
-        <span style="white-space: pre; font-size: 0.8rem;" 
-            data-bind="
-                text: $data,
-                css: { 
-                    'my-function-name': $root.names_lookup[$data],
-                },"></span>
+        <!-- ko if: $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '('-->
+            <span style="white-space: pre; font-size: 0.8rem;" 
+                class="my-function-name"
+                data-bind="
+                    text: $data,
+                    "></span>
+        <!-- /ko-->
+        <!-- ko ifnot: $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '('-->
+            <span style="white-space: pre; font-size: 0.8rem;" 
+                data-bind="
+                    text: $data,
+                    css: { 
+                        'webpad-color-green': $parent.reserved_lookup[$data],
+                        'webpad-color-purple': $parent.local_lookup[$data] >= 2,
+                        'my-function-name': $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '(',
+                    },"></span>
+        <!-- /ko-->
     </script>
 
     <script type="text/html" id="rdf-statement-template">
@@ -225,12 +236,16 @@
             <span data-bind="
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
-                <span style="white-space: normal; font-size: 0;" class="lisperanto-rdf-value" 
-                    data-bind="
-                        template: { name: 'rdf-word-template', foreach: $root.customObjects[$data.subject_id()].splitted },
+                <span
+                    data-bind="with: $root.customObjects[$data.subject_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                         attr: {id: 'rdf-subject-in-statement--' + $data.id}">
+                    <span style="white-space: normal; font-size: 0;" class="lisperanto-rdf-value" 
+                        data-bind="
+                            template: { name: 'rdf-word-template', foreach: $data.splitted }">
+                    </span>
                 </span>
+                
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="
