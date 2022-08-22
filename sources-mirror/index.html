@@ -22,7 +22,8 @@
         "click: $root.bodyOnClick,
         event: 
             {
-                keydown: $root.bodyKeyDown
+                keydown: $root.bodyKeyDown,
+                keyup: $root.bodyKeyUp,
             },
         style: 
             { 
@@ -202,21 +203,29 @@
     </script>
 
     <script type="text/html" id="rdf-word-template">
-        <!-- ko if: $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '('-->
+        <!-- ko if: $root.names_lookup[$data.word] || ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
             <span style="white-space: pre; font-size: 0.8rem;" 
                 class="my-function-name"
                 data-bind="
-                    text: $data,
+                    text: $data.word,
+                    click: $root.open_rdf_entry_by_name,
+                    attr: { 
+                        id: $data.id,
+                        contenteditable: !$root.allow_to_open_definition(),
+                    },
+                    css: {
+                        'lisperanto-open-link': $root.allow_to_open_definition,
+                    }
                     "></span>
         <!-- /ko-->
-        <!-- ko ifnot: $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '('-->
+        <!-- ko ifnot: $root.names_lookup[$data.word] || ($parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
             <span style="white-space: pre; font-size: 0.8rem;" 
+                contenteditable="true"
                 data-bind="
-                    text: $data,
+                    text: $data.word,
                     css: { 
-                        'webpad-color-green': $parent.reserved_lookup[$data],
-                        'webpad-color-purple': $parent.local_lookup[$data] >= 2,
-                        'my-function-name': $root.names_lookup[$data] || $parent.splitted[$index() + 1] === '(',
+                        'webpad-color-green': $parent.reserved_lookup[$data.word],
+                        'webpad-color-purple': $parent.local_lookup[$data.word] >= 2,
                     },"></span>
         <!-- /ko-->
     </script>

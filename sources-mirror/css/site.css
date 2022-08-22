@@ -17,6 +17,12 @@ body {
   background-color: inherit;
   font-family: 'Input Mono', monospace;
 }
+
+.lisperanto-open-link
+{
+    text-decoration: underline;
+}
+
 .my-function-result
 {
   color:rgb(218, 116, 21);

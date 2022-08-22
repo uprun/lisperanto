@@ -724,6 +724,31 @@ lookup.createUIObject = function()
     return toAdd;
 };
 
+
+lookup.open_rdf_entry_by_name = function(word_object)
+{
+    if( !lookup.allow_to_open_definition() )
+    {
+        return;
+    }
+    event.stopPropagation();
+    const name = word_object.word;
+    const rdf_entry_id = lookup.find_or_create_rdf_entry_with_name(name);
+    const rdf_entry = lookup.customObjects[rdf_entry_id];
+    var ui_object = document.getElementById(word_object.id);
+    const main_rdf_entry = lookup.customObjects[ui_object.offsetParent.id];
+    const offset_X = main_rdf_entry.offsetX();
+    const offset_Y = main_rdf_entry.offsetY();
+    var offset =  
+    {
+        x:  offset_X + ui_object.offsetParent.offsetWidth,
+        y:  offset_Y + ui_object.offsetTop
+    };
+    lookup.desiredOffset = offset;
+    console.log(offset);
+    lookup.openElement(rdf_entry);
+};
+
 lookup.names_lookup = {};
 
 
@@ -747,7 +772,14 @@ lookup.create_RDF_Entry = function(name)
     var newRejoined = lookup.rejoin_many(newRejoined, "'");
     var newRejoined = lookup.rejoin_many(newRejoined, '"');
     var newRejoined = lookup.rejoin_many(newRejoined, '//');
-    toAdd.splitted = newRejoined;
+    toAdd.splitted = newRejoined.map((element, index) => 
+    {
+        return {
+            id: toAdd.id + "--" + index,
+            word: element
+        };
+    });
+
     toAdd.local_lookup = {};
     toAdd.reserved_lookup = {
         "if": true,
@@ -770,16 +802,16 @@ lookup.create_RDF_Entry = function(name)
         '}': true,
     };
     toAdd.splitted.forEach(element => {
-        if(typeof(toAdd.reserved_lookup[element]) === "undefined")
+        if(typeof(toAdd.reserved_lookup[element.word]) === "undefined")
         {
-            const value = toAdd.local_lookup[element];
-            if(typeof(value) === "undefined")
+            const count = toAdd.local_lookup[element.word];
+            if(typeof(count) === "undefined")
             {
-                toAdd.local_lookup[element] = 1;
+                toAdd.local_lookup[element.word] = 1;
             }
             else
             {
-                toAdd.local_lookup[element] = value + 1;
+                toAdd.local_lookup[element.word] = count + 1;
             }
         }
     });
@@ -2612,6 +2644,8 @@ lookup.omniBoxInputKeyUp = function( data, event)
     event.stopPropagation();
 };
 
+lookup.allow_to_open_definition = ko.observable(false);
+
 lookup.bodyKeyDown = function( data, event)
 {
     // turns out Firefox has a bug 
@@ -2639,6 +2673,42 @@ lookup.bodyKeyDown = function( data, event)
     if(event.code === "KeyF" && !lookup.isOmniBoxOpen())
     {
         lookup.toggleFullScreen();
+    }
+
+    if(
+        (
+            event.code === "ControlLeft" ||
+            event.code === "ControlRight" ||
+            event.code === "OSLeft" ||
+            event.code === "OSRight" ||
+            event.code === "MetaLeft" ||
+            event.code === "MetaRight"
+        )
+        &&
+        !lookup.isOmniBoxOpen())
+    {
+        lookup.allow_to_open_definition(true);
+    }
+
+    return true;
+
+};
+
+lookup.bodyKeyUp = function( data, event)
+{
+    if(
+        (
+            event.code === "ControlLeft" ||
+            event.code === "ControlRight" ||
+            event.code === "OSLeft" ||
+            event.code === "OSRight" ||
+            event.code === "MetaLeft" ||
+            event.code === "MetaRight"
+        )
+        &&
+        !lookup.isOmniBoxOpen())
+    {
+        lookup.allow_to_open_definition(false);
     }
 
     return true;
