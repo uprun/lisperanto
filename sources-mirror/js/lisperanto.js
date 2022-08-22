@@ -112,6 +112,18 @@ lookup.operationsPush = function(some)
                 toAdd[keyInner] = valueInner();
             }else
             {
+                if(keyInner === "splitted")
+                {
+                    continue;
+                }
+                if(keyInner === "local_lookup")
+                {
+                    continue;
+                }
+                if(keyInner === "reserved_lookup")
+                {
+                    continue;
+                }
                 toAdd[keyInner] = valueInner;
             }
         }
@@ -633,7 +645,7 @@ lookup.try_restore_RDF_entry = function(value)
 {
     value.name = ko.observable(value.name);
     value.statements = ko.observableArray(value.statements);
-    lookup.names_lookup[value.name()] = true;
+    lookup.restore_splitted_view(value);
     return value;
 };
 
@@ -759,62 +771,7 @@ lookup.create_RDF_Entry = function(name)
     toAdd.name = ko.observable(name);
     toAdd.statements = ko.observableArray([]);
 
-    var newRejoined = lookup.rejoin_many([name], " ");
-    var newRejoined = lookup.rejoin_many(newRejoined, "(");
-    var newRejoined = lookup.rejoin_many(newRejoined, ")");
-    var newRejoined = lookup.rejoin_many(newRejoined, "{");
-    var newRejoined = lookup.rejoin_many(newRejoined, "}");
-    var newRejoined = lookup.rejoin_many(newRejoined, ",");
-    var newRejoined = lookup.rejoin_many(newRejoined, "[");
-    var newRejoined = lookup.rejoin_many(newRejoined, "]");
-    var newRejoined = lookup.rejoin_many(newRejoined, ".");
-    var newRejoined = lookup.rejoin_many(newRejoined, ";");
-    var newRejoined = lookup.rejoin_many(newRejoined, "'");
-    var newRejoined = lookup.rejoin_many(newRejoined, '"');
-    var newRejoined = lookup.rejoin_many(newRejoined, '//');
-    toAdd.splitted = newRejoined.map((element, index) => 
-    {
-        return {
-            id: toAdd.id + "--" + index,
-            word: element
-        };
-    });
-
-    toAdd.local_lookup = {};
-    toAdd.reserved_lookup = {
-        "if": true,
-        "var": true,
-        "const": true,
-        "while": true,
-        "for": true,
-        "return": true,
-        ".": true,
-        "(": true,
-        ")": true,
-        "[": true,
-        "]": true,
-        "break": true,
-        ";": true,
-        "'": true,
-        '"': true,
-        '//': true,
-        '{': true,
-        '}': true,
-    };
-    toAdd.splitted.forEach(element => {
-        if(typeof(toAdd.reserved_lookup[element.word]) === "undefined")
-        {
-            const count = toAdd.local_lookup[element.word];
-            if(typeof(count) === "undefined")
-            {
-                toAdd.local_lookup[element.word] = 1;
-            }
-            else
-            {
-                toAdd.local_lookup[element.word] = count + 1;
-            }
-        }
-    });
+    lookup.restore_splitted_view(toAdd);
     
 
     var operation = 
@@ -823,7 +780,6 @@ lookup.create_RDF_Entry = function(name)
         id: toAdd.id,
         name: name
     };
-    lookup.names_lookup[name] = true;
     lookup.operationsPush(operation);
     return toAdd;
 };
@@ -2820,6 +2776,64 @@ lookup.rejoin_many = function(newRejoined, splitBy)
         result = result.concat(sub_array);
     }
     return result;
+};
+
+lookup.restore_splitted_view = function (toAdd)
+{
+    lookup.names_lookup[toAdd.name()] = true;
+    var newRejoined = lookup.rejoin_many([toAdd.name()], " ");
+    var newRejoined = lookup.rejoin_many(newRejoined, "(");
+    var newRejoined = lookup.rejoin_many(newRejoined, ")");
+    var newRejoined = lookup.rejoin_many(newRejoined, "{");
+    var newRejoined = lookup.rejoin_many(newRejoined, "}");
+    var newRejoined = lookup.rejoin_many(newRejoined, ",");
+    var newRejoined = lookup.rejoin_many(newRejoined, "[");
+    var newRejoined = lookup.rejoin_many(newRejoined, "]");
+    var newRejoined = lookup.rejoin_many(newRejoined, ".");
+    var newRejoined = lookup.rejoin_many(newRejoined, ";");
+    var newRejoined = lookup.rejoin_many(newRejoined, "'");
+    var newRejoined = lookup.rejoin_many(newRejoined, '"');
+    var newRejoined = lookup.rejoin_many(newRejoined, '//');
+    toAdd.splitted = newRejoined.map((element, index) => {
+        return {
+            id: toAdd.id + "--" + index,
+            word: element
+        };
+    });
+
+    toAdd.local_lookup = {};
+    toAdd.reserved_lookup = {
+        "if": true,
+        "var": true,
+        "const": true,
+        "while": true,
+        "for": true,
+        "return": true,
+        ".": true,
+        "(": true,
+        ")": true,
+        "[": true,
+        "]": true,
+        "break": true,
+        ";": true,
+        "'": true,
+        '"': true,
+        '//': true,
+        '{': true,
+        '}': true,
+    };
+    toAdd.splitted.forEach(element => {
+        if (typeof (toAdd.reserved_lookup[element.word]) === "undefined") {
+            const count = toAdd.local_lookup[element.word];
+            if (typeof (count) === "undefined") {
+                toAdd.local_lookup[element.word] = 1;
+            }
+
+            else {
+                toAdd.local_lookup[element.word] = count + 1;
+            }
+        }
+    });
 };
 
 function Lisperanto()
