@@ -5,45 +5,6 @@ lookup.omniBoxTextInput = ko.observable("");
 lookup.omniBoxTextInput
     .extend({ rateLimit: 100 });
 
-lookup.omniBoxTextInput
-    .subscribe(function()
-    {
-        lookup.preParseOmniBox();
-    });
-
-lookup.functionsArray = ko.observableArray([]);
-
-lookup.functionsLookup = ko.computed(function()
-{
-    var searchQuery = lookup.omniBoxTextInput().trim().toLowerCase();
-    var filtered = [];
-    const availableEntries = lookup.functionsArray();
-
-    if(searchQuery === "")
-    {
-        filtered = availableEntries;
-    }
-    else
-    {
-        filtered = ko.utils.arrayFilter(availableEntries, function(item)
-        {
-            return lookup.customObjects[item.id].name().toLowerCase().indexOf(searchQuery) >= 0;
-        });
-
-    }
-     
-    return ko.utils.arrayMap(filtered, function(item) {
-        var parameters_names_list = ko.utils.arrayMap(lookup.customObjects[item.id].parameters(), function(item)
-        {
-            return lookup.customObjects[item].parameterName;
-        });
-        return { id: item.id, 
-            text: lookup.customObjects[item.id].name() + '(' + parameters_names_list.join(", ") +')'
-        };
-    });
-    
-});
-
 
 lookup.somethingChanged = ko.observable(0);
 
@@ -132,9 +93,6 @@ lookup.operationsPush = function(some)
     var data = JSON.stringify(toSerialize);
     localStorage.setItem('customObjects', data);
     lookup.somethingChanged(lookup.somethingChanged() + 1);
-    // TODO: refresh functionsArray
-    // on load refresh functions array
-    // on load first  load data because there might not be any saved data then set default functions then if there are not present
 };
 
 lookup.loadFromStorage = function()
@@ -149,65 +107,7 @@ lookup.loadFromStorage = function()
             lookup.tryRestoreOffsetCoordinates(value);
             if(typeof(value.type) !== 'undefined')
             {
-                if(value.type === "built-in-function")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreBuiltInFunction(value);
-                }
-                if(value.type === "built-in-type")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreBuiltInType(value);
-                }
-                if(value.type === "type")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreType(value);
-                }
-                if(value.type === "built-in-function-parameter")
-                {
-                    lookup.customObjects[key] = value;
-                }
-                if(value.type === "function")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreFunction(value);
-                }
-                if(value.type === "sandbox-unique")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreFunction(value);
-                }
-                if(value.type === "function-usage")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreFunctionUsage(value);
-                }
-                if(value.type === "constant-number")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
-                }
-                if(value.type === "constant-int")
-                {
-                    //constant-int is deprecated now, so it transfers to constant-number
-                    value.type = "constant-number";
-                    lookup.customObjects[key] = lookup.tryRestoreConstantNumber(value);
-                }
-                if(value.type === "constant-string")
-                {
-                    lookup.customObjects[key] = value;
-                }
-                if(value.type === "parameter")
-                {
-                    lookup.customObjects[key] = value;
-                }
-                if(value.type === "symbol-usage")
-                {
-                    lookup.customObjects[key] = value;
-                }
-                if(value.type === "parameter-value")
-                {
-                    lookup.customObjects[key] = lookup.tryRestoreParameterValue(value);
-                }
                 if(value.type === "rdf-predicate") 
-                {
-                    lookup.customObjects[key] = lookup.try_restore_RDF_predicate(value);
-                }
-                if(value.type === "built-in-rdf-predicate") 
                 {
                     lookup.customObjects[key] = lookup.try_restore_RDF_predicate(value);
                 }
@@ -219,10 +119,6 @@ lookup.loadFromStorage = function()
                 {
                     lookup.customObjects[key] = lookup.try_restore_RDF_statement(value);
                 }
-
-                
-                
-                
             }
             lookup.somethingChanged(lookup.somethingChanged() + 1);
         }
@@ -282,35 +178,12 @@ lookup.tryRestoreOffsetCoordinates = function(value)
     });
 };
 
-
-lookup.restoreFunctionsArray = function()
-{
-    for (const [key, value] of Object.entries(lookup.customObjects)) 
-    {
-        if(typeof(value.type) !== 'undefined')
-        {
-            if(value.type === "built-in-function" )
-            {
-                lookup.functionsArray.push(value);
-            }
-            if(value.type === "function" )
-            {
-                lookup.functionsArray.push(value);
-            }
-        }
-    }
-};
-
 lookup.restore_RDF_predicates_array = function()
 {
     for (const [key, value] of Object.entries(lookup.customObjects)) 
     {
         if(typeof(value.type) !== 'undefined')
         {
-            if(value.type === "built-in-rdf-predicate" )
-            {
-                lookup.rdf_predicates_Array.push(value);
-            }
             if(value.type === "rdf-predicate" )
             {
                 lookup.rdf_predicates_Array.push(value);
@@ -319,251 +192,6 @@ lookup.restore_RDF_predicates_array = function()
     }
 };
 
-
-
-lookup.tryRestoreBuiltInFunction = function(value)
-{
-    value.name = ko.observable(value.name);
-    value.parameters = ko.observableArray(value.parameters);
-    value.body = ko.observableArray(value.body);
-    return value;
-};
-
-lookup.defineBuiltInFunction = function (obj) 
-{
-    var parameters_list = obj.parameters;
-    if(typeof(lookup.customObjects[obj.id]) === 'undefined')
-    {
-        var toAdd ={
-            id: obj.id,
-            type: "built-in-function",
-            name: ko.observable(obj.name),
-            parameters: ko.observableArray([]),
-            body: ko.observable(undefined)
-        };
-        for(var k = 0; k < parameters_list.length; k++)
-        {
-            toAdd.parameters.push(lookup.defineBuiltInFunctionParameter(obj.id, parameters_list[k]))
-        }
-        lookup.customObjects[obj.id] = toAdd;
-    }
-    
-};
-
-
-lookup.tryRestoreType = function(value)
-{
-    value.name = ko.observable(value.name);
-    return value;
-};
-
-lookup.tryRestoreBuiltInType = function(value)
-{
-    value.name = ko.observable(value.name);
-    return value;
-};
-
-
-lookup.defineBuiltInType = function (obj) 
-{
-    if(typeof(lookup.customObjects[obj.id]) === 'undefined')
-    {
-        var toAdd ={
-            id: obj.id,
-            type: "built-in-type",
-            name: ko.observable(obj.name),
-        };
-        lookup.customObjects[obj.id] = toAdd;
-    }
-};
-
-lookup.defineType = function (name) 
-{
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "type";
-    toAdd.name = ko.observable(name);
-    toAdd.fields = ko.observableArray([]);
-
-    lookup.typesArray.push(toAdd);
-
-    var operation = 
-    {
-        operation: "define-type",
-        name: name,
-        guid: toAdd.id
-    };
-    lookup.operationsPush(operation);
-    return toAdd;
-};
-
-
-
-lookup.defineBuiltInFunctionParameter = function(functionName, parameter)
-{
-    var id = functionName + "#" +  parameter;
-    var toAdd = 
-    {
-        id: id ,
-        type: "built-in-function-parameter",
-        parameterName: parameter
-    };
-    lookup.customObjects[id] = toAdd;
-    return id;
-};
-
-lookup.builtInTypesArray = [
-    {
-        id: "number",
-        name: "number"
-    },
-    {
-        id: "string",
-        name: "string"
-    },
-    {
-        id: "boolean",
-        name: "boolean"
-    }
-];
-
-lookup.builtInFunctionsArray = [
-    {
-        id: "if",
-        name: "if",
-        parameters: ["check", "if-true-run", "else-run"]
-    },
-    {
-        id: "plus",
-        name: "+",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "minus",
-        name: "-",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "multiply",
-        name: "*",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "divide",
-        name: "/",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "less-or-equal",
-        name: "<=",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "less",
-        name: "<",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "more",
-        name: ">",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "more-or-equal",
-        name: ">=",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "not-equal",
-        name: "<>",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "equal",
-        name: "=",
-        parameters: ["a", "b"]
-    },
-    {
-        id: "code-block",
-        name: "code-block",
-        parameters: ["next"]
-    },
-    {
-        id: "define-variable",
-        name: "define-variable",
-        parameters: ["name", "type"]
-    },
-    {
-        id: "set-variable-value",
-        name: "set-variable-value",
-        parameters: ["name", "value"]
-    },
-];
-
-lookup.defineListOfPredefinedFunctions = function()
-{
-    for( var k = 0; k < lookup.builtInFunctionsArray.length; k++)
-    {
-        var obj = lookup.builtInFunctionsArray[k];
-        lookup.defineBuiltInFunction(obj);
-    }
-};
-
-lookup.defineListOfPredefinedTypes = function()
-{
-    for( var k = 0; k < lookup.builtInTypesArray.length; k++)
-    {
-        var obj = lookup.builtInTypesArray[k];
-        lookup.defineBuiltInType(obj);
-    }
-};
-
-lookup.sandbox = ko.observable(undefined);
-
-lookup.defineSandbox = function()
-{
-    var name = "sandbox-unique";
-    if(typeof(lookup.customObjects[name]) === 'undefined')
-    {
-        var toAdd ={
-            id: "sandbox-unique",
-            type: "sandbox-unique",
-            name: ko.observable(name),
-            parameters: ko.observableArray([]),
-            body: ko.observable(lookup.defineFunctionCall("code-block", "sandbox-unique")),
-            evaluationResult: ko.observable("")
-        };
-        
-        lookup.customObjects[toAdd.id] = toAdd;
-        var operation = 
-        {
-            operation: "define-sandbox",
-            guid: toAdd.id
-        };
-        lookup.operationsPush(operation);
-    }
-
-    var foundSandbox = lookup.customObjects[name];
-
-    lookup.tryRestoreOffsetCoordinates(foundSandbox);
-
-    lookup.sandbox(foundSandbox);
-};
-
-lookup.clearSandbox = function()
-{
-    lookup.hideOmniBox();
-    var name = "sandbox-unique";
-    var sandboxObj = lookup.customObjects[name];
-    // maybe need to remove previous body function tree
-    var nextSandBoxBody = lookup.defineFunctionCall("code-block", "sandbox-unique");
-    sandboxObj.body(nextSandBoxBody);
-    var operation = 
-    {
-        operation: "clear-sandbox",
-        guid: nextSandBoxBody.id
-    };
-    lookup.operationsPush(operation);
-};
 
 //this is my personal list of people who inspire me
 lookup.defaultNamesForFunctions =
@@ -600,39 +228,7 @@ lookup.defaultNamesForFunctions =
 
 lookup.getRandomInt = function(max) {
     return Math.floor(Math.random() * max);
-  };  
-
-lookup.createFunction = function()
-{
-    lookup.hideOmniWheel();
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "function";
-    toAdd.name = ko.observable(lookup.defaultNamesForFunctions[lookup.getRandomInt(lookup.defaultNamesForFunctions.length)]);
-    toAdd.body = ko.observable(lookup.defineFunctionCall("code-block", toAdd.id));
-    toAdd.parameters = ko.observableArray([]);
-    
-    
-    var operation = 
-    {
-        operation: "define-function",
-        guid: toAdd.id,
-        name: toAdd.name
-    };
-    lookup.operationsPush(operation);
-    lookup.functionsArray.push(toAdd);
-    lookup.openElement(toAdd);
-    event.stopPropagation();
-    lookup.hideOmniBox();
-};
-
-lookup.tryRestoreFunction = function(value)
-{
-    value.name = ko.observable(value.name);
-    value.parameters = ko.observableArray(value.parameters);
-    value.body = ko.observable(value.body);
-    lookup.addEvaluationVariables(value);
-    return value;
-};
+  };
 
 lookup.try_restore_RDF_predicate = function(value)
 {
@@ -655,36 +251,6 @@ lookup.try_restore_RDF_statement = function(value)
     value.subject_id = ko.observable(value.subject_id);
     value.statements = ko.observableArray(value.statements);
     return value;
-};
-
-var not_computed = {
-    type: "not-computed-yet"
-};
-
-lookup.addEvaluationVariables = function(obj)
-{
-    obj.evaluationResult = ko.observable(not_computed);
-    obj.prettyPrintEvaluationResult = ko.computed(function()
-        {
-            const result = obj.evaluationResult();
-            var map = {};
-            map["fail-to-evaluate"] = () => "[failed to evaluate]";
-            map["not-computed-yet"] = () => "not-computed-yet";
-            map["error--division-by-zero"] = () => "error--division-by-zero";
-            map["boolean"] = () => result.value + " [" + result.type + "]";
-            map["number"] = () => result.value + " [" + result.type + "]";
-            map["string"] = () => result.value + " [" + result.type + "]";
-
-            if( lookup.isFieldPresent(result, "type") && lookup.isFieldPresent(map, result.type))
-            {
-                return map[result.type]();
-            }
-            else
-            {
-                return "unexpected";
-            }
-        }
-    );
 };
 
 lookup.getCurrentDateTimeString = function()
@@ -729,7 +295,6 @@ lookup.createUIObject = function()
         id: guid,
         creation_time: lookup.getCurrentDateTimeString()
     };
-    lookup.addEvaluationVariables(toAdd);
     lookup.tryRestoreOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
@@ -786,202 +351,9 @@ lookup.create_RDF_Entry = function(name)
 
 lookup.create_and_show_RDF_entry = function(name)
 {
-    lookup.hideOmniWheel();
     var toShow = lookup.create_RDF_Entry(name);
     lookup.openElement(toShow);
     lookup.hideOmniBox();
-};
-
-
-
-
-
-lookup.defineConstantNumber = function(c)
-{
-    var toAdd = lookup.createUIObject();
-    
-    toAdd.type = "constant-number";
-    toAdd.value = c;
-    
-    if(typeof(c) !== 'number')
-    {
-        const preparedToParse = c.trim().replace(",", ".");
-        toAdd.value = parseFloat(preparedToParse);
-    }
-    
-
-    var operation = 
-    {
-        operation: "define-constant-number",
-        guid: toAdd.id,
-        constantValue: c
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
-};
-
-lookup.tryRestoreConstantNumber = function(value)
-{
-    if(typeof(value.value) !== 'number')
-    {
-        value.value = parseFloat(value.value.trim())
-    }
-    return value;
-};
-
-lookup.defineConstantString = function(str)
-{
-    var toAdd = lookup.createUIObject();
-    
-    toAdd.type = "constant-string";
-    toAdd.value = str;
-
-    var operation = 
-    {
-        operation: "define-constant-string",
-        guid: toAdd.id,
-        constantValue: toAdd.value
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
-};
-
-lookup.defineSymbolUsage = function(symbol)
-{
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "symbol-usage";
-    toAdd.symbolName = symbol;
-
-    var operation = 
-    {
-        operation: "define-symbol-usage",
-        guid: toAdd.id,
-        symbolName: symbol
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
-};
-
-lookup.defineParameterValue = function(parameterGuid, guidToUse, assignedToGuid)
-{
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "parameter-value";
-    toAdd.parameterGuid = parameterGuid;
-    toAdd.guidToUse = ko.observable(guidToUse);
-    toAdd.assignedToGuid = assignedToGuid;
-
-    var operation = 
-    {
-        operation: "parameter-value",
-        guid: toAdd.id,
-        parameterGuid: parameterGuid,
-        assignedToGuid: assignedToGuid
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
-};
-
-lookup.tryRestoreParameterValue = function(value)
-{
-    value.guidToUse = ko.observable(value.guidToUse);
-    return value;
-};
-
-lookup.defineFunctionCall = function( functionGuid, objId)
-{
-    var toWorkWith = lookup.customObjects[functionGuid];
-    var functionToCallName = toWorkWith.name;
-    var toAdd = lookup.createUIObject();
-
-    toAdd.type = "function-usage";
-    toAdd.functionName = functionToCallName;
-    toAdd.functionGuid = functionGuid;
-    toAdd.parameters = ko.observableArray([]);
-    lookup.addEvaluationVariables(toAdd);
-    toAdd.assignedToGuid = objId;
-
-    for(var k = 0; k < toWorkWith.parameters().length; k++)
-    {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[k], undefined, toAdd.id);
-        toAdd.parameters.push(parameterValue);
-    }
-
-
-    var operation = 
-    {
-        operation: "define-function-call",
-        guid: toAdd.id,
-        functionName: functionToCallName,
-        functionGuid: functionGuid
-    };
-    lookup.operationsPush(operation);
-
-    return toAdd.id;
-};
-
-lookup.unplug = function()
-{
-    var usedObj = lookup.calledObj;
-    var obj = lookup.customObjects[usedObj.assignedToGuid];
-    
-    usedObj.assignedToGuid = undefined;
-    if(typeof(obj["guidToUse"]) !== 'undefined')
-    {
-        obj.guidToUse(undefined);
-    }
-    
-
-    var operation = 
-    {
-        operation: "unplug",
-        objId: obj.id,
-        usedObjId: usedObj.id
-    };
-    lookup.openElement(usedObj);
-    lookup.operationsPush(operation);
-    lookup.hideOmniBox();
-};
-
-lookup.addParameterValueByNumber = function(functionUsageToAdd, functionGuid, parameterNumber)
-{
-    var toWorkWith = lookup.customObjects[functionGuid];
-    if( parameterNumber < toWorkWith.parameters().length)
-    {
-        var parameterValue = lookup.defineParameterValue(toWorkWith.parameters()[parameterNumber], undefined, functionUsageToAdd.id);
-        functionUsageToAdd.parameters.push(parameterValue);
-    }
-};
-
-
-lookup.tryRestoreFunctionUsage = function(value)
-{
-    value.parameters = ko.observableArray(value.parameters);
-    for (const [key, parameterValue] of Object.entries(value.parameters())) 
-    {
-        parameterValue.guidToUse = ko.observable(parameterValue.guidToUse);
-    }
-    lookup.addEvaluationVariables(value);
-    return value;
-};
-
-
-lookup.defineParameter = function(parameter, objId)
-{
-    var toAdd = lookup.createUIObject();
-
-    toAdd.type = "parameter";
-    toAdd.parameterName = parameter;
-    toAdd.assignedToGuid = objId;
-    
-    var operation = 
-    {
-        operation: "define-parameter",
-        guid: toAdd.id,
-        parameterName: parameter,
-        assignedToGuid: objId
-    };
-    lookup.operationsPush(operation);
-    return toAdd.id;
 };
 
 lookup.define_rdf_statement = function(predicate, objId)
@@ -1112,137 +484,11 @@ lookup.activeOperation = ko.observable("");
 
 lookup.focusedObj = ko.observable({});
 
-lookup.focusOnParameter = function(objId)
-{
-    lookup.hideOmniBox();
-    const objToWorkOn = lookup.customObjects[objId];
-    lookup.focusedObj(objToWorkOn);
-    lookup.activeOperation("focusOnParameter");
-    var root = lookup.findRoot(objToWorkOn);
-    lookup.filloutOmniBoxDataForFunction(objId, lookup.canvasOmniBox, root);
-
-};
-
 lookup.isOmniBoxOpen = ko.computed(function()
 {
     return lookup.activeOperation() !== "" ;
 });
 
-lookup.goBackwardAndEvaluate = function(obj)
-{
-    var currentObj = lookup.findRoot(obj);
-    lookup.startEvaluation(currentObj);
-
-};
-
-lookup.addConstant = function(text, obj)
-{
-    var guid = lookup.defineConstantNumber(text);
-    if(lookup.activeOperation() === "focusOnParameter" )
-    {
-        obj.guidToUse(guid);
-        var operation = 
-        {
-            operation: "set-parameter-value",
-            guidToUse: guid,
-            parameterValueGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-        //if there is a parameter assignment then start evaluation
-        lookup.goBackwardAndEvaluate(obj);
-    }
-};
-
-
-lookup.addFunction = function(funcObj, obj)
-{
-    var guid = lookup.defineFunctionCall(funcObj.id, obj.id);
-    if(lookup.activeOperation() === "focusOnParameter" )
-    {
-        obj.guidToUse(guid);
-        var operation = 
-        {
-            operation: "set-parameter-value",
-            guidToUse: guid,
-            parameterValueGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
-    lookup.hideOmniBox();
-    lookup.goBackwardAndEvaluate(obj);
-    return guid;
-
-};
-
-lookup.addFunctionByClick = function(funcObj)
-{
-    const type = lookup.customObjects[funcObj.id]["type"];
-    var map = {};
-    map["function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
-    map["built-in-function"] = () => lookup.addFunction(funcObj, lookup.focusedObj());
-    if( lookup.isFieldPresent(map, type))
-    {
-        map[type]();
-    }
-};
-
-lookup.addSymbol = function(text, obj)
-{
-    var guid = lookup.defineSymbolUsage(text);
-    if(lookup.activeOperation() === "focusOnParameter" )
-    {
-        obj.guidToUse(guid);
-        var operation = 
-        {
-            operation: "set-parameter-value",
-            guidToUse: guid,
-            parameterValueGuid: obj.id
-        };
-        lookup.operationsPush(operation);
-    }
-    lookup.activeOperation("");
-};
-
-lookup.renameFunction = function()
-{
-    var obj = lookup.focusedObj();
-    
-    const newName = lookup.omniBoxTextInput().trim();
-    var operation = 
-    {
-        operation: "rename-function",
-        functionGuid: obj.id,
-        newName: newName,
-        oldName: obj.name()
-    };
-
-    obj.name(newName);
-
-    lookup.operationsPush(operation);
-    lookup.hideOmniBox();
-
-
-};
-
-
-
-
-
-lookup.addParameter = function()
-{
-    var obj = lookup.focusedObj();
-    var toAdd = lookup.defineParameter(lookup.omniBoxTextInput(), obj.id);
-    obj.parameters.push(toAdd);
-    
-    var operation = 
-    {
-        operation: "added-parameter-to-function",
-        functionGuid: obj.id,
-        parameterGuid: toAdd.id
-    };
-    lookup.operationsPush(operation);
-    lookup.hideOmniBox();
-};
 
 
 lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus)
@@ -1334,488 +580,8 @@ lookup.add_name_to_rdf_entry = function()
 
 };
 
-
-lookup.makeCopyOfContext = function( context)
-{
-    if(typeof(context) === 'undefined')
-    {
-        context = {};
-    }
-    var toParse = JSON.stringify(context);
-    return JSON.parse(toParse);
-};
-
-lookup.findBuiltInParameterById = function (parameters, name, functionDefinition)
-{
-    var toCheck = functionDefinition.id + '#' + name;
-    for(var k = 0; k < parameters().length; k++)
-    {
-        var parameterUsage = lookup.customObjects[parameters()[k]];
-        if(lookup.customObjects[parameterUsage.parameterGuid].id === toCheck)
-        {
-            return parameterUsage;
-        }
-    }
-};
-
-lookup.startEvaluation = function(obj)
-{
-    var rootContext = {};
-    var result = "";
-    if(typeof(obj.body) !== "undefined")
-    {
-        if(typeof(obj.body()) !== "undefined")
-        {
-            var result = lookup.evaluate(obj.body(), rootContext);
-            obj.evaluationResult(result);
-        }
-    }
-    else
-    {
-        var result = lookup.evaluate(obj, rootContext);
-    }
-    
-};
-
-
-lookup.evaluate = function(guid, context)
-{
-    if(typeof(guid) === "undefined")
-    {
-        return lookup.generateFailToEvaluate();
-    }
-    else
-    {
-        var toWork = lookup.customObjects[guid];
-        if(toWork != null )
-        {
-            if(typeof(toWork.type) != undefined)
-            {
-                if(toWork.type === 'function-usage')
-                {
-                    var functionDefinition = lookup.customObjects[toWork.functionGuid];
-                    var result = "";
-                    if(functionDefinition.type === "built-in-function")
-                    {
-                        result = lookup.evaluateBuiltInFunctions(context, functionDefinition, result, toWork);
-                    }
-                    if(functionDefinition.type === "function")
-                    {
-                        result = lookup.evaluateUserFunctionCall(toWork, functionDefinition, context);
-                    }
-                    toWork.evaluationResult(result);
-                    return result;
-                }
-                if(toWork.type === 'symbol-usage')
-                {
-                    if(lookup.isFieldPresent(context, toWork.symbolName))
-                    {
-                        return context[toWork.symbolName];
-                    }
-                    else
-                    {
-                        return lookup.generateFailToEvaluate();
-                    }
-                    
-                }
-                if(toWork.type === 'constant-number')
-                {
-                    var result = {};
-                    result.value = toWork.value;
-                    result.type = "number";
-                    return result;
-                }
-                if(toWork.type === 'constant-int')
-                {
-                    // just remember that 'constant-int' is deprecated already as of some time before
-                    var result = {};
-                    result.value = toWork.value;
-                    result.type = "number"; // yep type is number, because there will be no ints
-                    return result;
-                }
-                if(toWork.type === 'constant-string')
-                {
-                    var result = {};
-                    result.value = toWork.value;
-                    result.type = "string";
-                    return result;
-                }
-                return lookup.generateFailToEvaluate();
-            }
-        }
-    }
-
-};
-
-lookup.evaluateUserFunctionCall = function(toWork, functionDefinition, context)
-{
-    var localContext = lookup.makeCopyOfContext(context);
-    for(var k = 0; k < toWork.parameters().length; k++)
-    {
-        var parameterUsage = lookup.customObjects[toWork.parameters()[k]];
-        if(parameterUsage.type === 'parameter-value')
-        {
-            var parameterDefinition = lookup.customObjects[parameterUsage.parameterGuid];
-            localContext[parameterDefinition.parameterName] = lookup.evaluate(parameterUsage.guidToUse(), context);
-        }
-    }
-    var result = "";
-    if(typeof(functionDefinition.body()) !== "undefined")
-    {
-        result = lookup.evaluate(functionDefinition.body(), localContext);
-    }
-
-    return result;
-};
-
-lookup.evaluateBuiltInIf = function(toWork, functionDefinition, localContext)
-{
-    var checkParameter = lookup.findBuiltInParameterById(toWork.parameters, "check", functionDefinition);
-    var check = lookup.evaluate(checkParameter.guidToUse(), localContext);
-
-    if
-    ( 
-        check.type === "boolean"
-    )
-    {
-        if(check.value === "true")
-        {
-            var ifTrueRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "if-true-run", functionDefinition);
-            return lookup.evaluate(ifTrueRunParameter.guidToUse(), localContext);
-        }
-        else
-        {
-            var elseRunParameter = lookup.findBuiltInParameterById(toWork.parameters, "else-run", functionDefinition);
-            return lookup.evaluate(elseRunParameter.guidToUse(), localContext);
-        }
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-
-lookup.evaluateBuiltInPlus = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if (a.type === "number" && b.type === "number")
-    {
-        return lookup.generateNumber(a.value + b.value);
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.generateFailToEvaluate = function()
-{
-    var obj = {
-        type: "fail-to-evaluate"
-    };
-    return obj;
-};
-
-lookup.generateNumber = function(value)
-{
-    var toReturn = 
-    {
-        type: "rdf-entry", 
-        statements: 
-        [
-            {
-                "type": "number",
-                "value": value
-            }
-        ]
-    };
-    return toReturn;
-};
-
-lookup.generateBoolean = function()
-{
-    var toReturn = 
-    {
-        type: "rdf-entry", 
-        statements: 
-        [
-            {
-                "type": "boolean",
-            }
-        ]
-    };
-    return toReturn;
-};
-
-
-
-lookup.isFailToEvaluate = function(obj)
-{
-    var map = {};
-    map["fail-to-evaluate"] = true;
-    map["error--division-by-zero"] = true;
-    map["not-computed-yet"] = true;
-    return lookup.isFieldPresent(obj, "type") &&  lookup.isFieldPresent(map, obj.type);
-};
-
-lookup.evaluateBuiltInLessOrEqual = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value <= b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInLess = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value < b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInMore = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value > b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInMoreOrEqual = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value >= b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInNotEqual = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value != b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInEqual = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-
-    if (a.type === "number" && b.type === "number")
-    {
-        var result = lookup.generateBoolean();
-        if (a.value == b.value)
-        {
-            result.value = "true";
-        }
-        else
-        {
-            result.value = "false";
-        }
-        return result;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInMinus = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if (a.type === "number" && b.type === "number")
-    {
-        return lookup.generateNumber(a.value - b.value);
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInMultiply = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if (a.type === "number" && b.type === "number")
-    {
-        return lookup.generateNumber(a.value * b.value);
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInDivide = function(toWork, functionDefinition, localContext) {
-    var aParameter = lookup.findBuiltInParameterById(toWork.parameters, "a", functionDefinition);
-    var a = lookup.evaluate(aParameter.guidToUse(), localContext);
-    var bParameter = lookup.findBuiltInParameterById(toWork.parameters, "b", functionDefinition);
-    var b = lookup.evaluate(bParameter.guidToUse(), localContext);
-    if (a.type === "number" && b.type === "number")
-    {
-        if (b.value == 0)
-        {
-            return { type: "error--division-by-zero" };
-        }
-        else
-        {
-            return lookup.generateNumber(a.value / b.value);
-        }
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-};
-
-lookup.evaluateBuiltInCodeBlock = function(toWork, functionDefinition, localContext)
-{
-    var result = undefined;
-    for(var k = 0; k < toWork.parameters().length; k++)
-    {
-        var parameterUsage = lookup.customObjects[toWork.parameters()[k]];
-        if(typeof(parameterUsage.guidToUse()) !== "undefined")
-        {
-            result = lookup.evaluate(parameterUsage.guidToUse(), localContext);
-        }
-    }
-    if(typeof(result) === 'undefined')
-    {
-        result = lookup.generateFailToEvaluate();
-    }
-    return result;
-};
-
-lookup.evaluateBuiltInDefineVariable = function(toWork, functionDefinition, localContext, previousContext)
-{
-    var result = lookup.generateFailToEvaluate();
-    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
-    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
-    if (nameParameterValue.type === "symbol-usage")
-    {
-        previousContext[nameParameterValue.symbolName] = result;
-    }
-    return result;
-};
-
-lookup.evaluateBuiltInSetVariableValue = function(toWork, functionDefinition, localContext, previousContext)
-{
-    var nameParameter = lookup.findBuiltInParameterById(toWork.parameters, "name", functionDefinition);
-    var nameParameterValue = lookup.customObjects[nameParameter.guidToUse()];
-    if (nameParameterValue.type === "symbol-usage")
-    {
-        var valueParameter = lookup.findBuiltInParameterById(toWork.parameters, "value", functionDefinition);
-        var value = lookup.evaluate(valueParameter.guidToUse(), localContext);
-        previousContext[nameParameterValue.symbolName] = value;
-        return value;
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
-    
-};
-
-
-
 lookup.listOfOpenElements = ko.observableArray([]);
 lookup.mapOfOpenElements = {};
-lookup.functionDefinitionIsActive = ko.observable(false);
 lookup.closeElement = function(obj)
 {
     delete lookup.mapOfOpenElements[obj.id];
@@ -1941,7 +707,6 @@ lookup.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
     omniBox.top(offsetY);
 
     $("#" + omniBox.id ).focus();
-    lookup.preParseOmniBox();
     event.stopPropagation();
 };
 
@@ -1964,37 +729,7 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
     };
 
     $("#" + omniBox.id ).focus();
-    lookup.preParseOmniBox();
     event && event.stopPropagation();
-};
-
-lookup.showOmniWheel = function(omniWheel, offset) 
-{
-    lookup.focusedObj(undefined);
-    lookup.activeOperation("global-omni-wheel-activated");
-    
-    omniWheel.visible(true);
-    var offsetX = offset.x;
-        offsetX -= lookup.globalOffsetX();
-    omniWheel.left(offsetX );
-    var offsetY = offset.y;
-        offsetY -= lookup.globalOffsetY();
-    omniWheel.top(offsetY);
-
-    lookup.desiredOffset = {
-        x: offsetX,
-        y: offsetY
-    };
-
-    event.stopPropagation();
-};
-
-lookup.openSandbox = function()
-{
-    lookup.hideOmniWheel();
-    lookup.openElement(lookup.sandbox());
-    //event.stopPropagation();
-    lookup.hideOmniBox();
 };
 
 lookup.getUIBoxOfElement = function(obj, margin = 0.0)
@@ -2123,9 +858,6 @@ lookup.vectorsAreCoAligned = function(bv, obv)
     var cosAlpha = dp / (lookup.vectorLength(bv) * lookup.vectorLength(obv));
     var result = lookup.epsilonEqual(cosAlpha, 1.0);
     return result;
-
-
-
 };
 
 
@@ -2201,14 +933,6 @@ lookup.vectorBetweenBoxes = function(firstBox, secondBox)
 
 };
 
-lookup.omniBoxRenameFunctionAction = function()
-{
-    lookup.activeOperation("renameFunction");
-    var obj = lookup.focusedObj();
-    lookup.omniBoxTextInput(obj.name());
-    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
-};
-
 lookup.desiredOffset = {x: 0, y: 0};
 
 lookup.calledObj = undefined;
@@ -2218,42 +942,6 @@ lookup.showBorders = ko.observable(false);
 lookup.toggleShowBorders = function()
 {
     lookup.showBorders(!lookup.showBorders());
-};
-
-lookup.openOmniBoxForFunctionUsage = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.calledObj = caller;
-    lookup.focusedObj(lookup.customObjects[caller.functionGuid]);
-    lookup.activeOperation("functionUsageIsSelected");
-
-    var root = lookup.findRoot(caller);
-    
-    lookup.filloutOmniBoxDataForFunction("function-name-" + caller.id, lookup.canvasOmniBox, root);
-
-    var foundAnchor = lookup.findAnchor();
-
-    var foundUI = $("#function-name-" + caller.id)[0];
-    
-    lookup.desiredOffset = 
-    { 
-        x : foundAnchor.offsetWidth,
-        y : foundUI.offsetTop
-    };
-    
-    var foundRoot = $("#" + root.id)[0];
-    lookup.desiredOffset.x += root.offsetX() + foundRoot.offsetWidth;
-    lookup.desiredOffset.y += root.offsetY();
-};
-
-lookup.openOmniBoxForAddingParametersInFunctionDefiniton = function(caller)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(caller);
-    lookup.activeOperation("addingFunctionParameter");
-
-    lookup.filloutOmniBoxDataForFunction('add-function-parameter--' + caller.id, lookup.canvasOmniBox, caller);
-
 };
 
 lookup.open_OmniBox_for_adding_statement_to_rdf_entry = function(caller)
@@ -2292,16 +980,6 @@ lookup.hideOmniBox = function()
     lookup.focusedObj(undefined);
     lookup.activeOperation("");
     lookup.omniBoxTextInput("");
-};
-
-lookup.omniBoxOpenFunctionAction = function()
-{
-    var functionToOpen = lookup.focusedObj();
-    lookup.hideOmniBox();
-    lookup.hideMenu();
-    lookup.hideOptions();
-    event.stopPropagation();
-    lookup.openElement(functionToOpen);
 };
 
 
@@ -2343,19 +1021,7 @@ lookup.add_existing_RDF_predicate_from_omnibox = function(obj)
     lookup.hideOmniBox();
 };
 
-lookup.openFunctionFromTheListOfFunctions = function(obj)
-{
-    lookup.hideMenu();
-    lookup.hideOptions();
-    lookup.openElement(obj);
-};
-
 lookup.omniBoxClick = function()
-{
-    event.stopPropagation();
-};
-
-lookup.omniWheelOnClick = function()
 {
     event.stopPropagation();
 };
@@ -2365,135 +1031,20 @@ lookup.stopPropagation = function()
     event.stopPropagation();
 };
 
-lookup.preParsedOmniBoxValueInformation = ko.observable("");
-
-lookup.preParseOmniBox = function()
-{
-    var toTest = lookup.omniBoxTextInput().trim();
-    if(toTest === "")
-    {
-        lookup.preParsedOmniBoxValueInformation("empty");
-    }
-    else
-    {
-        var result = "";
-        var numberRegExp = new RegExp('^\\d+((\\.|,)\\d+|)$');
-        if(numberRegExp.test(toTest))
-        {
-            result = "number";
-        }
-        else
-        {
-
-            // this is either symbol either function call
-            // this can also be command or macros
-            // or image or matrix or float or string but later
-
-            var lowerCasedToTest = toTest.toLowerCase();
-            var filtered = ko.utils.arrayFilter(lookup.functionsArray(), function(item)
-            {
-                return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
-            });
-            if(filtered.length === 1)
-            {
-                result = "function";
-            }
-            else
-            {
-                let words = toTest.split(' ').filter(x => x.length > 0);
-                if(words.length === 2 )
-                {
-                    result = "1 word from binary";
-                }
-                else
-                {
-                    if(words.length === 3)
-                    {
-                        result = "maybe binary";
-                    }
-                    else
-                    {
-                        result = "symbol";
-                    }
-                }
-                
-            }
-        }
-        lookup.preParsedOmniBoxValueInformation(result);
-    }
-    
-
-};
-
-lookup.tryParseOmniBox = function(toTest, obj)
-{
-    if(toTest !== "")
-    {
-        var numberRegExp = new RegExp('^\\d+((\\.|,)\\d+|)$');
-        if(numberRegExp.test(toTest))
-        {
-            lookup.addConstant(toTest, obj);
-        }
-        else
-        {
-            //var symbolRegExp = new RegExp('^\\D.*$');
-
-            // this is either symbol either function call
-            // this can also be command or macros
-            // or image or matrix or float or string but later
-            var lowerCasedToTest = toTest.toLowerCase();
-            var foundFunctions = lookup.findFunctionsWithSameName(lowerCasedToTest);
-            if(foundFunctions.length === 1)
-            {
-                lookup.addFunction(foundFunctions[0], obj);
-            }
-            else
-            {
-                let words = toTest.split(' ').filter(x => x.length > 0);
-                if(words.length === 3)
-                {
-                    var foundFunctionsTriple = lookup.findFunctionsWithSameName(words[1]);
-                    if(foundFunctionsTriple.length >= 1)
-                    {
-                        var guidOfFunction = lookup.addFunction(foundFunctionsTriple[0], obj);
-                        
-                        var firstParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters()[0]];
-                        var secondParameterUsageObj = lookup.customObjects[lookup.customObjects[guidOfFunction].parameters()[1]];
-                        lookup.activeOperation("focusOnParameter");
-                        lookup.tryParseOmniBox(words[0], firstParameterUsageObj);
-                        lookup.activeOperation("focusOnParameter");
-                        lookup.tryParseOmniBox(words[2], secondParameterUsageObj);
-                    }
-                    else
-                    { 
-                        // no binary function found
-                        lookup.addSymbol(toTest, obj);
-                    }
-                }
-                else
-                {
-                    lookup.addSymbol(toTest, obj);
-                }
-                
-            }
-        }
-    }
-    lookup.hideOmniBox();
-};
 
 lookup.omniBoxInputKeyDown = function(data, event)
 {
     //console.log(event.originalEvent);
     if(event.originalEvent.code == "Tab")
     {
-        const availableFunctions = lookup.functionsLookup();
-        if(availableFunctions.length === 1)
-        {
-            var autocompleteName = lookup.customObjects[availableFunctions[0].id].name();
-            lookup.omniBoxTextInput(autocompleteName);
-            event.stopPropagation();
-            return false;
-        }
+        // const availableFunctions = lookup.functionsLookup();
+        // if(availableFunctions.length === 1)
+        // {
+        //     var autocompleteName = lookup.customObjects[availableFunctions[0].id].name();
+        //     lookup.omniBoxTextInput(autocompleteName);
+        //     event.stopPropagation();
+        //     return false;
+        // }
     }
     return true;
 };
@@ -2522,15 +1073,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
     {
         if(event.keyCode == 13)
         {
-            if(lookup.activeOperation() ===  "renameFunction")
-            {
-                lookup.renameFunction();
-            }
-            else if(lookup.activeOperation() ===  "addingFunctionParameter")
-            {
-                lookup.addParameter();
-            }
-            else if(lookup.activeOperation() === "add-statement-predicate-to-rdf-entry")
+            if(lookup.activeOperation() === "add-statement-predicate-to-rdf-entry")
             {
                 lookup.add_statement_predicate_to_rdf_entry();
             }
@@ -2553,28 +1096,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
                     lookup.openElement(functionToOpen);
                     lookup.hideOmniBox();
                 }
-                else if(availableEntries.length === 1)
-                {
-                    var functionToOpen = lookup.customObjects[availableEntries[0].id];
-                    lookup.openElement(functionToOpen);
-                    lookup.hideOmniBox();
-                }
                 else
                 {
                     lookup.create_RDF_entry_with_name_from_omnibox();
                 }
-            }
-            else
-            {
-                if(typeof(lookup.focusedObj()) !== 'undefined')
-                {
-                    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
-                }
-                else
-                {
-                    lookup.hideOmniBox();
-                }
-                
             }
         }
         else
@@ -2583,11 +1108,6 @@ lookup.omniBoxInputKeyPress = function(data, event)
         }
     }
     return true;
-};
-
-lookup.tryParseOmniBoxByClick = function()
-{
-    lookup.tryParseOmniBox(lookup.omniBoxTextInput().trim(), lookup.focusedObj());
 };
 
 lookup.omniBoxInputKeyUp = function( data, event)
@@ -2671,45 +1191,10 @@ lookup.bodyKeyUp = function( data, event)
 
 };
 
-lookup.findFunctionsWithSameName = function (lowerCasedToTest) 
-{
-    return ko.utils.arrayFilter(lookup.functionsArray(), function (item) {
-        return lookup.customObjects[item.id].name().toLowerCase() === lowerCasedToTest;
-    });
-};
 
 lookup.isFieldPresent = function(obj, fieldName) 
 {
     return typeof(obj[fieldName]) !== "undefined";
-};
-
-lookup.evaluateBuiltInFunctions = function(context, functionDefinition, result, toWork) {
-    var localContext = lookup.makeCopyOfContext(context);
-
-    var localDictionary = {};
-    localDictionary["if"] = () => lookup.evaluateBuiltInIf(toWork, functionDefinition, localContext);
-    localDictionary["plus"] = () => lookup.evaluateBuiltInPlus(toWork, functionDefinition, localContext);
-    localDictionary["minus"] = () => lookup.evaluateBuiltInMinus(toWork, functionDefinition, localContext);
-    localDictionary["less-or-equal"] = () => lookup.evaluateBuiltInLessOrEqual(toWork, functionDefinition, localContext);
-    localDictionary["less"] = () => lookup.evaluateBuiltInLess(toWork, functionDefinition, localContext);
-    localDictionary["more"] = () => lookup.evaluateBuiltInMore(toWork, functionDefinition, localContext);
-    localDictionary["more-or-equal"] = () => lookup.evaluateBuiltInMoreOrEqual(toWork, functionDefinition, localContext);
-    localDictionary["not-equal"] = () => lookup.evaluateBuiltInNotEqual(toWork, functionDefinition, localContext);
-    localDictionary["equal"] = () => lookup.evaluateBuiltInEqual(toWork, functionDefinition, localContext);
-    localDictionary["multiply"] = () => lookup.evaluateBuiltInMultiply(toWork, functionDefinition, localContext);
-    localDictionary["divide"] = () => lookup.evaluateBuiltInDivide(toWork, functionDefinition, localContext);
-    localDictionary["code-block"] = () => lookup.evaluateBuiltInCodeBlock(toWork, functionDefinition, localContext);
-    localDictionary["define-variable"] = () => lookup.evaluateBuiltInDefineVariable(toWork, functionDefinition, localContext, context);
-    localDictionary["set-variable-value"] = () => lookup.evaluateBuiltInSetVariableValue(toWork, functionDefinition, localContext, context);
-
-    if( lookup.isFieldPresent(localDictionary, functionDefinition.id) )
-    {
-        return localDictionary[functionDefinition.id]();
-    }
-    else
-    {
-        return lookup.generateFailToEvaluate();
-    }
 };
 
 lookup.findRoot = function(obj) 
@@ -2731,18 +1216,7 @@ lookup.defineOmniBox = function() {
     return omniBox;
 };
 
-lookup.defineOmniWheel = function() {
-    var omniBox = {
-        visible: ko.observable(false),
-        left: ko.observable(0),
-        top: ko.observable(0),
-        id: 'global--popup-omni-wheel' 
-    };
-    return omniBox;
-};
-
 lookup.canvasOmniBox = lookup.defineOmniBox();
-lookup.omniWheel = lookup.defineOmniWheel();
 
 lookup.rejoin = function(name, splitBy) {
     var result = [];
@@ -2869,16 +1343,6 @@ lookup.findAnchor = function()
     return foundAnchor;
 };
 
-lookup.openOmniBoxForFunctionHeaderDefinition = function(obj)
-{
-    lookup.hideOmniBox();
-    
-    lookup.focusedObj(obj);
-    lookup.activeOperation("focusOnFunctionHeaderDefinition");
-    lookup.filloutOmniBoxDataForFunction('function-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
-
-};
-
 lookup.open_OmniBox_for_RDF_predicate_in_statement = function(caller)
 {
     lookup.hideOmniBox();
@@ -2932,16 +1396,6 @@ lookup.open_OmniBox_for_actual_RDF_subject_in_statement = function(caller)
 
 };
 
-
-
-lookup.openOmniBoxForSandboxHeaderDefinition = function(obj)
-{
-    lookup.hideOmniBox();
-    lookup.focusedObj(obj);
-    lookup.activeOperation("focusOnSandboxHeaderDefinition");
-    lookup.filloutOmniBoxDataForFunction('sandbox-definition-header--' + obj.id, lookup.canvasOmniBox, obj);
-};
-
 lookup.bodyOnClick = function(e)
 {
     //console.log(event);
@@ -2953,7 +1407,6 @@ lookup.bodyOnClick = function(e)
     if(lookup.canvasOmniBox.visible() || lookup.omniWheel.visible())
     {
         lookup.hideOmniBox();
-        lookup.hideOmniWheel();
     }
     else
     {
@@ -2996,23 +1449,9 @@ lookup.githubLinkOnClick = function(event)
     event.stopPropagation();
 };
 
-lookup.hideOmniWheel = function()
-{
-    if(lookup.omniWheel.visible())
-    {
-        lookup.toggleOmniWheel();
-    }
-};
-
-lookup.toggleOmniWheel = function()
-{
-    lookup.omniWheel.visible(!lookup.omniWheel.visible());
-};
-
 
 lookup.showOmniBox = function()
 {
-    lookup.hideOmniWheel();
     var offset = 
     {
         x: event.pageX,
@@ -3085,12 +1524,7 @@ $(document).ready(function()
     lookup.loadFromStorage();
     lookup.backgroundApplySaved();
     viewModel.ApplyLookupToSelf();
-    //lookup.defineListOfPredefinedFunctions();
-    //lookup.defineListOfPredefinedTypes();
-    //lookup.defineSandbox();
     lookup.findSandboxAnchorPosition();
-    //lookup.openElement(lookup.sandbox());
-    //lookup.restoreFunctionsArray();
     lookup.restore_RDF_predicates_array();
     lookup.defineTimerForFunctions();
     
