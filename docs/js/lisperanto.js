@@ -1031,6 +1031,11 @@ lookup.stopPropagation = function()
     event.stopPropagation();
 };
 
+lookup.stopPropagation2 = function(data, event)
+{
+    event.stopPropagation();
+};
+
 
 lookup.omniBoxInputKeyDown = function(data, event)
 {
@@ -1153,12 +1158,8 @@ lookup.bodyKeyDown = function( data, event)
 
     if(
         (
-            event.code === "ControlLeft" ||
-            event.code === "ControlRight" ||
-            event.code === "OSLeft" ||
-            event.code === "OSRight" ||
-            event.code === "MetaLeft" ||
-            event.code === "MetaRight"
+            event.code === "AltLeft" ||
+            event.code === "AltRight" 
         )
         &&
         !lookup.isOmniBoxOpen())
@@ -1174,12 +1175,8 @@ lookup.bodyKeyUp = function( data, event)
 {
     if(
         (
-            event.code === "ControlLeft" ||
-            event.code === "ControlRight" ||
-            event.code === "OSLeft" ||
-            event.code === "OSRight" ||
-            event.code === "MetaLeft" ||
-            event.code === "MetaRight"
+            event.code === "AltLeft" ||
+            event.code === "AltRight" 
         )
         &&
         !lookup.isOmniBoxOpen())

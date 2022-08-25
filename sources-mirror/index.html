@@ -128,31 +128,21 @@
         </div>
     </script>
 
-    <script type="text/html" id="rdf-word-template">
-        <!-- ko if: $root.names_lookup[$data.word] || ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
-        <span style="white-space: pre; font-size: 0.8rem; position: relative;" 
-                class="my-function-name"
-                data-bind="
-                    text: $data.word,
-                    click: $root.open_rdf_entry_by_name,
-                    attr: { 
-                        id: $data.id,
-                    },
-                    css: {
-                        'lisperanto-open-link': $root.allow_to_open_definition,
-                    }
-                    "></span>
-        <!-- /ko-->
-        <!-- ko ifnot: $root.names_lookup[$data.word] || ($parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
-        <span style="white-space: pre; font-size: 0.8rem; position: relative;" 
-                data-bind="
-                    text: $data.word,
-                    css: { 
-                        'webpad-color-green': $parent.reserved_lookup[$data.word],
-                        'webpad-color-purple': $parent.local_lookup[$data.word] >= 2,
-                    },"></span>
-        <!-- /ko-->
-    </script>
+<script type="text/html" id="rdf-word-template"><code style="white-space: pre; font-size: 0.8rem; display: inline;" 
+            class="my-function-name"
+            data-bind="
+                text: $data.word,
+                click: $root.open_rdf_entry_by_name,
+                attr: { 
+                    id: $data.id,
+                },
+                css: {
+                    'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition,
+                    'webpad-color-green': $parent.reserved_lookup[$data.word],
+                    'webpad-color-purple': $parent.local_lookup[$data.word] >= 2 && ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(') == false,
+                    'my-function-name': $root.names_lookup[$data.word] || ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')
+                }
+                "></code></script>
 
     <script type="text/html" id="rdf-statement-template">
         <div 
@@ -170,33 +160,26 @@
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
                 <span
-                    style="outline: 0px solid transparent;"
+                    style=""
                     data-bind="with: $root.customObjects[$data.subject_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                         attr: 
                             {
                                 id: 'rdf-subject-in-statement--' + $data.id,
                             }">
-                    <span style="outline: 0px solid transparent; white-space: pre; font-size: 0.8rem;" class="lisperanto-rdf-value" 
+                    <!-- <div style="outline: 0px solid transparent; white-space: pre; font-size: 0.8rem; display: inline;" class="lisperanto-rdf-value" 
                         onclick="lookup.stopPropagation(event)"
-                        data-bind="text: $data.name,
-                            visible: !$root.allow_to_open_definition() ,
-                            attr:
-                                {
-                                    contenteditable: !$root.allow_to_open_definition()
-                                }">
-                    </span>
-                    <div style="white-space: normal; font-size: 0; display: inline;" class="lisperanto-rdf-value"
                         data-bind="
-                            style: 
-                            {
-                                display: $root.allow_to_open_definition() ? 'inline' : 'none'
-
-                            }">
-                        
-                            <!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } -->
-                            <!-- /ko -->
-                        </div>
+                            contentEditable: !$root.allow_to_open_definition(), 
+                            htmlLazy: name,
+                            ">
+                            </div> -->
+                    <div style="white-space: normal; font-size: 0.8rem; display: inline; outline: 0px solid transparent;" class="lisperanto-rdf-value"
+                        data-bind="
+                            contentEditable: !$root.allow_to_open_definition(), 
+                            ">
+                            <!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko -->
+                    </div>
                 </span>
                 
             </span>
@@ -701,6 +684,7 @@
     </div>
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
+    <script src="js/ko-contentEditable.js" asp-append-version="true"></script>
     <script src="js/lisperanto.js" asp-append-version="true"></script>
     <script src="js/removeEverything.js" asp-append-version="true"></script>
     <script src="js/toggleFullScreen.js" asp-append-version="true"></script>
