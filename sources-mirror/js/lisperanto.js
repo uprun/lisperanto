@@ -306,7 +306,7 @@ lookup.open_rdf_entry_by_name = function(word_object)
 {
     if( !lookup.allow_to_open_definition() )
     {
-        return;
+        return true;
     }
     event.stopPropagation();
     const name = word_object.word;
@@ -1199,6 +1199,10 @@ lookup.isFieldPresent = function(obj, fieldName)
 
 lookup.findRoot = function(obj) 
 {
+    // var ui_object = document.getElementById(obj.id);
+    // const found_parent_id = ui_object.offsetParent.id;
+    // const found_parent_object = lookup.customObjects[found_parent_id];
+    // return found_parent_object;
     var currentObj = obj;
     for (var k = 0; typeof (currentObj.assignedToGuid) !== 'undefined' && k < 10000; k++) {
         currentObj = lookup.customObjects[currentObj.assignedToGuid];
@@ -1404,7 +1408,7 @@ lookup.bodyOnClick = function(e)
         x: event.pageX,
         y: event.pageY
     };
-    if(lookup.canvasOmniBox.visible() || lookup.omniWheel.visible())
+    if(lookup.canvasOmniBox.visible())
     {
         lookup.hideOmniBox();
     }
@@ -1417,11 +1421,14 @@ lookup.bodyOnClick = function(e)
         }
         else
         {
-            //lookup.showOmniWheel(lookup.omniWheel, offset);
             lookup.showOmniBox();
-            //lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, offset);
         }
     }
+};
+
+lookup.stopPropagation = function(event)
+{
+    event.stopPropagation();
 };
 
 lookup.optionsOnClick = function(event)

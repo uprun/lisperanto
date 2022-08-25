@@ -130,14 +130,13 @@
 
     <script type="text/html" id="rdf-word-template">
         <!-- ko if: $root.names_lookup[$data.word] || ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
-            <span style="white-space: pre; font-size: 0.8rem;" 
+        <span style="white-space: pre; font-size: 0.8rem; position: relative;" 
                 class="my-function-name"
                 data-bind="
                     text: $data.word,
                     click: $root.open_rdf_entry_by_name,
                     attr: { 
                         id: $data.id,
-                        contenteditable: !$root.allow_to_open_definition(),
                     },
                     css: {
                         'lisperanto-open-link': $root.allow_to_open_definition,
@@ -145,8 +144,7 @@
                     "></span>
         <!-- /ko-->
         <!-- ko ifnot: $root.names_lookup[$data.word] || ($parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')-->
-            <span style="white-space: pre; font-size: 0.8rem;" 
-                contenteditable="true"
+        <span style="white-space: pre; font-size: 0.8rem; position: relative;" 
                 data-bind="
                     text: $data.word,
                     css: { 
@@ -172,13 +170,33 @@
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
                 <span
+                    style="outline: 0px solid transparent;"
                     data-bind="with: $root.customObjects[$data.subject_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
-                        attr: {id: 'rdf-subject-in-statement--' + $data.id}">
-                    <span style="white-space: normal; font-size: 0;" class="lisperanto-rdf-value" 
-                        data-bind="
-                            template: { name: 'rdf-word-template', foreach: $data.splitted }">
+                        attr: 
+                            {
+                                id: 'rdf-subject-in-statement--' + $data.id,
+                            }">
+                    <span style="outline: 0px solid transparent; white-space: pre; font-size: 0.8rem;" class="lisperanto-rdf-value" 
+                        onclick="lookup.stopPropagation(event)"
+                        data-bind="text: $data.name,
+                            visible: !$root.allow_to_open_definition() ,
+                            attr:
+                                {
+                                    contenteditable: !$root.allow_to_open_definition()
+                                }">
                     </span>
+                    <div style="white-space: normal; font-size: 0; display: inline;" class="lisperanto-rdf-value"
+                        data-bind="
+                            style: 
+                            {
+                                display: $root.allow_to_open_definition() ? 'inline' : 'none'
+
+                            }">
+                        
+                            <!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } -->
+                            <!-- /ko -->
+                        </div>
                 </span>
                 
             </span>
