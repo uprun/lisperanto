@@ -155,6 +155,8 @@ a
 {
     /* border-style: none; */
     display: inline-block;
+    cursor: pointer;
+    user-select: none;
 }
 
 .webpad-button-paddings

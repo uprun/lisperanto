@@ -128,7 +128,7 @@
         </div>
     </script>
 
-<script type="text/html" id="rdf-word-template"><code style="display: inline;" 
+<script type="text/html" id="rdf-word-template"><span style="white-space: pre;" 
             class="my-function-name"
             data-bind="
                 text: $data.word,
@@ -137,14 +137,12 @@
                     id: $data.id,
                 },
                 css: {
-                    'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition,
-                    'webpad-color-green': $parents[1].reserved_lookup[$data.word],
-                    'webpad-color-purple': $parents[1].local_lookup[$data.word] >= 2 && ( $parents[1].splitted[$index() + 1] && $parents[1].splitted[$index() + 1].word === '(') == false,
-                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[1].splitted[$index() + 1] && $parents[1].splitted[$index() + 1].word === '(')
+                    'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition(),
+                    'webpad-color-green': $parents[0].reserved_lookup[$data.word],
+                    'webpad-color-purple': $parents[0].local_lookup[$data.word] >= 2 && ( $parents[0].splitted[$index() + 1] && $parents[0].splitted[$index() + 1].word === '(') == false,
+                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[0].splitted[$index() + 1] && $parents[0].splitted[$index() + 1].word === '(')
                 }
-                "></code></script>
-
-<script type="text/html" id="rdf-lines-template"><div data-bind="style: { display: $index() == 0 ? 'inline' : 'block' }" ><!-- ko template: { name: 'rdf-word-template', foreach: $data } --><!-- /ko --></div></script>
+                "></span></script>
 
     <script type="text/html" id="rdf-statement-template">
         <div 
@@ -162,27 +160,25 @@
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
                 <span
-                    style=""
                     data-bind="with: $root.customObjects[$data.subject_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                         attr: 
                             {
                                 id: 'rdf-subject-in-statement--' + $data.id,
                             }">
-                    <!-- <div style="outline: 0px solid transparent; white-space: pre; font-size: 0.8rem; display: inline;" class="lisperanto-rdf-value" 
+                    <span data-bind="visible: $data.newVersionExists">hey new version</span>
+                    <div style="font-size: 0.8rem; outline: 0px solid transparent;"
                         onclick="lookup.stopPropagation(event)"
+                        onkeydown="lookup.editorKeyDown(event)"
+                        onkeyup="lookup.editorKeyUp(event)"
+                        contenteditable="true"
                         data-bind="
-                            contentEditable: !$root.allow_to_open_definition(), 
-                            htmlLazy: name,
-                            ">
-                            </div> -->
-                    <div style="font-size: 0.8rem; display: inline; outline: 0px solid transparent;" class="lisperanto-rdf-value"
-                        onclick="lookup.stopPropagation(event)"
-                        onkeydown="lookup.stopPropagation(event)"
-                        onkeyup="lookup.stopPropagation(event)"
-                        data-bind="
-                            contentEditable: !$root.allow_to_open_definition(), 
-                            "><!-- ko template: { name: 'rdf-lines-template', foreach: $data.lines } --><!-- /ko --></div>
+                            event: 
+                            {
+                                input: $root.editor_on_input
+                            }
+                        "
+                        ><!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko --></div>
                 </span>
                 
             </span>
@@ -687,7 +683,6 @@
     </div>
     <script src="lib/jquery/dist/jquery.min.js"></script>
     <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
-    <script src="js/ko-contentEditable.js" asp-append-version="true"></script>
     <script src="js/lisperanto.js" asp-append-version="true"></script>
     <script src="js/removeEverything.js" asp-append-version="true"></script>
     <script src="js/toggleFullScreen.js" asp-append-version="true"></script>

@@ -139,6 +139,8 @@ a
 {
     /* border-style: none; */
     display: inline-block;
+    cursor: pointer;
+    user-select: none;
 }
 
 .webpad-button-paddings
@@ -160,6 +162,9 @@ a
     border-width: 0.2rem;
     border-color: #f8e755;
     border-radius: 0.7rem;
+    cursor: pointer;
+    user-select: none;
+    width: fit-content;
 }
 
 .webpad-brightness-dimmed

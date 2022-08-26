@@ -241,6 +241,7 @@ lookup.try_restore_RDF_entry = function(value)
 {
     value.name = ko.observable(value.name);
     value.statements = ko.observableArray(value.statements);
+    value.newVersionExists = ko.observable(false);
     lookup.restore_splitted_view(value);
     return value;
 };
@@ -335,6 +336,7 @@ lookup.create_RDF_Entry = function(name)
     toAdd.type = "rdf-entry";
     toAdd.name = ko.observable(name);
     toAdd.statements = ko.observableArray([]);
+    toAdd.newVersionExists = ko.observable(false);
 
     lookup.restore_splitted_view(toAdd);
     
@@ -1188,6 +1190,46 @@ lookup.bodyKeyUp = function( data, event)
 
 };
 
+lookup.editorKeyUp = function(event)
+{
+    event.stopPropagation();
+    if(
+        (
+            event.code === "AltLeft" ||
+            event.code === "AltRight" 
+        )
+        &&
+        !lookup.isOmniBoxOpen())
+    {
+        lookup.allow_to_open_definition(false);
+    }
+};
+
+lookup.editorKeyDown = function(event)
+{
+    event.stopPropagation();
+    if(
+        (
+            event.code === "AltLeft" ||
+            event.code === "AltRight" 
+        )
+        &&
+        !lookup.isOmniBoxOpen())
+    {
+        lookup.allow_to_open_definition(true);
+    }
+};
+
+lookup.editor_on_input = function(obj)
+{
+    const innerText = event.target.innerText;
+    console.log(innerText);
+    const original_name = obj.name();
+    console.log(original_name);
+
+    obj.newVersionExists(innerText != original_name);
+};
+
 
 lookup.isFieldPresent = function(obj, fieldName) 
 {
@@ -1273,10 +1315,9 @@ lookup.restore_splitted_view = function (toAdd)
     toAdd.splitted = newRejoined.map((element, index) => {
         return {
             id: toAdd.id + "--" + index,
-            word: element
+            word: element == '\r\n' ? '\n' : element
         };
     });
-    toAdd.lines = [[]];
 
     toAdd.local_lookup = {};
     toAdd.reserved_lookup = {
@@ -1309,16 +1350,6 @@ lookup.restore_splitted_view = function (toAdd)
             else {
                 toAdd.local_lookup[element.word] = count + 1;
             }
-        }
-    });
-    toAdd.splitted.forEach((element) => {
-        if (element.word == '\r\n')
-        {
-            toAdd.lines.push([]);
-        }
-        else
-        {
-            toAdd.lines[toAdd.lines.length - 1].push(element);
         }
     });
 };
