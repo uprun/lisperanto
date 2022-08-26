@@ -1269,12 +1269,14 @@ lookup.restore_splitted_view = function (toAdd)
     var newRejoined = lookup.rejoin_many(newRejoined, "'");
     var newRejoined = lookup.rejoin_many(newRejoined, '"');
     var newRejoined = lookup.rejoin_many(newRejoined, '//');
+    var newRejoined = lookup.rejoin_many(newRejoined, '\r\n');
     toAdd.splitted = newRejoined.map((element, index) => {
         return {
             id: toAdd.id + "--" + index,
             word: element
         };
     });
+    toAdd.lines = [[]];
 
     toAdd.local_lookup = {};
     toAdd.reserved_lookup = {
@@ -1307,6 +1309,16 @@ lookup.restore_splitted_view = function (toAdd)
             else {
                 toAdd.local_lookup[element.word] = count + 1;
             }
+        }
+    });
+    toAdd.splitted.forEach((element) => {
+        if (element.word == '\r\n')
+        {
+            toAdd.lines.push([]);
+        }
+        else
+        {
+            toAdd.lines[toAdd.lines.length - 1].push(element);
         }
     });
 };

@@ -128,7 +128,7 @@
         </div>
     </script>
 
-<script type="text/html" id="rdf-word-template"><code style="white-space: pre; font-size: 0.8rem; display: inline;" 
+<script type="text/html" id="rdf-word-template"><code style="display: inline;" 
             class="my-function-name"
             data-bind="
                 text: $data.word,
@@ -138,11 +138,13 @@
                 },
                 css: {
                     'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition,
-                    'webpad-color-green': $parent.reserved_lookup[$data.word],
-                    'webpad-color-purple': $parent.local_lookup[$data.word] >= 2 && ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(') == false,
-                    'my-function-name': $root.names_lookup[$data.word] || ( $parent.splitted[$index() + 1] && $parent.splitted[$index() + 1].word === '(')
+                    'webpad-color-green': $parents[1].reserved_lookup[$data.word],
+                    'webpad-color-purple': $parents[1].local_lookup[$data.word] >= 2 && ( $parents[1].splitted[$index() + 1] && $parents[1].splitted[$index() + 1].word === '(') == false,
+                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[1].splitted[$index() + 1] && $parents[1].splitted[$index() + 1].word === '(')
                 }
                 "></code></script>
+
+<script type="text/html" id="rdf-lines-template"><div data-bind="style: { display: $index() == 0 ? 'inline' : 'block' }" ><!-- ko template: { name: 'rdf-word-template', foreach: $data } --><!-- /ko --></div></script>
 
     <script type="text/html" id="rdf-statement-template">
         <div 
@@ -174,12 +176,13 @@
                             htmlLazy: name,
                             ">
                             </div> -->
-                    <div style="white-space: normal; font-size: 0.8rem; display: inline; outline: 0px solid transparent;" class="lisperanto-rdf-value"
+                    <div style="font-size: 0.8rem; display: inline; outline: 0px solid transparent;" class="lisperanto-rdf-value"
+                        onclick="lookup.stopPropagation(event)"
+                        onkeydown="lookup.stopPropagation(event)"
+                        onkeyup="lookup.stopPropagation(event)"
                         data-bind="
                             contentEditable: !$root.allow_to_open_definition(), 
-                            ">
-                            <!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko -->
-                    </div>
+                            "><!-- ko template: { name: 'rdf-lines-template', foreach: $data.lines } --><!-- /ko --></div>
                 </span>
                 
             </span>
