@@ -46,7 +46,7 @@
                     data-bind="if:
                         $root.activeOperation() === 'global-omni-box-activated'
                         || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
-                        || $root.activeOperation() === 'add_RDF_subject_in_statement'
+                        || $root.activeOperation() === 'add_RDF_value_in_statement'
                         || $root.activeOperation() === 'add-name-to-rdf-entry' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
@@ -74,9 +74,9 @@
                     </div>
                 </div>
                 <div 
-                    data-bind="if: $root.activeOperation() === 'add_RDF_subject_in_statement'">
+                    data-bind="if: $root.activeOperation() === 'add_RDF_value_in_statement'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.add_maybe_existing_RDF_subject_in_statement">
+                        data-bind="click: $root.add_maybe_existing_RDF_value_in_statement">
                             reuse existing 
                     </div>
                 </div>
@@ -103,8 +103,8 @@
                         </div>
                     </div>
 
-                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-subject-in-statement' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_subject_definition_from_statement">
+                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-value-in-statement' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_value_definition_from_statement">
                             open definition
                         </div>
                     </div>
@@ -113,9 +113,9 @@
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'add_RDF_subject_in_statement'">
+                    <div data-bind="if: $root.activeOperation() === 'add_RDF_value_in_statement'">
                         <div data-bind="foreach: $root.filteredSearch">
-                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_subject_to_statement_from_omnibox_list"></div>
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_value_to_statement_from_omnibox_list"></div>
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
@@ -169,10 +169,10 @@
                     </div>
                 <span
                     data-bind="with: $root.customObjects[$data.value_id()],
-                        click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
+                        click: $root.open_OmniBox_for_actual_RDF_value_in_statement,
                         attr: 
                             {
-                                id: 'rdf-subject-in-statement--' + $data.id,
+                                id: 'rdf-value-in-statement--' + $data.id,
                             }">
                     <div style="outline: 0px solid transparent; margin-left: 1rem;"
                         onclick="lookup.stopPropagation(event)"
@@ -192,8 +192,8 @@
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="
                         visible: typeof($data.value_id()) === 'undefined',
-                        click: $root.open_OmniBox_for_RDF_subject_in_statement, 
-                        attr: {id: 'add-RDF-subject-in-statement--' + $data.id}">
+                        click: $root.open_OmniBox_for_RDF_value_in_statement, 
+                        attr: {id: 'add-RDF-value-in-statement--' + $data.id}">
                     + rdf-value
             </div>
         </div>

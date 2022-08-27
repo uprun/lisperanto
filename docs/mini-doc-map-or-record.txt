@@ -40,7 +40,7 @@ RDF
         id: "local-id",
         object: "id",
         predicate: "another-id",
-        subject: "third-id",
+        value: "third-id",
         "created-by": "user-id",
         "creation-time": "time-object-id",
         "previous-known-statement": "previous-statement-id",

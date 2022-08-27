@@ -518,7 +518,7 @@ lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus
 
 };
 
-lookup.add_maybe_existing_RDF_subject_in_statement = function()
+lookup.add_maybe_existing_RDF_value_in_statement = function()
 {
     var obj = lookup.focusedObj();
     const rdf_name = lookup.omniBoxTextInput().trim();
@@ -528,10 +528,10 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
         obj.value_id(value_id);
         var operation = 
         {
-            operation: "complete-rdf-statement-with-previously-missing-subject",
+            operation: "complete-rdf-statement-with-previously-missing-value",
             statement_id: obj.id,
             value_id: value_id,
-            subject_name: rdf_name
+            value_name: rdf_name
         };
         lookup.operationsPush(operation);
     }
@@ -541,7 +541,7 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
 
 };
 
-lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filtered_rdf_entry, rdf_statemnt_object_in_focus)
+lookup.add_existing_RDF_value_to_statement_from_omnibox_list = function(filtered_rdf_entry, rdf_statemnt_object_in_focus)
 {
     var obj = rdf_statemnt_object_in_focus || lookup.focusedObj();
     if ( typeof(obj.value_id()) === 'undefined')
@@ -550,10 +550,10 @@ lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filter
         obj.value_id(value_id);
         var operation = 
         {
-            operation: "complete-rdf-statement-with-previously-missing-subject",
+            operation: "complete-rdf-statement-with-previously-missing-value",
             statement_id: obj.id,
             value_id: value_id,
-            subject_name: filtered_rdf_entry.text
+            value_name: filtered_rdf_entry.text
         };
         lookup.operationsPush(operation);
     }
@@ -966,15 +966,15 @@ lookup.open_OmniBox_for_adding_name_to_rdf_entry = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-rdf-entry-name-value--' + caller.id, lookup.canvasOmniBox, caller);
 };
 
-lookup.open_OmniBox_for_RDF_subject_in_statement = function(caller)
+lookup.open_OmniBox_for_RDF_value_in_statement = function(caller)
 {
     lookup.hideOmniBox();
     lookup.focusedObj(caller);
-    lookup.activeOperation("add_RDF_subject_in_statement");
+    lookup.activeOperation("add_RDF_value_in_statement");
 
     var root = lookup.findRoot(caller);
 
-    lookup.filloutOmniBoxDataForFunction('add-RDF-subject-in-statement--' + caller.id, lookup.canvasOmniBox, root);
+    lookup.filloutOmniBoxDataForFunction('add-RDF-value-in-statement--' + caller.id, lookup.canvasOmniBox, root);
 
 };
 
@@ -997,14 +997,14 @@ lookup.omniBox_open_predicate_definition_from_statement = function()
     lookup.openElement(predicateToOpen);
 };
 
-lookup.omniBox_open_subject_definition_from_statement = function()
+lookup.omniBox_open_value_definition_from_statement = function()
 {
-    var subjectToOpen = lookup.focusedObj();
+    var valueToOpen = lookup.focusedObj();
     lookup.hideOmniBox();
     lookup.hideMenu();
     lookup.hideOptions();
     event.stopPropagation();
-    lookup.openElement(subjectToOpen);
+    lookup.openElement(valueToOpen);
 };
 
 
@@ -1086,9 +1086,9 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 lookup.add_statement_predicate_to_rdf_entry();
             }
-            else if(lookup.activeOperation() === "add_RDF_subject_in_statement") 
+            else if(lookup.activeOperation() === "add_RDF_value_in_statement") 
             {
-                lookup.add_maybe_existing_RDF_subject_in_statement();
+                lookup.add_maybe_existing_RDF_value_in_statement();
             }
             else if(lookup.activeOperation() === "add-name-to-rdf-entry")
             {
@@ -1433,15 +1433,15 @@ lookup.open_OmniBox_for_RDF_predicate_in_statement = function(caller)
 };
 
 
-lookup.open_OmniBox_for_actual_RDF_subject_in_statement = function(caller)
+lookup.open_OmniBox_for_actual_RDF_value_in_statement = function(caller)
 {
     lookup.hideOmniBox();
     var toWorkOn = lookup.customObjects[caller.value_id()];
     lookup.focusedObj(toWorkOn);
-    lookup.activeOperation("focus-on-RDF-subject-in-statement");
+    lookup.activeOperation("focus-on-RDF-value-in-statement");
     var root = lookup.findRoot(caller);
 
-    lookup.filloutOmniBoxDataForFunction('rdf-subject-in-statement--' + caller.id, lookup.canvasOmniBox, root);
+    lookup.filloutOmniBoxDataForFunction('rdf-value-in-statement--' + caller.id, lookup.canvasOmniBox, root);
 
     var foundAnchor = lookup.findAnchor();
 
@@ -1538,10 +1538,10 @@ lookup.omniWheelOnWheelEvent = function()
     event.stopPropagation();
 };
 
-lookup.add_key_and_value = function(created_rdf_object, predicate_name, subject_name_or_value) 
+lookup.add_key_and_value = function(created_rdf_object, predicate_name, value_name_or_value) 
 {
     var predicate_id = lookup.find_or_create_rdf_predicate(predicate_name);
-    var value_id = lookup.find_or_create_rdf_entry_with_name(subject_name_or_value);
+    var value_id = lookup.find_or_create_rdf_entry_with_name(value_name_or_value);
     for( var k = 0; k < created_rdf_object.statements().length; k++)
     {
         var statement_id = created_rdf_object.statements()[k];
@@ -1555,8 +1555,8 @@ lookup.add_key_and_value = function(created_rdf_object, predicate_name, subject_
     var statement_id = lookup.add_statement_predicate_to_rdf_entry(predicate_name, created_rdf_object);
     
     var statement_object = lookup.customObjects[statement_id];
-    var subject_object = lookup.customObjects[value_id];
-    lookup.add_existing_RDF_subject_to_statement_from_omnibox_list(subject_object, statement_object);
+    var value_object = lookup.customObjects[value_id];
+    lookup.add_existing_RDF_value_to_statement_from_omnibox_list(value_object, statement_object);
 };
 
 
