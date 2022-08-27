@@ -362,14 +362,7 @@ lookup.create_and_show_RDF_entry = function(name)
 
 lookup.define_rdf_statement = function(predicate, objId)
 {
-    var toAdd = lookup.createUIObject();
-
-    toAdd.type = "rdf-statement";
-    toAdd.object_id = objId;
-    toAdd.predicate_id = ko.observable(lookup.find_or_create_rdf_predicate(predicate));
-    toAdd.value_id = ko.observable(undefined);
-    toAdd.assignedToGuid = objId;
-    toAdd.statements = ko.observableArray([]);
+    var toAdd = lookup.define_full_rdf_statement(objId, lookup.find_or_create_rdf_predicate(predicate), undefined);
     
     var operation = 
     {
@@ -1232,17 +1225,48 @@ lookup.editor_on_input = function(obj)
 
 lookup.apply_new_version_of_rdf_value = function(parent)
 {
-    const obj = lookup.customObjects[parent.value_id()];
-    console.log(obj);
+    const previous_value_entry = lookup.customObjects[parent.value_id()];
+    console.log(previous_value_entry);
     console.log(parent);
     event.stopPropagation();
-    const id = lookup.find_or_create_rdf_entry_with_name(obj.newName());
-    const createdElementKinda = lookup.customObjects[id];
-    lookup.openElement(createdElementKinda);
-    obj.newVersionExists(false);
-    const previousWords = obj.splitted()
-    obj.splitted([]);
-    obj.splitted(previousWords);
+    const new_value_id = lookup.find_or_create_rdf_entry_with_name(previous_value_entry.newName());
+    
+    previous_value_entry.newVersionExists(false);
+    const previousWords = previous_value_entry.splitted()
+    previous_value_entry.splitted([]);
+    previous_value_entry.splitted(previousWords);
+
+    const main_rdf_entry = lookup.customObjects[parent.object_id];
+    parent.value_id(new_value_id);
+
+    const new_main_rdf_entry = lookup.create_RDF_Entry(main_rdf_entry.name());
+    for(var k = 0; k < main_rdf_entry.statements().length; k++ )
+    {
+        const current_statement_id = main_rdf_entry.statements()[k];
+        const current_statement = lookup.customObjects[current_statement_id];
+        const copy_of_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, current_statement.predicate_id(), current_statement.value_id());
+        new_main_rdf_entry.statements.push(copy_of_statement.id);
+    }
+
+    const previous_version_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, lookup.find_or_create_rdf_predicate("previous-version"), main_rdf_entry.id);
+    new_main_rdf_entry.statements.push(previous_version_statement.id);
+
+    parent.value_id(previous_value_entry.id);
+
+    var operation = 
+    {
+        operation: "new-version-of-rdf-entry",
+        previous_id: main_rdf_entry.id,
+        new_id: new_main_rdf_entry.id
+    };
+
+    lookup.operationsPush(operation);
+
+
+
+    lookup.openElement(new_main_rdf_entry);
+
+
 
 
 
@@ -1373,6 +1397,18 @@ lookup.restore_splitted_view = function (toAdd)
     toAdd.splitted = ko.observableArray(toAdd.splitted);
 };
 
+lookup.define_full_rdf_statement = function(objId, predicate_id, value_id) {
+    var toAdd = lookup.createUIObject();
+
+    toAdd.type = "rdf-statement";
+    toAdd.object_id = objId;
+    toAdd.predicate_id = ko.observable(predicate_id);
+    toAdd.value_id = ko.observable(value_id);
+    toAdd.assignedToGuid = objId;
+    toAdd.statements = ko.observableArray([]);
+    return toAdd;
+};
+
 function Lisperanto()
 {
     var self = this;
@@ -1485,32 +1521,32 @@ lookup.bodyOnClick = function(e)
     }
 };
 
-lookup.stopPropagation = function(event)
+lookup.stopPropagation = function()
 {
     event.stopPropagation();
 };
 
-lookup.optionsOnClick = function(event)
+lookup.optionsOnClick = function()
 {
     event.stopPropagation();
 };
 
-lookup.infoOnClick = function(event)
+lookup.infoOnClick = function()
 {
     event.stopPropagation();
 };
 
-lookup.patreonLinkOnClick = function(event)
+lookup.patreonLinkOnClick = function()
 {
     event.stopPropagation();
 };
 
-lookup.emailMeLinkOnClick = function(event)
+lookup.emailMeLinkOnClick = function()
 {
     event.stopPropagation();
 };
 
-lookup.githubLinkOnClick = function(event)
+lookup.githubLinkOnClick = function()
 {
     event.stopPropagation();
 };
