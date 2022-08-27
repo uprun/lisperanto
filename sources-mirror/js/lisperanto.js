@@ -242,6 +242,7 @@ lookup.try_restore_RDF_entry = function(value)
     value.name = ko.observable(value.name);
     value.statements = ko.observableArray(value.statements);
     value.newVersionExists = ko.observable(false);
+    value.newName = ko.observable("");
     lookup.restore_splitted_view(value);
     return value;
 };
@@ -337,6 +338,7 @@ lookup.create_RDF_Entry = function(name)
     toAdd.name = ko.observable(name);
     toAdd.statements = ko.observableArray([]);
     toAdd.newVersionExists = ko.observable(false);
+    toAdd.newName = ko.observable("");
 
     lookup.restore_splitted_view(toAdd);
     
@@ -1223,11 +1225,27 @@ lookup.editorKeyDown = function(event)
 lookup.editor_on_input = function(obj)
 {
     const innerText = event.target.innerText;
-    console.log(innerText);
     const original_name = obj.name();
-    console.log(original_name);
-
     obj.newVersionExists(innerText != original_name);
+    obj.newName(innerText);
+};
+
+lookup.apply_new_version_of_rdf_value = function(parent)
+{
+    const obj = lookup.customObjects[parent.subject_id()];
+    console.log(obj);
+    console.log(parent);
+    event.stopPropagation();
+    const id = lookup.find_or_create_rdf_entry_with_name(obj.newName());
+    const createdElementKinda = lookup.customObjects[id];
+    lookup.openElement(createdElementKinda);
+    obj.newVersionExists(false);
+    const previousWords = obj.splitted()
+    obj.splitted([]);
+    obj.splitted(previousWords);
+
+
+
 };
 
 
@@ -1352,6 +1370,7 @@ lookup.restore_splitted_view = function (toAdd)
             }
         }
     });
+    toAdd.splitted = ko.observableArray(toAdd.splitted);
 };
 
 function Lisperanto()

@@ -139,18 +139,19 @@
                 css: {
                     'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition(),
                     'webpad-color-green': $parents[0].reserved_lookup[$data.word],
-                    'webpad-color-purple': $parents[0].local_lookup[$data.word] >= 2 && ( $parents[0].splitted[$index() + 1] && $parents[0].splitted[$index() + 1].word === '(') == false,
-                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[0].splitted[$index() + 1] && $parents[0].splitted[$index() + 1].word === '(')
+                    'webpad-color-purple': $parents[0].local_lookup[$data.word] >= 2 && ( $parents[0].splitted()[$index() + 1] && $parents[0].splitted()[$index() + 1].word === '(') == false,
+                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[0].splitted()[$index() + 1] && $parents[0].splitted()[$index() + 1].word === '(')
                 }
                 "></span></script>
 
     <script type="text/html" id="rdf-statement-template">
         <div 
+            style="font-size: 0.8rem;"
             data-bind="
                 using: lookup.customObjects[$data],
                 attr: {id: 'rdf-statement--' + $data}">
             <strong 
-                class="lisperanto-rdf-key"
+                class="webpad-color-orange"
                 data-bind="
                     click: $root.open_OmniBox_for_RDF_predicate_in_statement,
                     text: $root.customObjects[$data.predicate_id()].name,
@@ -159,6 +160,13 @@
             <span data-bind="
                 if: typeof($data.subject_id()) !== 'undefined'
                 ">
+                <span data-bind="visible: $root.customObjects[$data.subject_id()].newVersionExists">new version</span>
+                    <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="
+                            visible: $root.customObjects[$data.subject_id()].newVersionExists,
+                            click: $root.apply_new_version_of_rdf_value">
+                        apply
+                    </div>
                 <span
                     data-bind="with: $root.customObjects[$data.subject_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
@@ -166,8 +174,7 @@
                             {
                                 id: 'rdf-subject-in-statement--' + $data.id,
                             }">
-                    <span data-bind="visible: $data.newVersionExists">hey new version</span>
-                    <div style="font-size: 0.8rem; outline: 0px solid transparent;"
+                    <div style="outline: 0px solid transparent; margin-left: 1rem;"
                         onclick="lookup.stopPropagation(event)"
                         onkeydown="lookup.editorKeyDown(event)"
                         onkeyup="lookup.editorKeyUp(event)"
