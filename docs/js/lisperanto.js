@@ -250,7 +250,7 @@ lookup.try_restore_RDF_entry = function(value)
 lookup.try_restore_RDF_statement = function(value)
 {
     value.predicate_id = ko.observable(value.predicate_id);
-    value.subject_id = ko.observable(value.subject_id);
+    value.value_id = ko.observable(value.value_id);
     value.statements = ko.observableArray(value.statements);
     return value;
 };
@@ -367,7 +367,7 @@ lookup.define_rdf_statement = function(predicate, objId)
     toAdd.type = "rdf-statement";
     toAdd.object_id = objId;
     toAdd.predicate_id = ko.observable(lookup.find_or_create_rdf_predicate(predicate));
-    toAdd.subject_id = ko.observable(undefined);
+    toAdd.value_id = ko.observable(undefined);
     toAdd.assignedToGuid = objId;
     toAdd.statements = ko.observableArray([]);
     
@@ -522,15 +522,15 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
 {
     var obj = lookup.focusedObj();
     const rdf_name = lookup.omniBoxTextInput().trim();
-    if ( typeof(obj.subject_id()) === 'undefined')
+    if ( typeof(obj.value_id()) === 'undefined')
     {
-        var subject_id = lookup.find_or_create_rdf_entry_with_name(rdf_name);
-        obj.subject_id(subject_id);
+        var value_id = lookup.find_or_create_rdf_entry_with_name(rdf_name);
+        obj.value_id(value_id);
         var operation = 
         {
             operation: "complete-rdf-statement-with-previously-missing-subject",
             statement_id: obj.id,
-            subject_id: subject_id,
+            value_id: value_id,
             subject_name: rdf_name
         };
         lookup.operationsPush(operation);
@@ -544,15 +544,15 @@ lookup.add_maybe_existing_RDF_subject_in_statement = function()
 lookup.add_existing_RDF_subject_to_statement_from_omnibox_list = function(filtered_rdf_entry, rdf_statemnt_object_in_focus)
 {
     var obj = rdf_statemnt_object_in_focus || lookup.focusedObj();
-    if ( typeof(obj.subject_id()) === 'undefined')
+    if ( typeof(obj.value_id()) === 'undefined')
     {
-        const subject_id = filtered_rdf_entry.id;
-        obj.subject_id(subject_id);
+        const value_id = filtered_rdf_entry.id;
+        obj.value_id(value_id);
         var operation = 
         {
             operation: "complete-rdf-statement-with-previously-missing-subject",
             statement_id: obj.id,
-            subject_id: subject_id,
+            value_id: value_id,
             subject_name: filtered_rdf_entry.text
         };
         lookup.operationsPush(operation);
@@ -1232,7 +1232,7 @@ lookup.editor_on_input = function(obj)
 
 lookup.apply_new_version_of_rdf_value = function(parent)
 {
-    const obj = lookup.customObjects[parent.subject_id()];
+    const obj = lookup.customObjects[parent.value_id()];
     console.log(obj);
     console.log(parent);
     event.stopPropagation();
@@ -1436,7 +1436,7 @@ lookup.open_OmniBox_for_RDF_predicate_in_statement = function(caller)
 lookup.open_OmniBox_for_actual_RDF_subject_in_statement = function(caller)
 {
     lookup.hideOmniBox();
-    var toWorkOn = lookup.customObjects[caller.subject_id()];
+    var toWorkOn = lookup.customObjects[caller.value_id()];
     lookup.focusedObj(toWorkOn);
     lookup.activeOperation("focus-on-RDF-subject-in-statement");
     var root = lookup.findRoot(caller);
@@ -1546,7 +1546,7 @@ lookup.add_key_and_value = function(created_rdf_object, predicate_name, subject_
     {
         var statement_id = created_rdf_object.statements()[k];
         var statement_object = lookup.customObjects[statement_id];
-        if (statement_object.predicate_id() === predicate_id && statement_object.subject_id() === value_id)
+        if (statement_object.predicate_id() === predicate_id && statement_object.value_id() === value_id)
         {
             return;
         }
