@@ -158,17 +158,17 @@
                     attr: {id: 'rdf-predicate-in-statement--' + $data.id}"></strong>
             <span class="webpad-color-orange">:</span>
             <span data-bind="
-                if: typeof($data.subject_id()) !== 'undefined'
+                if: typeof($data.value_id()) !== 'undefined'
                 ">
-                <span data-bind="visible: $root.customObjects[$data.subject_id()].newVersionExists">new version</span>
+                <span data-bind="visible: $root.customObjects[$data.value_id()].newVersionExists">new version</span>
                     <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="
-                            visible: $root.customObjects[$data.subject_id()].newVersionExists,
+                            visible: $root.customObjects[$data.value_id()].newVersionExists,
                             click: $root.apply_new_version_of_rdf_value">
                         apply
                     </div>
                 <span
-                    data-bind="with: $root.customObjects[$data.subject_id()],
+                    data-bind="with: $root.customObjects[$data.value_id()],
                         click: $root.open_OmniBox_for_actual_RDF_subject_in_statement,
                         attr: 
                             {
@@ -191,7 +191,7 @@
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind="
-                        visible: typeof($data.subject_id()) === 'undefined',
+                        visible: typeof($data.value_id()) === 'undefined',
                         click: $root.open_OmniBox_for_RDF_subject_in_statement, 
                         attr: {id: 'add-RDF-subject-in-statement--' + $data.id}">
                     + rdf-value
