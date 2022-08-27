@@ -129,7 +129,6 @@
     </script>
 
 <script type="text/html" id="rdf-word-template"><span style="white-space: pre;" 
-            class="my-function-name"
             data-bind="
                 text: $data.word,
                 click: $root.open_rdf_entry_by_name,
@@ -144,6 +143,34 @@
                 }
                 "></span></script>
 
+<script type="text/html" id="rdf-regular-text-template"><span data-bind="visible: $root.customObjects[$data.value_id()].newVersionExists">new version</span>
+    <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+        data-bind="
+            visible: $root.customObjects[$data.value_id()].newVersionExists,
+            click: $root.apply_new_version_of_rdf_value">
+        apply
+    </div>
+<span
+    data-bind="with: $root.customObjects[$data.value_id()],
+        click: $root.open_OmniBox_for_actual_RDF_value_in_statement,
+        attr: 
+            {
+                id: 'rdf-value-in-statement--' + $data.id,
+            }">
+    <div style="outline: 0px solid transparent; margin-left: 1rem;"
+        onclick="lookup.stopPropagation()"
+        onkeydown="lookup.editorKeyDown(event)"
+        onkeyup="lookup.editorKeyUp(event)"
+        contenteditable="true"
+        data-bind="
+            event: 
+            {
+                input: $root.editor_on_input
+            }
+        "
+        ><!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko --></div>
+</span></script>
+
     <script type="text/html" id="rdf-statement-template">
         <div 
             style="font-size: 0.8rem;"
@@ -155,38 +182,24 @@
                 data-bind="
                     click: $root.open_OmniBox_for_RDF_predicate_in_statement,
                     text: $root.customObjects[$data.predicate_id()].name,
-                    attr: {id: 'rdf-predicate-in-statement--' + $data.id}"></strong>
+                    attr: {id: 'rdf-predicate-in-statement--' + $data.id},
+                    css: {
+                        'lisperanto-read-only': $root.find_or_create_rdf_predicate('previous-version') === $data.predicate_id()
+                    }"></strong>
             <span class="webpad-color-orange">:</span>
             <span data-bind="
                 if: typeof($data.value_id()) !== 'undefined'
                 ">
-                <span data-bind="visible: $root.customObjects[$data.value_id()].newVersionExists">new version</span>
-                    <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                <!-- ko if: $root.find_or_create_rdf_predicate("previous-version") === $data.predicate_id() -->
+                    <span class="lisperanto-read-only my-function-name lisperanto-open-link"
                         data-bind="
-                            visible: $root.customObjects[$data.value_id()].newVersionExists,
-                            click: $root.apply_new_version_of_rdf_value">
-                        apply
-                    </div>
-                <span
-                    data-bind="with: $root.customObjects[$data.value_id()],
-                        click: $root.open_OmniBox_for_actual_RDF_value_in_statement,
-                        attr: 
-                            {
-                                id: 'rdf-value-in-statement--' + $data.id,
-                            }">
-                    <div style="outline: 0px solid transparent; margin-left: 1rem;"
-                        onclick="lookup.stopPropagation()"
-                        onkeydown="lookup.editorKeyDown(event)"
-                        onkeyup="lookup.editorKeyUp(event)"
-                        contenteditable="true"
-                        data-bind="
-                            event: 
-                            {
-                                input: $root.editor_on_input
-                            }
-                        "
-                        ><!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko --></div>
-                </span>
+                            text: $data.value_id(),
+                            click: $root.open_rdf_value_by_id
+                            "></span>
+                <!-- /ko -->
+                <!-- ko ifnot: $root.find_or_create_rdf_predicate("previous-version") === $data.predicate_id() -->
+                    <!-- ko template: {name: 'rdf-regular-text-template', data: $data} --><!-- /ko -->
+                <!-- /ko -->
                 
             </span>
             <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 

@@ -1223,9 +1223,17 @@ lookup.editor_on_input = function(obj)
     obj.newName(innerText);
 };
 
-lookup.apply_new_version_of_rdf_value = function(parent)
+lookup.apply_new_version_of_rdf_value = function(statement)
 {
-    const previous_value_entry = lookup.customObjects[parent.value_id()];
+    const main_ui = document.getElementById(statement.object_id);
+    const main_rdf_entry = lookup.customObjects[statement.object_id];
+    const offset = {
+        x: main_rdf_entry.offsetX() + main_ui.offsetWidth,
+        y: main_rdf_entry.offsetY()
+    };
+    lookup.desiredOffset = offset;
+    
+    const previous_value_entry = lookup.customObjects[statement.value_id()];
     event.stopPropagation();
     const new_value_id = lookup.find_or_create_rdf_entry_with_name(previous_value_entry.newName());
     
@@ -1234,8 +1242,7 @@ lookup.apply_new_version_of_rdf_value = function(parent)
     previous_value_entry.splitted([]);
     previous_value_entry.splitted(previousWords);
 
-    const main_rdf_entry = lookup.customObjects[parent.object_id];
-    parent.value_id(new_value_id);
+    statement.value_id(new_value_id);
 
     const new_main_rdf_entry = lookup.create_RDF_Entry(main_rdf_entry.name());
     const predicate_id_for_previos_version = lookup.find_or_create_rdf_predicate("previous-version");
@@ -1265,7 +1272,7 @@ lookup.apply_new_version_of_rdf_value = function(parent)
     }
     
 
-    parent.value_id(previous_value_entry.id);
+    statement.value_id(previous_value_entry.id);
 
     var operation = 
     {
@@ -1276,14 +1283,22 @@ lookup.apply_new_version_of_rdf_value = function(parent)
 
     lookup.operationsPush(operation);
 
-
-
     lookup.openElement(new_main_rdf_entry);
+};
 
-
-
-
-
+lookup.open_rdf_value_by_id = function(statement)
+{
+    event.stopPropagation();
+    const id = statement.value_id();
+    const main_ui = document.getElementById(statement.object_id);
+    const main_rdf_entry = lookup.customObjects[statement.object_id];
+    const offset = {
+        x: main_rdf_entry.offsetX() + main_ui.offsetWidth,
+        y: main_rdf_entry.offsetY()
+    };
+    lookup.desiredOffset = offset;
+    const rdf_entry = lookup.customObjects[id];
+    lookup.openElement(rdf_entry);
 };
 
 

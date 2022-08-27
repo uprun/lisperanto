@@ -242,6 +242,11 @@ a
     font-size: 0.8rem;
 }
 
+.lisperanto-read-only
+{
+  font-style: italic;
+}
+
 
 .lisperanto-sandbox-stripes
 {
