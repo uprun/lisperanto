@@ -1286,14 +1286,14 @@ lookup.apply_new_version_of_rdf_value = function(statement)
     lookup.openElement(new_main_rdf_entry);
 };
 
-lookup.open_rdf_value_by_id = function(statement)
+lookup.open_rdf_value_by_id_on_the_left = function(statement)
 {
     event.stopPropagation();
     const id = statement.value_id();
     const main_ui = document.getElementById(statement.object_id);
     const main_rdf_entry = lookup.customObjects[statement.object_id];
     const offset = {
-        x: main_rdf_entry.offsetX() + main_ui.offsetWidth,
+        x: main_rdf_entry.offsetX() - main_ui.offsetWidth,
         y: main_rdf_entry.offsetY()
     };
     lookup.desiredOffset = offset;
