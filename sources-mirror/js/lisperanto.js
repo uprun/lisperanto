@@ -1243,35 +1243,7 @@ lookup.apply_new_version_of_rdf_value = function(statement)
     previous_value_entry.splitted(previousWords);
 
     statement.value_id(new_value_id);
-
-    const new_main_rdf_entry = lookup.create_RDF_Entry(main_rdf_entry.name());
-    const predicate_id_for_previos_version = lookup.find_or_create_rdf_predicate("previous-version");
-    var previous_version_predicate_was_present = false;
-    for(var k = 0; k < main_rdf_entry.statements().length; k++ )
-    {
-        const current_statement_id = main_rdf_entry.statements()[k];
-        const current_statement = lookup.customObjects[current_statement_id];
-        if(current_statement.predicate_id() === predicate_id_for_previos_version)
-        {
-            previous_version_predicate_was_present = true;
-            const copy_of_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, current_statement.predicate_id(), main_rdf_entry.id);
-            new_main_rdf_entry.statements.push(copy_of_statement.id);
-        }
-        else
-        {
-            const copy_of_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, current_statement.predicate_id(), current_statement.value_id());
-            new_main_rdf_entry.statements.push(copy_of_statement.id);
-        }
-        
-    }
-
-    if(previous_version_predicate_was_present === false)
-    {
-        const previous_version_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, predicate_id_for_previos_version, main_rdf_entry.id);
-        new_main_rdf_entry.statements.push(previous_version_statement.id);
-    }
-    
-
+    const new_main_rdf_entry = lookup.create_copy_of_RDF_entry(main_rdf_entry);
     statement.value_id(previous_value_entry.id);
 
     var operation = 
@@ -1284,6 +1256,15 @@ lookup.apply_new_version_of_rdf_value = function(statement)
     lookup.operationsPush(operation);
 
     lookup.openElement(new_main_rdf_entry);
+
+    const definition_predicate_id = lookup.find_or_create_rdf_predicate("definition");
+    if(statement.predicate_id() === definition_predicate_id)
+    {
+        const to_evaluate = lookup.customObjects[new_value_id].name();
+        const to_replace = main_rdf_entry.name();
+        window.eval("lookup['" + to_replace + "'] = " + to_evaluate);
+    }
+
 };
 
 lookup.open_rdf_value_by_id_on_the_left = function(statement)
@@ -1436,6 +1417,34 @@ lookup.define_full_rdf_statement = function(objId, predicate_id, value_id) {
     toAdd.assignedToGuid = objId;
     toAdd.statements = ko.observableArray([]);
     return toAdd;
+};
+
+lookup.create_copy_of_RDF_entry = function(main_rdf_entry)
+{
+    const new_main_rdf_entry = lookup.create_RDF_Entry(main_rdf_entry.name());
+    const predicate_id_for_previos_version = lookup.find_or_create_rdf_predicate("previous-version");
+    var previous_version_predicate_was_present = false;
+    for (var k = 0; k < main_rdf_entry.statements().length; k++) {
+        const current_statement_id = main_rdf_entry.statements()[k];
+        const current_statement = lookup.customObjects[current_statement_id];
+        if (current_statement.predicate_id() === predicate_id_for_previos_version) {
+            previous_version_predicate_was_present = true;
+            const copy_of_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, current_statement.predicate_id(), main_rdf_entry.id);
+            new_main_rdf_entry.statements.push(copy_of_statement.id);
+        }
+
+        else {
+            const copy_of_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, current_statement.predicate_id(), current_statement.value_id());
+            new_main_rdf_entry.statements.push(copy_of_statement.id);
+        }
+
+    }
+
+    if (previous_version_predicate_was_present === false) {
+        const previous_version_statement = lookup.define_full_rdf_statement(new_main_rdf_entry.id, predicate_id_for_previos_version, main_rdf_entry.id);
+        new_main_rdf_entry.statements.push(previous_version_statement.id);
+    }
+    return new_main_rdf_entry;
 };
 
 function Lisperanto()
