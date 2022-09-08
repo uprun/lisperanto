@@ -53,6 +53,14 @@ lookup.filteredSearch = ko.computed(
             });
         }
 
+        filtered = filtered.map(element => { 
+
+            const index = element.text.toLowerCase().indexOf(searchQuery);
+            const new_text = element.text.substring(index - 50, index + 50);
+            element.text = new_text;
+            return element;
+        });
+
         return filtered;
     }
 );
