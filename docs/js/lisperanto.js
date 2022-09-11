@@ -297,12 +297,12 @@ lookup.getCurrentDateTimeString = function()
     return datetime;
 };
 
-lookup.createUIObject = function()
+lookup.createUIObject = function(prefix = "")
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
-        id: guid,
+        id: prefix + "--" + guid,
         creation_time: lookup.getCurrentDateTimeString()
     };
     lookup.tryRestoreOffsetCoordinates(toAdd);
@@ -420,7 +420,7 @@ lookup.find_or_create_rdf_predicate = function(predicate)
     const predicateNameInLowerCase = predicate.toLowerCase();
     var filtered = ko.utils.arrayFilter(lookup.rdf_predicates_Array(), function(item)
         {
-            return lookup.customObjects[item.id].name().toLowerCase() === predicateNameInLowerCase;
+            return item.name().toLowerCase() === predicateNameInLowerCase;
         });
     if(filtered.length === 1)
     {
@@ -459,10 +459,9 @@ lookup.find_or_create_rdf_entry_with_name = function(entry_name)
 
 lookup.create_RDF_predicate = function(predicate_name)
 {
-    var toAdd = lookup.createUIObject();
+    var toAdd = lookup.createUIObject(predicate_name);
     toAdd.type = "rdf-predicate";
     toAdd.name = ko.observable(predicate_name);
-    toAdd.statements = ko.observableArray([]);
 
     var operation = 
     {
@@ -498,6 +497,7 @@ lookup.isOmniBoxOpen = ko.computed(function()
 
 lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus)
 {
+    // funcitons should not have override variables, I guess
     // [lives-in] [Odesa]
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field
 
@@ -517,6 +517,51 @@ lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus
     lookup.hideOmniBox();
     return toAdd_id;
 
+};
+
+lookup.create_json_copy = function(obj, key, value)
+{
+    var prefix = obj["type"] === "rdf-predicate" ? obj["name"]() : "";
+    var new_obj = lookup.createUIObject(prefix);
+    const available_keys = Object.keys(obj);
+    available_keys.forEach(k =>
+    {
+        if(!(k in new_obj))
+        {
+            var k_value = obj[k];
+            new_obj[k] = k_value;
+        }
+    });
+    new_obj["offsetX"](obj["offsetX"]());
+    new_obj["offsetY"](obj["offsetY"]());
+    new_obj[key] = value;
+    const previous_version_key = lookup.find_or_create_rdf_predicate("previous-version@lisperanto");
+    new_obj[previous_version_key] = obj["id"]; // here I need all possible versions for "id"
+    return new_obj;
+};
+
+lookup.add_statement_key_to_json_entry = function()
+{
+    // [lives-in] [Odesa]
+    // I decided that by convention every rdf-entry and rdf-predicate will have a name field 
+
+    var obj = lookup.focusedObj().wrapped_one();
+    const predicateName = name || lookup.omniBoxTextInput().trim();
+    if(predicateName === "")
+        return;
+    var created_copy = lookup.add_to_be_added_key_to_json(predicateName, obj);
+    lookup.focusedObj().wrapped_one(created_copy);
+    lookup.hideOmniBox();
+    return created_copy;
+};
+
+lookup.add_statement_key_to_json_entry_by_name = function(statement_key)
+{
+    var obj = lookup.focusedObj().wrapped_one();
+    var created_copy = lookup.add_to_be_added_key_to_json(statement_key, obj);
+    lookup.focusedObj().wrapped_one(created_copy);
+    lookup.hideOmniBox();
+    return created_copy;
 };
 
 lookup.add_maybe_existing_RDF_value_in_statement = function()
@@ -599,7 +644,10 @@ lookup.openElement = function(obj)
     lookup.tryRestoreOffsetCoordinates(obj);
     if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
     {
-        lookup.listOfOpenElements.push(obj);
+        var wrapper = {
+            wrapped_one : ko.observable(obj)
+        };
+        lookup.listOfOpenElements.push(wrapper);
         lookup.mapOfOpenElements[obj.id] = true;
     }
     if(typeof(lookup.desiredOffset) !== "undefined")
@@ -656,16 +704,19 @@ lookup.moveElementsOnCanvasIteration = function()
     var elements = lookup.listOfOpenElements();
     const anchorWidth = lookup.anchorWidth();
     const margin = anchorWidth ;
-    for (const [key, value] of Object.entries(elements)) 
+    for (const [key, wrapper] of Object.entries(elements)) 
     {
+        const value = wrapper.wrapped_one();
+
         var box = lookup.getUIBoxOfElement(value, margin);
         if(typeof(box) === "undefined")
         {
             continue;
         }
         
-        for (const [innerKey, innerValue] of Object.entries(elements)) 
+        for (const [innerKey, inner_wrapper] of Object.entries(elements)) 
         {
+            const innerValue = inner_wrapper.wrapped_one();
             if(value.id == innerValue.id)
             {
                 continue;
@@ -740,8 +791,8 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
 lookup.getUIBoxOfElement = function(obj, margin = 0.0)
 {
     var objId = obj.id
-    var foundUI = $("#" + objId)[0];
-    if(typeof(foundUI) === "undefined")
+    var foundUI = document.getElementById(objId);//$("#" + objId)[0];
+    if(foundUI == null || typeof(foundUI) === "undefined")
     {
         return undefined;
     }
@@ -958,6 +1009,17 @@ lookup.open_OmniBox_for_adding_statement_to_rdf_entry = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-statement-to-rdf-entry--' + caller.id, lookup.canvasOmniBox, caller);
 };
 
+lookup.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("add-statement-key-to-json-entry");
+
+    caller = caller.wrapped_one();
+
+    lookup.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.id, lookup.canvasOmniBox, caller);
+};
+
 lookup.open_OmniBox_for_adding_name_to_rdf_entry = function(caller)
 {
     lookup.hideOmniBox();
@@ -1026,6 +1088,13 @@ lookup.add_existing_RDF_predicate_from_omnibox = function(obj)
     lookup.hideOmniBox();
 };
 
+lookup.add_existing_RDF_predicate_to_json_from_omnibox = function(obj)
+{
+    event.stopPropagation();
+    lookup.add_statement_key_to_json_entry_by_name(obj.text);
+    lookup.hideOmniBox();
+};
+
 lookup.omniBoxClick = function()
 {
     event.stopPropagation();
@@ -1086,6 +1155,10 @@ lookup.omniBoxInputKeyPress = function(data, event)
             if(lookup.activeOperation() === "add-statement-predicate-to-rdf-entry")
             {
                 lookup.add_statement_predicate_to_rdf_entry();
+            }
+            else if (lookup.activeOperation() === "add-statement-key-to-json-entry")
+            {
+                lookup.add_statement_key_to_json_entry();
             }
             else if(lookup.activeOperation() === "add_RDF_value_in_statement") 
             {
@@ -1455,6 +1528,19 @@ lookup.create_copy_of_RDF_entry = function(main_rdf_entry)
     return new_main_rdf_entry;
 };
 
+lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
+    var toAdd_id = lookup.find_or_create_rdf_predicate(predicateName);
+    var to_hold_id = lookup.find_or_create_rdf_predicate("new-key-holder@lisperanto");
+    var created_copy = lookup.create_json_copy(obj, to_hold_id, toAdd_id);
+    var operation = {
+        operation: "hold-json-key",
+        toAdd_id: toAdd_id,
+        object_id: obj.id
+    };
+    lookup.operationsPush(operation);
+    return created_copy;
+};
+
 function Lisperanto()
 {
     var self = this;
@@ -1680,5 +1766,5 @@ $(document).ready(function()
 
     lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: 0, y: 0});
 
-    lookup.print_all_functions_from_lookup();
+    //lookup.print_all_functions_from_lookup();
 });

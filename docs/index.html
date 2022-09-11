@@ -46,6 +46,7 @@
                     data-bind="if:
                         $root.activeOperation() === 'global-omni-box-activated'
                         || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
+                        || $root.activeOperation() === 'add-statement-key-to-json-entry'
                         || $root.activeOperation() === 'add_RDF_value_in_statement'
                         || $root.activeOperation() === 'add-name-to-rdf-entry' ">
                     <input 
@@ -70,6 +71,13 @@
                     data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.add_statement_predicate_to_rdf_entry">
+                            add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_statement_key_to_json_entry">
                             add 
                     </div>
                 </div>
@@ -116,6 +124,11 @@
                     <div data-bind="if: $root.activeOperation() === 'add_RDF_value_in_statement'">
                         <div data-bind="foreach: $root.filteredSearch">
                             <div data-bind="text: $data.text, click: $root.add_existing_RDF_value_to_statement_from_omnibox_list"></div>
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_to_json_from_omnibox"></div>
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
@@ -300,6 +313,38 @@
         </div>
     </script>
 
+    <script type="text/html" id="json-key-value-statement-template">
+        <div style="font-size: 0.8rem;" >
+            <strong 
+                class="webpad-color-orange"
+                data-bind="
+                    text: $data"></strong>
+            <span class="webpad-color-orange">:</span>
+            <span class="lisperanto-read-only my-function-name "
+                data-bind="
+                    text: $parent.wrapped_one()[$data]
+                    "></span>
+        </div>
+    </script>
+
+    <script type="text/html" id="json-entry-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element lisperanto-rdf"
+            data-bind="
+                attr: 
+                {
+                    id: $data.wrapped_one().id
+                }">
+            <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data.wrapped_one()) }">
+            </div>
+            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                data-bind=" 
+                    click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
+                    attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
+                    + statement
+            </div>
+        </div>
+    </script>
+
     <script type="text/html" id="rdf-real-statement-template">
         <div class="lisperanto-function-definition lisperanto-ui-element"
             data-bind="
@@ -439,21 +484,11 @@
             data-bind="
                 style: 
                 { 
-                    left: inWorldOffsetX(), 
-                    top: inWorldOffsetY()
+                    left: wrapped_one().inWorldOffsetX(), 
+                    top: wrapped_one().inWorldOffsetY()
                 }">
                 <div>
-                    <!-- ko if: $data.type === 'rdf-entry' -->
-                        <!-- ko template: { name: 'rdf-entry-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'rdf-predicate' -->
-                        <!-- ko template: { name: 'rdf-predicate-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'rdf-statement' -->
-                        <!-- ko template: { name: 'rdf-real-statement-template', data: $data} -->
-                        <!-- /ko -->
+                    <!-- ko template: { name: 'json-entry-template', data: $data} -->
                     <!-- /ko -->
                 </div>
         </div>
@@ -665,10 +700,10 @@
                     "
                 data-bind="style: 
                 { 
-                    left: box().left, 
-                    top: box().top, 
-                    width: box().width,
-                    height: $data.box().height
+                    left: wrapped_one().box().left, 
+                    top: wrapped_one().box().top, 
+                    width: wrapped_one().box().width,
+                    height: wrapped_one().box().height
                 }," >
 
                 </div>
