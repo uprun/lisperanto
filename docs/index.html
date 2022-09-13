@@ -47,6 +47,7 @@
                         $root.activeOperation() === 'global-omni-box-activated'
                         || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
                         || $root.activeOperation() === 'add-statement-key-to-json-entry'
+                        || $root.activeOperation() === 'add-text-value-to-json-entry'
                         || $root.activeOperation() === 'add_RDF_value_in_statement'
                         || $root.activeOperation() === 'add-name-to-rdf-entry' ">
                     <input 
@@ -79,6 +80,13 @@
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.add_statement_key_to_json_entry">
                             add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add-text-value-to-json-entry'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_text_value_to_json_entry">
+                            add text
                     </div>
                 </div>
                 <div 
@@ -336,12 +344,22 @@
                 }">
             <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data.wrapped_one()) }">
             </div>
-            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
-                    attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
-                    + statement
-            </div>
+            <!-- ko ifnot: lookup.checkIfAnyVersionOfKeyIsPresent("new-key-holder@lisperanto", $data.wrapped_one()) -->
+                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
+                        attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
+                        + statement
+                </div>
+            <!-- /ko -->
+            <!-- ko if: lookup.checkIfAnyVersionOfKeyIsPresent("new-key-holder@lisperanto", $data.wrapped_one()) -->
+                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: $root.open_OmniBox_for_adding_text_value_to_json_entry, 
+                        attr: {id: 'add-text-value-to-json-entry--' + $data.wrapped_one().id}">
+                        + text value
+                </div>
+            <!-- /ko -->
         </div>
     </script>
 

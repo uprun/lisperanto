@@ -536,7 +536,7 @@ lookup.create_json_copy = function(obj, key, value)
     new_obj["offsetY"](obj["offsetY"]());
     new_obj[key] = value;
     const previous_version_key = lookup.find_or_create_rdf_predicate("previous-version@lisperanto");
-    new_obj[previous_version_key] = obj["id"]; // here I need all possible versions for "id"
+    new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
 
@@ -546,13 +546,31 @@ lookup.add_statement_key_to_json_entry = function()
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field 
 
     var obj = lookup.focusedObj().wrapped_one();
-    const predicateName = name || lookup.omniBoxTextInput().trim();
+    const predicateName = lookup.omniBoxTextInput().trim();
     if(predicateName === "")
         return;
     var created_copy = lookup.add_to_be_added_key_to_json(predicateName, obj);
     lookup.focusedObj().wrapped_one(created_copy);
     lookup.hideOmniBox();
     return created_copy;
+};
+
+lookup.add_text_value_to_json_entry = function()
+{
+    var obj = lookup.focusedObj().wrapped_one();
+    const text_value = lookup.omniBoxTextInput().trim();
+    const key = obj["new-key-holder@lisperanto"];
+    var created_copy = lookup.create_json_copy(obj, key, text_value);
+    delete created_copy["new-key-holder@lisperanto"];
+    lookup.customObjects[created_copy["id"]] = created_copy;
+    var operation = {
+        operation: "set-json-key-text-value",
+        key: key,
+        text_value: text_value
+    };
+    lookup.focusedObj().wrapped_one(created_copy);
+    lookup.operationsPush(operation);
+    lookup.hideOmniBox();
 };
 
 lookup.add_statement_key_to_json_entry_by_name = function(statement_key)
@@ -1020,6 +1038,17 @@ lookup.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
     lookup.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.id, lookup.canvasOmniBox, caller);
 };
 
+lookup.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
+{
+    lookup.hideOmniBox();
+    lookup.focusedObj(caller);
+    lookup.activeOperation("add-text-value-to-json-entry");
+
+    caller = caller.wrapped_one();
+
+    lookup.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.id, lookup.canvasOmniBox, caller);
+};
+
 lookup.open_OmniBox_for_adding_name_to_rdf_entry = function(caller)
 {
     lookup.hideOmniBox();
@@ -1348,6 +1377,21 @@ lookup.apply_new_version_of_rdf_value = function(statement)
 
 };
 
+lookup.getAllKeysWithName = function(predicateKey)
+{
+    var result = [predicateKey];
+    var sub = lookup.rdf_predicates_Array()
+        .filter(element => element.name() === predicateKey)
+        .map(element => element.id);
+    return result.concat(sub);
+};
+
+lookup.checkIfAnyVersionOfKeyIsPresent = function(predicateKey, obj)
+{
+    var all_possible_keys = lookup.getAllKeysWithName(predicateKey);
+    return all_possible_keys.some(key => key in obj);
+};
+
 lookup.open_rdf_value_by_id_on_the_left = function(statement)
 {
     event.stopPropagation();
@@ -1531,12 +1575,13 @@ lookup.create_copy_of_RDF_entry = function(main_rdf_entry)
 lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
     var toAdd_id = lookup.find_or_create_rdf_predicate(predicateName);
     var to_hold_id = lookup.find_or_create_rdf_predicate("new-key-holder@lisperanto");
-    var created_copy = lookup.create_json_copy(obj, to_hold_id, toAdd_id);
+    var created_copy = lookup.create_json_copy(obj, "new-key-holder@lisperanto", predicateName);
     var operation = {
         operation: "hold-json-key",
         toAdd_id: toAdd_id,
         object_id: obj.id
     };
+    lookup.customObjects[created_copy["id"]] = created_copy;
     lookup.operationsPush(operation);
     return created_copy;
 };
