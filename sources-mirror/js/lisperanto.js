@@ -297,12 +297,12 @@ lookup.getCurrentDateTimeString = function()
     return datetime;
 };
 
-lookup.createUIObject = function(prefix = "")
+lookup.createUIObject = function()
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
-        id: prefix + "--" + guid,
+        id: guid,
         creation_time: lookup.getCurrentDateTimeString()
     };
     lookup.tryRestoreOffsetCoordinates(toAdd);
@@ -521,8 +521,7 @@ lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus
 
 lookup.create_json_copy = function(obj, key, value)
 {
-    var prefix = obj["type"] === "rdf-predicate" ? obj["name"]() : "";
-    var new_obj = lookup.createUIObject(prefix);
+    var new_obj = lookup.createUIObject();
     const available_keys = Object.keys(obj);
     available_keys.forEach(k =>
     {
@@ -535,7 +534,25 @@ lookup.create_json_copy = function(obj, key, value)
     new_obj["offsetX"](obj["offsetX"]());
     new_obj["offsetY"](obj["offsetY"]());
     new_obj[key] = value;
-    const previous_version_key = lookup.find_or_create_rdf_predicate("previous-version@lisperanto");
+    new_obj["previous-version@lisperanto"] = obj["id"];
+    return new_obj;
+};
+
+
+lookup.create_plain_json_copy = function(obj)
+{
+    var new_obj = lookup.createUIObject();
+    const available_keys = Object.keys(obj);
+    available_keys.forEach(k =>
+    {
+        if(!(k in new_obj))
+        {
+            var k_value = obj[k];
+            new_obj[k] = k_value;
+        }
+    });
+    new_obj["offsetX"](obj["offsetX"]());
+    new_obj["offsetY"](obj["offsetY"]());
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
@@ -659,6 +676,10 @@ lookup.closeElement = function(obj)
 lookup.openElement = function(obj)
 {
     lookup.closeElement(obj);
+    if ( !( "id" in obj))
+    {
+        obj["id"] = lookup.uuidv4();
+    }
     lookup.tryRestoreOffsetCoordinates(obj);
     if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
     {
@@ -1175,27 +1196,24 @@ lookup.omniBoxInputKeyPress = function(data, event)
         {
             lookup.create_RDF_entry_with_name_from_omnibox();
         }
-
     }
     else
     {
         if(event.keyCode == 13)
         {
-            if(lookup.activeOperation() === "add-statement-predicate-to-rdf-entry")
+            const key = lookup.activeOperation();
+            var map = 
             {
-                lookup.add_statement_predicate_to_rdf_entry();
-            }
-            else if (lookup.activeOperation() === "add-statement-key-to-json-entry")
+                "add-statement-key-to-json-entry": () => lookup.add_statement_key_to_json_entry(),
+                'add-text-value-to-json-entry': () => lookup.add_text_value_to_json_entry(),
+                "add-statement-predicate-to-rdf-entry": () => lookup.add_statement_predicate_to_rdf_entry(),
+                "add_RDF_value_in_statement": () => lookup.add_maybe_existing_RDF_value_in_statement(),
+                "add-name-to-rdf-entry": () => lookup.add_name_to_rdf_entry(),
+            };
+
+            if ( key in map)
             {
-                lookup.add_statement_key_to_json_entry();
-            }
-            else if(lookup.activeOperation() === "add_RDF_value_in_statement") 
-            {
-                lookup.add_maybe_existing_RDF_value_in_statement();
-            }
-            else if(lookup.activeOperation() === "add-name-to-rdf-entry")
-            {
-                lookup.add_name_to_rdf_entry();
+                map[key]();
             }
             else if(lookup.activeOperation() === "global-omni-box-activated")
             {
@@ -1574,7 +1592,6 @@ lookup.create_copy_of_RDF_entry = function(main_rdf_entry)
 
 lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
     var toAdd_id = lookup.find_or_create_rdf_predicate(predicateName);
-    var to_hold_id = lookup.find_or_create_rdf_predicate("new-key-holder@lisperanto");
     var created_copy = lookup.create_json_copy(obj, "new-key-holder@lisperanto", predicateName);
     var operation = {
         operation: "hold-json-key",
@@ -1584,6 +1601,42 @@ lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
     lookup.customObjects[created_copy["id"]] = created_copy;
     lookup.operationsPush(operation);
     return created_copy;
+};
+
+lookup.json_key_oncontextmenu = function(obj, parent)
+{
+    const foundObj = parent.wrapped_one();
+    console.log(obj);
+    console.log(parent);
+    lookup.desiredOffset = {
+        x: foundObj.offsetX() + event.originalTarget.offsetLeft,
+        y: foundObj.offsetY() + event.originalTarget.offsetTop + event.originalTarget.offsetHeight
+    };
+    
+    lookup.focusedObj(parent);
+    lookup.key_in_json_to_focus = obj;
+    lookup.activeOperation("focused-on-existing-json-key");
+    event.stopPropagation();
+    console.log(event);
+    lookup.canvasOmniBox.visible(true);
+    lookup.canvasOmniBox.left(lookup.desiredOffset.x);
+    lookup.canvasOmniBox.top(lookup.desiredOffset.y);
+    return false;
+};
+
+lookup.delete_json_key = function()
+{
+    var copy = lookup.create_plain_json_copy(lookup.focusedObj().wrapped_one());
+    delete copy[lookup.key_in_json_to_focus];
+    lookup.focusedObj().wrapped_one(copy);
+    var operation = {
+        operation: "delete_json_key",
+        object_id: lookup.focusedObj().wrapped_one().id,
+        remove_key: lookup.key_in_json_to_focus
+    };
+    lookup.customObjects[copy["id"]] = copy;
+    lookup.operationsPush(operation);
+    lookup.hideOmniBox();
 };
 
 function Lisperanto()
