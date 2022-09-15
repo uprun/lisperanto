@@ -140,7 +140,6 @@
                     'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition(),
                     'webpad-color-green': $parents[0].reserved_lookup[$data.word],
                     'webpad-color-purple': $parents[0].local_lookup[$data.word] >= 2 && ( $parents[0].splitted()[$index() + 1] && $parents[0].splitted()[$index() + 1].word === '(') == false,
-                    'my-function-name': $root.names_lookup[$data.word] || ( $parents[0].splitted()[$index() + 1] && $parents[0].splitted()[$index() + 1].word === '(')
                 }
                 "></span></script>
 
@@ -518,7 +517,7 @@
                 'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
                 'webpad-menu-animate-fade-back': !$root.menuIsOpen()
             },
-            click: $root.infoOnClick
+            click: $root.stopPropagation
             ">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
@@ -549,7 +548,7 @@
                             href="mailto:oleksandr.kryvonos.ods.ua@gmail.com" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.emailMeLinkOnClick(event)"
+                            onclick="lookup.stopPropagation(event)"
                             >oleksandr.kryvonos.ods.ua@gmail.com</a>
                     </div>
                     <div
@@ -558,7 +557,7 @@
                             href="https://www.patreon.com/o_kryvonos" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.patreonLinkOnClick(event)"
+                            onclick="lookup.stopPropagation(event)"
                             >
                             Support on Patreon
                         </a>
@@ -579,7 +578,7 @@
                                 href="https://github.com/uprun/lisperanto" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                onclick="lookup.githubLinkOnClick(event)"
+                                onclick="lookup.stopPropagation(event)"
                                 >https://github.com/uprun/lisperanto</a>
                         </div>
                     </div>
@@ -592,16 +591,10 @@
 
                     <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
                         <div class="webpad-color-coral">
-                            Lisperanto is a programming environment and version control system.
+                            Lisperanto is a JavaScript programming environment.
                         </div>
                         <div class="webpad-color-yellow">
-                            Lisperanto is an AST-based version control system.
-                        </div>
-                        <div class="webpad-color-green">
-                            Lisperanto is a projection editor.
-                        </div>
-                        <div class="webpad-color-pink">
-                            Lisperanto is a structure editor.
+                            Lisperanto is a version control system.
                         </div>
                         <div class="webpad-color-orange">
                             Lisperanto is a mono-repository.
@@ -610,10 +603,7 @@
                             Lisperanto was inspired by Lisp.
                         </div>
                         <div class="webpad-color-coral">
-                            Lisperanto was  inspired by Smalltalk.
-                        </div>
-                        <div class="webpad-color-orange">
-                            Lisperanto is an AST editor.
+                            Lisperanto was inspired by Smalltalk.
                         </div>
                     </div>
                 </div>
@@ -629,7 +619,7 @@
                 'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
                 'webpad-options-animate-fade-back': !$root.optionsIsOpen()
             },
-            click: $root.optionsOnClick">
+            click: $root.stopPropagation">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
                 <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
@@ -730,9 +720,6 @@
         
         <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
         <!-- /ko -->
-        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
-
-        </div>
     </div>
     <div class="text-center lisperanto-tool-bar">
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
