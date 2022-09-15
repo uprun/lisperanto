@@ -519,7 +519,7 @@ lookup.add_statement_predicate_to_rdf_entry = function(name, rdf_object_in_focus
 
 };
 
-lookup.create_json_copy = function(obj, key, value)
+lookup.copy_json_and_add_key_and_value = function(obj, key, value)
 {
     var new_obj = lookup.createUIObject();
     const available_keys = Object.keys(obj);
@@ -534,6 +534,31 @@ lookup.create_json_copy = function(obj, key, value)
     new_obj["offsetX"](obj["offsetX"]());
     new_obj["offsetY"](obj["offsetY"]());
     new_obj[key] = value;
+    new_obj["previous-version@lisperanto"] = obj["id"];
+    return new_obj;
+};
+
+lookup.copy_json_and_add_replace_key = function(obj, old_key, new_key)
+{
+    var new_obj = lookup.createUIObject();
+    const available_keys = Object.keys(obj);
+    available_keys.forEach(k =>
+    {
+        if(!(k in new_obj))
+        {
+            var k_value = obj[k];
+            if(k === old_key)
+            {
+                new_obj[new_key] = k_value;
+            }
+            else
+            {
+                new_obj[k] = k_value;
+            }
+        }
+    });
+    new_obj["offsetX"](obj["offsetX"]());
+    new_obj["offsetY"](obj["offsetY"]());
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
@@ -577,7 +602,7 @@ lookup.add_text_value_to_json_entry = function()
     var obj = lookup.focusedObj().wrapped_one();
     const text_value = lookup.omniBoxTextInput().trim();
     const key = obj["new-key-holder@lisperanto"];
-    var created_copy = lookup.create_json_copy(obj, key, text_value);
+    var created_copy = lookup.copy_json_and_add_key_and_value(obj, key, text_value);
     delete created_copy["new-key-holder@lisperanto"];
     lookup.customObjects[created_copy["id"]] = created_copy;
     var operation = {
@@ -1145,6 +1170,23 @@ lookup.add_existing_RDF_predicate_to_json_from_omnibox = function(obj)
     lookup.hideOmniBox();
 };
 
+lookup.replace_existing_json_key_from_omnibox = function(obj)
+{
+    event.stopPropagation();
+    const new_key = obj.text;
+    lookup.replace_focused_json_key_with_new(new_key);
+    lookup.hideOmniBox();
+
+};
+
+lookup.replace_existing_json_key_from_omnibox_text = function()
+{
+    const new_key = lookup.omniBoxTextInput().trim();
+    var new_key_id = lookup.find_or_create_rdf_predicate(new_key);
+    lookup.replace_focused_json_key_with_new(new_key);
+    lookup.hideOmniBox();
+};
+
 lookup.omniBoxClick = function()
 {
     event.stopPropagation();
@@ -1209,6 +1251,7 @@ lookup.omniBoxInputKeyPress = function(data, event)
                 "add-statement-predicate-to-rdf-entry": () => lookup.add_statement_predicate_to_rdf_entry(),
                 "add_RDF_value_in_statement": () => lookup.add_maybe_existing_RDF_value_in_statement(),
                 "add-name-to-rdf-entry": () => lookup.add_name_to_rdf_entry(),
+                'replace-existing-json-key': () => lookup.replace_existing_json_key_from_omnibox_text()
             };
 
             if ( key in map)
@@ -1592,7 +1635,7 @@ lookup.create_copy_of_RDF_entry = function(main_rdf_entry)
 
 lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
     var toAdd_id = lookup.find_or_create_rdf_predicate(predicateName);
-    var created_copy = lookup.create_json_copy(obj, "new-key-holder@lisperanto", predicateName);
+    var created_copy = lookup.copy_json_and_add_key_and_value(obj, "new-key-holder@lisperanto", predicateName);
     var operation = {
         operation: "hold-json-key",
         toAdd_id: toAdd_id,
@@ -1637,6 +1680,26 @@ lookup.delete_json_key = function()
     lookup.customObjects[copy["id"]] = copy;
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
+};
+
+lookup.activate_replace_json_key = function()
+{
+    lookup.activeOperation("replace-existing-json-key");
+    $("#" + lookup.canvasOmniBox.id ).focus();
+};
+
+lookup.replace_focused_json_key_with_new = function(new_key) {
+    const old_key = lookup.key_in_json_to_focus;
+    var copy = lookup.copy_json_and_add_replace_key(lookup.focusedObj().wrapped_one(), old_key, new_key);
+    lookup.focusedObj().wrapped_one(copy);
+    var operation = {
+        operation: "replace_json_key",
+        new_version_id: lookup.focusedObj().wrapped_one().id,
+        new_key: new_key,
+        old_key: old_key
+    };
+    lookup.customObjects[copy["id"]] = copy;
+    lookup.operationsPush(operation);
 };
 
 function Lisperanto()

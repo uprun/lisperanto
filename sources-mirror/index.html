@@ -45,11 +45,9 @@
                 <div 
                     data-bind="if:
                         $root.activeOperation() === 'global-omni-box-activated'
-                        || $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'
                         || $root.activeOperation() === 'add-statement-key-to-json-entry'
                         || $root.activeOperation() === 'add-text-value-to-json-entry'
-                        || $root.activeOperation() === 'add_RDF_value_in_statement'
-                        || $root.activeOperation() === 'add-name-to-rdf-entry' ">
+                        || $root.activeOperation() === 'replace-existing-json-key' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -67,14 +65,6 @@
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
-
-                <div 
-                    data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.add_statement_predicate_to_rdf_entry">
-                            add 
-                    </div>
-                </div>
                 <div 
                     data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
@@ -89,18 +79,12 @@
                             add text
                     </div>
                 </div>
+
                 <div 
-                    data-bind="if: $root.activeOperation() === 'add_RDF_value_in_statement'">
+                    data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.add_maybe_existing_RDF_value_in_statement">
-                            reuse existing 
-                    </div>
-                </div>
-                <div 
-                    data-bind="if: $root.activeOperation() === 'add-name-to-rdf-entry'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.add_name_to_rdf_entry">
-                            add 
+                        data-bind="click: $root.replace_existing_json_key_from_omnibox_text">
+                            replace
                     </div>
                 </div>
 
@@ -118,15 +102,9 @@
                             delete
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-predicate-in-statement' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_predicate_definition_from_statement">
-                            open definition
-                        </div>
-                    </div>
-
-                    <div data-bind="if: $root.activeOperation() === 'focus-on-RDF-value-in-statement' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBox_open_value_definition_from_statement">
-                            open definition
+                    <div data-bind="if: $root.activeOperation() === 'focused-on-existing-json-key' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.activate_replace_json_key">
+                            replace
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
@@ -134,21 +112,18 @@
                             <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'add_RDF_value_in_statement'">
-                        <div data-bind="foreach: $root.filteredSearch">
-                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_value_to_statement_from_omnibox_list"></div>
-                        </div>
-                    </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
                         <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
                             <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_to_json_from_omnibox"></div>
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'add-statement-predicate-to-rdf-entry'">
+                    <div data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
                         <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
-                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_from_omnibox"></div>
+                            <div data-bind="text: $data.text, click: $root.replace_existing_json_key_from_omnibox"></div>
                         </div>
                     </div>
+
+                    
                 </div>
             </div>
         </div>
