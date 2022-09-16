@@ -129,29 +129,39 @@
     </script>
 
     <script type="text/html" id="json-key-value-statement-template">
-        <div style="font-size: 0.8rem;" >
-            <span 
-                class="webpad-color-orange"
-                data-bind="
-                    text: $data,
-                    click: $root.stopPropagation,
-                    event:
-                    {
-                        contextmenu: () => lookup.json_key_oncontextmenu($data, $parents[1])
-                    }"></span>
-            <span class="webpad-color-orange">:</span>
-            <span style="outline: 0px solid transparent; white-space: pre;" class="lisperanto-read-only my-function-name "
+        <div style="font-size: 0.8rem; display: flex;" >
+            <div style="display: inline; margin-right: 0.3rem;">
+                <span 
+                    class="webpad-color-orange"
+                    data-bind="
+                        text: $data,
+                        click: $root.stopPropagation,
+                        event:
+                        {
+                            contextmenu: () => lookup.json_key_oncontextmenu($data, $parents[1])
+                        }"></span><span class="webpad-color-orange">:</span>
+            </div>
+            <div style="display: inline;">
+                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block;" class="lisperanto-read-only"
                 onclick="lookup.stopPropagation()"
                 onkeydown="lookup.editorKeyDown(event)"
                 onkeyup="lookup.editorKeyUp(event)"
-                contenteditable="true"
                 data-bind="
                     text: $parent[$data],
                     event: 
                         {
-                            input: () => $root.editor_on_input($data, $parents[1])
-                        }
-                    "></span>
+                            input: () => $root.editor_on_input($data, $parents[1]),
+                        },
+                    css:
+                    {
+                        'my-function-name': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                    },
+                    attr:
+                    {
+                        'contenteditable': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                    }
+                    "></div>
+            </div>
         </div>
     </script>
 
@@ -164,36 +174,37 @@
                 }">
             <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data) }">
             </div>
-            <!-- ko ifnot: ("new-key-holder@lisperanto" in $data) -->
-            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                data-bind=" 
-                    click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($parents[1]), 
-                    attr: {id: 'add-statement-to-json-entry--' + $data.id}">
-                    + statement
-            </div>
-            <!-- /ko -->
-            <!-- ko if: ("new-key-holder@lisperanto" in $data) -->
-            <div>
-                <span 
-                    class="webpad-color-orange"
-                    data-bind="
-                        text: $data['new-key-holder@lisperanto']"></span>
-                <span class="webpad-color-orange">:</span>
+            <!-- ko if: $data["key_with_changes@lisperanto"]() == ""-->
+                <!-- ko ifnot: ("new-key-holder@lisperanto" in $data) -->
                 <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
-                        click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($parents[1]), 
-                        attr: {id: 'add-text-value-to-json-entry--' + $data.id}">
-                        + text value
+                        click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($parents[1]), 
+                        attr: {id: 'add-statement-to-json-entry--' + $data.id}">
+                        + statement
                 </div>
-            </div>
+                <!-- /ko -->
+                <!-- ko if: ("new-key-holder@lisperanto" in $data) -->
+                <div>
+                    <span 
+                        class="webpad-color-orange"
+                        data-bind="
+                            text: $data['new-key-holder@lisperanto']"></span>
+                    <span class="webpad-color-orange">:</span>
+                    <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind=" 
+                            click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($parents[1]), 
+                            attr: {id: 'add-text-value-to-json-entry--' + $data.id}">
+                            + text value
+                    </div>
+                </div>
+                <!-- /ko -->
             <!-- /ko -->
             <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
                 && $data["new_value@lisperanto"]() 
                     != $data[$data["key_with_changes@lisperanto"]()] -->
             <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                 data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
-                    attr: {id: 'add-statement-to-json-entry--' + $data.id}">
+                    click: () => $root.confirm_change_to_json($parents[1])">
                     confirm change
             </div>
             <!-- /ko -->

@@ -1174,19 +1174,23 @@ lookup.editorKeyDown = function(event)
 
 lookup.editor_on_input = function(key_name, parent)
 {
-    console.log(event);
-    console.log(key_name);
-    const inner_text = event.originalTarget.innerText;
+    // console.log(event);
+    // console.log(key_name);
+    console.log(event.target.innerText);
+    var inner_text = event.target.innerText;
     console.log(inner_text);
 
     const obj = parent.wrapped_one();
-    obj["key_with_changes@lisperanto"](key_name);
-    obj["new_value@lisperanto"](inner_text);
-
-    
-
-    //obj.newVersionExists(innerText != original_name);
-    //obj.newName(innerText);
+    if (inner_text === obj[key_name])
+    {
+        obj["key_with_changes@lisperanto"]("");
+        obj["new_value@lisperanto"]("");
+    }
+    else
+    {
+        obj["key_with_changes@lisperanto"](key_name);
+        obj["new_value@lisperanto"](inner_text);
+    }
 };
 
 lookup.getAllKeysWithName = function(predicateKey)
@@ -1326,6 +1330,23 @@ lookup.delete_json_key = function()
     lookup.customObjects[copy["id"]] = copy;
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
+};
+
+lookup.confirm_change_to_json = function(parent)
+{
+    event.stopPropagation();
+    var obj = parent.wrapped_one();
+    const updated_key = obj["key_with_changes@lisperanto"]();
+    const new_value = obj["new_value@lisperanto"]();
+    const copy = lookup.copy_json_and_add_key_and_value(obj, updated_key, new_value);
+    parent.wrapped_one(copy);
+    lookup.customObjects[copy["id"]] = copy;
+    var operation = {
+        operation: "change_value_of_json_key",
+        object_id: copy.id,
+        updated_key: lookup.key_in_json_to_focus
+    };
+    lookup.operationsPush(operation);
 };
 
 lookup.activate_replace_json_key = function()
