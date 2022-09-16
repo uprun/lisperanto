@@ -17,6 +17,12 @@ body {
   background-color: inherit;
   font-family: 'Input Mono', monospace;
 }
+
+.lisperanto-open-link
+{
+    text-decoration: underline;
+}
+
 .my-function-result
 {
   color:rgb(218, 116, 21);
@@ -133,6 +139,8 @@ a
 {
     /* border-style: none; */
     display: inline-block;
+    cursor: pointer;
+    user-select: none;
 }
 
 .webpad-button-paddings
@@ -154,6 +162,9 @@ a
     border-width: 0.2rem;
     border-color: #f8e755;
     border-radius: 0.7rem;
+    cursor: pointer;
+    user-select: none;
+    width: fit-content;
 }
 
 .webpad-brightness-dimmed
@@ -205,20 +216,29 @@ a
 
 }
 
-.lisperanto-anchor-sandbox
-{
-    position: absolute;
-    display: inline-grid;
-    left: 40vw;
-    top: 33vh;
-}
-
 
 .lisperanto-function-definition
 {
     position: absolute;
     display: inline-grid;
 }
+
+.lisperanto-rdf
+{
+    max-width: 40rem;
+}
+
+.lisperanto-rdf-value
+{
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+}
+
+.lisperanto-read-only
+{
+  font-style: italic;
+}
+
 
 .lisperanto-sandbox-stripes
 {

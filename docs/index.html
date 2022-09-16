@@ -22,42 +22,14 @@
         "click: $root.bodyOnClick,
         event: 
             {
-                keydown: $root.bodyKeyDown
+                keydown: $root.bodyKeyDown,
+                keyup: $root.bodyKeyUp,
             },
         style: 
             { 
                 background: $root.backgroundColor() 
             }">
 
-            
-    <script type="text/html" id="contextual-omni-wheel-template">
-        <div class="contextual-omni-wheel"
-            data-bind="
-                visible: visible,
-                click: $root.omniWheelOnClick,
-                style: 
-                    { 
-                        left: $root.globalOffsetX() + left(), 
-                        top: $root.globalOffsetY() + top()
-                    }">
-            <div style="font-size: 1rem; right: 2rem; transform: translate(0, -50%); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
-                data-bind="click: $root.createFunction">
-                    function 
-            </div>
-            <div style="font-size: 1rem; bottom: 2rem; transform: translate(-50%, 0); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
-                data-bind="click: $root.createAndShowRecord">
-                    record 
-            </div>
-            <div style="font-size: 1rem; left: 2rem; transform: translate(0, -50%); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
-                data-bind="click: $root.openSandbox">
-                    sandbox 
-            </div>
-            <div style="font-size: 1rem; top: 2rem; transform: translate(-50%, 0); " class="lisperanto-div-button webpad-color-purple contextual-omni-wheel--options w3-animate-opacity" 
-                data-bind="click: $root.showOmniBox">
-                    command 
-            </div>
-        </div>
-    </script>
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
             onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
@@ -71,14 +43,11 @@
                     }">
             <div class="webpad-sky-frame diagonal-stripes-background">
                 <div 
-                    data-bind="if: 
-                        $root.activeOperation() === 'focusOnParameter' 
-                        || $root.activeOperation() === 'renameFunction' 
-                        || $root.activeOperation() === 'addingFunctionParameter'
-                        || $root.activeOperation() === 'addingFieldInRecord'
-                        || $root.activeOperation() === 'addingFieldTypeInRecord'
-                        || $root.activeOperation() === 'addingFieldValueInRecord'
-                        || $root.activeOperation() === 'global-omni-box-activated' ">
+                    data-bind="if:
+                        $root.activeOperation() === 'global-omni-box-activated'
+                        || $root.activeOperation() === 'add-statement-key-to-json-entry'
+                        || $root.activeOperation() === 'add-text-value-to-json-entry'
+                        || $root.activeOperation() === 'replace-existing-json-key' ">
                     <input 
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
@@ -96,346 +65,162 @@
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
-                <div data-bind="if: $root.activeOperation() === 'renameFunction'">
-                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.renameFunction">
-                            apply 
-                    </div>
-                </div>
                 <div 
-                    data-bind="if: $root.activeOperation() === 'addingFunctionParameter'">
+                    data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addParameter">
+                        data-bind="click: $root.add_statement_key_to_json_entry">
                             add 
                     </div>
                 </div>
                 <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldInRecord'">
+                    data-bind="if: $root.activeOperation() === 'add-text-value-to-json-entry'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordField">
-                            add 
+                        data-bind="click: $root.add_text_value_to_json_entry">
+                            add text
                     </div>
                 </div>
 
                 <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
+                    data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordFieldType">
-                            add 
+                        data-bind="click: $root.replace_existing_json_key_from_omnibox_text">
+                            replace
                     </div>
                 </div>
 
                 <div 
-                    data-bind="if: $root.activeOperation() === 'addingFieldValueInRecord'">
+                    data-bind="if: $root.activeOperation() === 'global-omni-box-activated' && $root.omniBoxTextInput().trim().length != 0">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.addRecordFieldValue">
-                            add 
+                        data-bind="click: $root.create_RDF_entry_with_name_from_omnibox">
+                            add [Shift + &#9166;]
                     </div>
                 </div>
                 
                 <div class="omnibox-options">
-                    <div data-bind="if: $root.activeOperation() === 'RecordFieldTypeMissmatchFix' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.transformSymbolUsageToStringConstant">
-                            temp: transform to string
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            temp: fix type
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
-                            temp: unplug
+                    <div data-bind="if: $root.activeOperation() === 'focused-on-existing-json-key' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.delete_json_key">
+                            delete
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'functionUsageIsSelected' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxOpenFunctionAction">
-                            open definition
-                        </div>
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.unplug">
-                            unplug
-                        </div>
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'focusOnFunctionHeaderDefinition' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.omniBoxRenameFunctionAction">
-                            rename
-                        </div>
-                        
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'focusOnSandboxHeaderDefinition' ">
-                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.clearSandbox">
-                            clear
-                        </div>
-                    </div>
-                    <div data-bind="if: $root.activeOperation() === 'focusOnParameter'">
-                        <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                            data-bind="click: $root.tryParseOmniBoxByClick, text: $root.preParsedOmniBoxValueInformation">
-                            add as 
-                        </div>
-                        <div data-bind="foreach: $root.functionsLookup">
-                            <div data-bind="text: $data.text, click: $root.addFunctionByClick"></div>
+                    <div data-bind="if: $root.activeOperation() === 'focused-on-existing-json-key' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.activate_replace_json_key">
+                            replace
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
-                        <div data-bind="foreach: $root.functionsLookup">
-                            <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
+                        <div data-bind="foreach: $root.filteredSearch">
+                            <div data-bind="text: $data.text, click: $root.open_json_entry_from_search_list"></div>
                         </div>
                     </div>
-                    <div data-bind="if: $root.activeOperation() === 'addingFieldTypeInRecord'">
-                        <div data-bind="foreach: $root.typesLookup">
-                            <div data-bind="
-                                text: $data.text,
-                                click: $root.addTypeForFieldInRecordFromOmniBox"
-                             ></div>
+                    <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_to_json_from_omnibox"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </script>
-    <script type="text/html" id="record-field-template">
-        <div 
-            data-bind="
-                using: lookup.customObjects[$data],
-                attr: {id: $data}">
-            <span data-bind="if: typeof($data.recordFieldTypeGuidToUse()) !== 'undefined' ">
-                <strong class="webpad-color-orange" data-bind="text: $root.customObjects[$data.recordFieldTypeGuidToUse()].name"></strong>
-            </span>
-            <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
-                        visible: typeof($data.recordFieldTypeGuidToUse()) === 'undefined',
-                        click: $root.openOmniBoxForFieldTypeInRecord, 
-                        attr: {id: 'add-field-type-in-record--' + $data.id}">
-                    + type
-            </div>
-            <strong data-bind="text: $data.recordFieldName"></strong>
-            <span>=</span>
-            <span data-bind="
-                if: typeof($data.recordFieldValueGuidToUse()) !== 'undefined',
-                ">
-                <span data-bind="template: { name: 'body-element-template', data: $data.recordFieldValueGuidToUse() }" >
-                </span>
-            </span>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind="
-                        visible: typeof($data.recordFieldValueGuidToUse()) === 'undefined',
-                        click: $root.openOmniBoxForFieldValueInRecord, 
-                        attr: {id: 'add-field-value-in-record--' + $data.id}">
-                    + value
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind="
-                        visible: $data.typeMissmatch,
-                        click: $root.openOmniBoxForRecordFieldTypeMissmatchFix, 
-                        attr: {id: 'fix-type-missmatch-in-record-field--' + $data.id}">
-                    type missmatch
-            </div>
-        </div>
+                    <div data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.replace_existing_json_key_from_omnibox"></div>
+                        </div>
+                    </div>
 
-    </script>
-    <script type="text/html" id="record-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
-            <div 
-                data-bind="
-                    click: $root.openOmniBoxForRecordHeader,
-                    attr: 
-                    {
-                        id: 'record-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'record-field-template', foreach: fields }">
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
-                        click: $root.openOmniBoxForAddingFieldInRecord, 
-                        attr: {id: 'add-field-in-record--' + $data.id}">
-                    add field
+                </div>
             </div>
         </div>
     </script>
-    <script type="text/html" id="function-definition-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
+
+    <script type="text/html" id="json-key-value-statement-template">
+        <div style="font-size: 0.8rem; display: flex;" >
+            <div style="display: inline; margin-right: 0.3rem;">
+                <span 
+                    class="webpad-color-orange"
+                    data-bind="
+                        text: $data,
+                        click: $root.stopPropagation,
+                        event:
+                        {
+                            contextmenu: () => lookup.json_key_oncontextmenu($data, $parents[1])
+                        }"></span><span class="webpad-color-orange">:</span>
+            </div>
+            <div style="display: inline;">
+                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block;" class=""
+                onclick="lookup.stopPropagation()"
+                onkeyup="lookup.editorKeyUp(event)"
+                data-bind="
+                    text: $parent[$data],
+                    event: 
+                        {
+                            input: () => $root.editor_on_input($data, $parents[1]),
+                            keydown: () => lookup.editorKeyDown($parents[1])
+                        },
+                    css:
+                    {
+                        'my-function-name': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                    },
+                    attr:
+                    {
+                        'contenteditable': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                    }
+                    "></div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="json-entry-template">
+        <div class="lisperanto-function-definition lisperanto-ui-element lisperanto-rdf"
             data-bind="
-                style: 
-                { 
-                    left: $root.globalOffsetX() + offsetX(), 
-                    top: $root.globalOffsetY() + offsetY() 
-                },
                 attr: 
                 {
                     id: $data.id
                 }">
-            <div 
-                data-bind="
-                    click: $root.openOmniBoxForFunctionHeaderDefinition,
-                    attr: 
-                    {
-                        id: 'function-definition-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-                <span class="my-function-name" style="font-size: 1rem;" data-bind="text: name"></span>
+            <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data) }">
             </div>
-            <div>
-                parameters:
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-symbol-template', foreach: parameters }">
-            </div>
-            <span data-bind="if: type !== 'built-in-function' ">
-                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind=" 
-                            click: $root.openOmniBoxForAddingParametersInFunctionDefiniton, 
-                            attr: {id: 'add-function-parameter--' + $data.id}">
-                        add
+            <!-- ko if: $data["key_with_changes@lisperanto"]() == ""-->
+                <!-- ko ifnot: ("new-key-holder@lisperanto" in $data) -->
+                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($parents[1]), 
+                        attr: {id: 'add-statement-to-json-entry--' + $data.id}">
+                        + statement
                 </div>
+                <!-- /ko -->
+                <!-- ko if: ("new-key-holder@lisperanto" in $data) -->
                 <div>
-                    body:
-                </div>
-                <div style="margin-left: 0rem;" data-bind="template: { name: 'body-element-template', data: body }">
-                </div>
-            </span>
-        </div>
-    </script>
-    <script type="text/html" id="sandbox-template">
-        <div class="lisperanto-ui-element" 
-            
-         data-bind="style: 
-            { 
-                left: inWorldOffsetX, 
-                top: inWorldOffsetY 
-            }, 
-            attr: 
-            {
-                id: $data.id
-            }">
-            <div class="lisperanto-sandbox-title">
-                <span class="my-function-name" style="font-size: 1.5rem;"
-                    data-bind="
-                    click: $root.openOmniBoxForSandboxHeaderDefinition,
-                    attr: 
-                    {
-                        id: 'sandbox-definition-header--' + $data.id
-                    }"
-                    >sandbox</span>
-            </div>
-            <div class="lisperanto-sandbox-stripes">
-                <span>
-                    <div data-bind="template: { name: 'body-element-template', data: body }">
+                    <span 
+                        class="webpad-color-orange"
+                        data-bind="
+                            text: $data['new-key-holder@lisperanto']"></span>
+                    <span class="webpad-color-orange">:</span>
+                    <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind=" 
+                            click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($parents[1]), 
+                            attr: {id: 'add-text-value-to-json-entry--' + $data.id}">
+                            + text value
                     </div>
-                </span>
-            </div>
-        </div>
-    </script>
-    <script type="text/html" id="parameter-value-template">
-        <div>
-            <!-- <span data-bind="text: lookup.customObjects[$data].guidToUse" ></span> -->
-            <div data-bind="template: { name: 'body-element-template', data: lookup.customObjects[$data].guidToUse() }" >
-            </div>
-            <span data-bind='if: typeof(lookup.customObjects[$data].guidToUse()) === "undefined", attr: {id: $data} '>
-                <div style="font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.focusOnParameter">
-                    <span data-bind="text: lookup.customObjects[lookup.customObjects[$data].parameterGuid].parameterName + ':' "></span>
                 </div>
-            <span>
-        </div>
-    </script>
-    <script type="text/html" id="parameter-symbol-template">
-        <div>
-            <strong data-bind="text: lookup.customObjects[$data].parameterName"></strong>
-        </div>
-    </script>
-    <script type="text/html" id="constant-number-template">
-        <strong data-bind="text: value"></strong>
-    </script>
-    <script type="text/html" id="constant-string-template">
-        "<strong data-bind="text: value"></strong>"
-    </script>
-    <script type="text/html" id="symbol-usage-template">
-        <strong data-bind="text: symbolName"></strong>
-    </script>
-    <script type="text/html" id="function-usage-template">
-        <span
-            data-bind="
-            attr: {id: $data.id}"
-            >
-            <span data-bind="text: '('"></span><span 
-                class="my-function-name" 
-                data-bind="
-                    text: lookup.customObjects[$data.functionGuid].name(), 
-                    click: $root.openOmniBoxForFunctionUsage, 
-                    attr: {id: 'function-name-' + $data.id}"
-                >
-            </span>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'parameter-value-template', foreach: parameters }" >
+                <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
+                && $data["new_value@lisperanto"]() 
+                    != $data[$data["key_with_changes@lisperanto"]()] -->
+            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                data-bind=" 
+                    click: () => $root.confirm_change_to_json($parents[1])">
+                    confirm change
             </div>
-            <span data-bind="text: ')'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
+            <!-- /ko -->
+        </div>
+    </script>
 
-        </span>
-        
-    </script>
-    <script type="text/html" id="record-reference-template">
-        <span
-            data-bind="
-            attr: {id: $data.id}"
-            >
-            <span data-bind="text: 'record-reference: ['"></span><span 
-                class="my-function-name" 
-                data-bind="
-                    text: lookup.customObjects[$data.recordGuid].name(), 
-                    click: $root.openOmniBoxForRecordReference, 
-                    attr: {id: 'record-reference--name-' + $data.id}"
-                >
-            </span><span data-bind="text: ']'"></span><span class="my-function-result" data-bind="text: '// ' + prettyPrintEvaluationResult() "></span>
-
-        </span>
-        
-    </script>
-    <script type="text/html" id="body-element-template">
-        <span data-bind="if:typeof($data) !== 'undefined' && typeof(lookup.customObjects[$data]) !== 'undefined' ">
-            <span data-bind='if: lookup.customObjects[$data].type === "constant-number" '>
-                <span data-bind="template: { name: 'constant-number-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "constant-string" '>
-                <span data-bind="template: { name: 'constant-string-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "function-usage" '>
-                <span data-bind="template: { name: 'function-usage-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "symbol-usage" '>
-                <span data-bind="template: { name: 'symbol-usage-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-            <span data-bind='if: lookup.customObjects[$data].type === "record-reference" '>
-                <span data-bind="template: { name: 'record-reference-template', data: lookup.customObjects[$data] }"></span>
-            </span>
-        </span>
-    </script>
     <script type="text/html" id="ui-element-template">
         <div class="lisperanto-ui-element"
             data-bind="
                 style: 
                 { 
-                    left: inWorldOffsetX(), 
-                    top: inWorldOffsetY()
+                    left: wrapped_one().inWorldOffsetX(), 
+                    top: wrapped_one().inWorldOffsetY()
                 }">
                 <div>
-                    <!-- ko if: $data.type === 'constant-number' -->
-                        <!-- ko template: { name: 'constant-number-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'function-usage' -->
-                        <!-- ko template: { name: 'function-usage-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'symbol-usage' -->
-                        <!-- ko template: { name: 'symbol-usage-template', data: $data} -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-                    <!-- ko if: $data.type === 'record' -->
-                        <!-- ko template: { name: 'record-template', data: $data} -->
-                        <!-- /ko -->
+                    <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
                     <!-- /ko -->
                 </div>
         </div>
@@ -450,7 +235,7 @@
                 'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
                 'webpad-menu-animate-fade-back': !$root.menuIsOpen()
             },
-            click: $root.infoOnClick
+            click: $root.stopPropagation
             ">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
@@ -481,7 +266,7 @@
                             href="mailto:oleksandr.kryvonos.ods.ua@gmail.com" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.emailMeLinkOnClick(event)"
+                            onclick="lookup.stopPropagation(event)"
                             >oleksandr.kryvonos.ods.ua@gmail.com</a>
                     </div>
                     <div
@@ -490,7 +275,7 @@
                             href="https://www.patreon.com/o_kryvonos" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.patreonLinkOnClick(event)"
+                            onclick="lookup.stopPropagation(event)"
                             >
                             Support on Patreon
                         </a>
@@ -511,7 +296,7 @@
                                 href="https://github.com/uprun/lisperanto" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                onclick="lookup.githubLinkOnClick(event)"
+                                onclick="lookup.stopPropagation(event)"
                                 >https://github.com/uprun/lisperanto</a>
                         </div>
                     </div>
@@ -524,16 +309,10 @@
 
                     <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
                         <div class="webpad-color-coral">
-                            Lisperanto is a programming environment and version control system.
+                            Lisperanto is a JavaScript programming environment.
                         </div>
                         <div class="webpad-color-yellow">
-                            Lisperanto is an AST-based version control system.
-                        </div>
-                        <div class="webpad-color-green">
-                            Lisperanto is a projection editor.
-                        </div>
-                        <div class="webpad-color-pink">
-                            Lisperanto is a structure editor.
+                            Lisperanto is a version control system.
                         </div>
                         <div class="webpad-color-orange">
                             Lisperanto is a mono-repository.
@@ -542,10 +321,7 @@
                             Lisperanto was inspired by Lisp.
                         </div>
                         <div class="webpad-color-coral">
-                            Lisperanto was  inspired by Smalltalk.
-                        </div>
-                        <div class="webpad-color-orange">
-                            Lisperanto is an AST editor.
+                            Lisperanto was inspired by Smalltalk.
                         </div>
                     </div>
                 </div>
@@ -561,7 +337,7 @@
                 'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
                 'webpad-options-animate-fade-back': !$root.optionsIsOpen()
             },
-            click: $root.optionsOnClick">
+            click: $root.stopPropagation">
         <div class="w3-row webpad-sky-frame">
             <div class="w3-col w3-container s12 m12 l12">
                 <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
@@ -635,21 +411,7 @@
     <div class="lisperanto-global-container" >
 
         <!-- ko foreach: $root.listOfOpenElements -->
-
-            <!-- ko if: $data.id === 'sandbox-unique' -->
-                <!-- ko template: { name: 'sandbox-template', data: $data} -->
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko ifnot: $data.id === 'sandbox-unique' -->
-                <!-- ko if: $data.type === 'function' || $data.type === 'built-in-function' -->
-                    <!-- ko template: { name: 'function-definition-template', data: $data} -->
-                    <!-- /ko -->
-                <!-- /ko -->
-                <!-- ko ifnot: $data.type === 'function' || $data.type === 'built-in-function'-->
-                    <!-- ko template: { name: 'ui-element-template', data: $data } -->
-                    <!-- /ko -->
-                <!-- /ko -->
-                
+            <!-- ko template: { name: 'ui-element-template', data: $data } -->
             <!-- /ko -->
             <!-- ko if: $root.showBorders -->
                 <div style="
@@ -661,10 +423,10 @@
                     "
                 data-bind="style: 
                 { 
-                    left: box().left, 
-                    top: box().top, 
-                    width: box().width,
-                    height: $data.box().height
+                    left: wrapped_one().box().left, 
+                    top: wrapped_one().box().top, 
+                    width: wrapped_one().box().width,
+                    height: wrapped_one().box().height
                 }," >
 
                 </div>
@@ -676,17 +438,8 @@
         
         <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
         <!-- /ko -->
-        <!-- ko template: { name: 'contextual-omni-wheel-template', data: $root.omniWheel } -->
-        <!-- /ko -->
-        <div class="lisperanto-anchor-sandbox webpad-golden-frame" style="width: 2rem; height: 2rem; visibility: hidden;">
-
-        </div>
     </div>
     <div class="text-center lisperanto-tool-bar">
-        <div class="webpad-color-orange" style="margin-left: 2rem;">
-            Pan with [shift + mouse-move] or for MacBooks - use scroll gesture.
-        </div>
-        <br/>
         <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
             data-bind="click: $root.toggleMenu">
             <span style="font-size: 1rem; vertical-align: middle;">
