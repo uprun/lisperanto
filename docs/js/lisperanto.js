@@ -98,14 +98,22 @@ lookup.loadFromStorage = function()
     if(typeof(stored) !== 'undefined' && stored != null)
     {
         var parsed = JSON.parse(stored);
-        for (const [key, value] of Object.entries(parsed)) 
+        for ([key, value] of Object.entries(parsed)) 
         {
             lookup.tryRestoreOffsetCoordinates(value);
+            value["key_with_changes@lisperanto"] = ko.observable("");
+            value["new_value@lisperanto"] = ko.observable("");
             lookup.customObjects[key] = value;
             lookup.somethingChanged(lookup.somethingChanged() + 1);
         }
     }
     
+};
+
+lookup.open_json_entry_from_search_list = function(obj)
+{
+    lookup.openElement(lookup.customObjects[obj.id]);
+    lookup.hideOmniBox();
 };
 
 lookup.tryRestoreOffsetCoordinates = function(value)
@@ -252,7 +260,9 @@ lookup.createUIObject = function()
     
     var toAdd = {
         id: guid,
-        creation_time: lookup.getCurrentDateTimeString()
+        creation_time: lookup.getCurrentDateTimeString(),
+        "key_with_changes@lisperanto": ko.observable(""),
+        "new_value@lisperanto": ko.observable("")
     };
     lookup.tryRestoreOffsetCoordinates(toAdd);
 
@@ -1162,12 +1172,21 @@ lookup.editorKeyDown = function(event)
     }
 };
 
-lookup.editor_on_input = function(obj)
+lookup.editor_on_input = function(key_name, parent)
 {
-    const innerText = event.target.innerText;
-    const original_name = obj.name;
-    obj.newVersionExists(innerText != original_name);
-    obj.newName(innerText);
+    console.log(event);
+    console.log(key_name);
+    const inner_text = event.originalTarget.innerText;
+    console.log(inner_text);
+
+    const obj = parent.wrapped_one();
+    obj["key_with_changes@lisperanto"](key_name);
+    obj["new_value@lisperanto"](inner_text);
+
+    
+
+    //obj.newVersionExists(innerText != original_name);
+    //obj.newName(innerText);
 };
 
 lookup.getAllKeysWithName = function(predicateKey)

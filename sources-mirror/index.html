@@ -109,7 +109,7 @@
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
                         <div data-bind="foreach: $root.filteredSearch">
-                            <div data-bind="text: $data.text, click: $root.openFunctionDefinitionFromOmniBox"></div>
+                            <div data-bind="text: $data.text, click: $root.open_json_entry_from_search_list"></div>
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
@@ -123,203 +123,34 @@
                         </div>
                     </div>
 
-                    
                 </div>
-            </div>
-        </div>
-    </script>
-
-<script type="text/html" id="rdf-word-template"><span style="white-space: pre;" 
-            data-bind="
-                text: $data.word,
-                click: $root.open_rdf_entry_by_name,
-                attr: { 
-                    id: $data.id,
-                },
-                css: {
-                    'lisperanto-open-link': $data.word != ' ' && $root.allow_to_open_definition(),
-                    'webpad-color-green': $parents[0].reserved_lookup[$data.word],
-                    'webpad-color-purple': $parents[0].local_lookup[$data.word] >= 2 && ( $parents[0].splitted()[$index() + 1] && $parents[0].splitted()[$index() + 1].word === '(') == false,
-                }
-                "></span></script>
-
-<script type="text/html" id="rdf-regular-text-template"><span data-bind="visible: $root.customObjects[$data.value_id()].newVersionExists">new version</span>
-    <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-        data-bind="
-            visible: $root.customObjects[$data.value_id()].newVersionExists,
-            click: $root.apply_new_version_of_rdf_value">
-        apply
-    </div>
-<span
-    data-bind="with: $root.customObjects[$data.value_id()],
-        click: $root.open_OmniBox_for_actual_RDF_value_in_statement,
-        attr: 
-            {
-                id: 'rdf-value-in-statement--' + $data.id,
-            }">
-    <div style="outline: 0px solid transparent; margin-left: 1rem;"
-        onclick="lookup.stopPropagation()"
-        onkeydown="lookup.editorKeyDown(event)"
-        onkeyup="lookup.editorKeyUp(event)"
-        contenteditable="true"
-        data-bind="
-            event: 
-            {
-                input: $root.editor_on_input
-            }
-        "
-        ><!-- ko template: { name: 'rdf-word-template', foreach: $data.splitted } --><!-- /ko --></div>
-</span></script>
-
-    <script type="text/html" id="rdf-statement-template">
-        <div 
-            style="font-size: 0.8rem;"
-            data-bind="
-                using: lookup.customObjects[$data],
-                attr: {id: 'rdf-statement--' + $data}">
-            <strong 
-                class="webpad-color-orange"
-                data-bind="
-                    click: $root.open_OmniBox_for_RDF_predicate_in_statement,
-                    text: $root.customObjects[$data.predicate_id()].name,
-                    attr: {id: 'rdf-predicate-in-statement--' + $data.id},
-                    css: {
-                        'lisperanto-read-only': $root.find_or_create_rdf_predicate('previous-version') === $data.predicate_id()
-                    }"></strong>
-            <span class="webpad-color-orange">:</span>
-            <span data-bind="
-                if: typeof($data.value_id()) !== 'undefined'
-                ">
-                <!-- ko if: $root.find_or_create_rdf_predicate("previous-version") === $data.predicate_id() -->
-                    <span class="lisperanto-read-only my-function-name lisperanto-open-link"
-                        data-bind="
-                            text: $data.value_id(),
-                            click: $root.open_rdf_value_by_id_on_the_left
-                            "></span>
-                <!-- /ko -->
-                <!-- ko ifnot: $root.find_or_create_rdf_predicate("previous-version") === $data.predicate_id() -->
-                    <!-- ko template: {name: 'rdf-regular-text-template', data: $data} --><!-- /ko -->
-                <!-- /ko -->
-                
-            </span>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind="
-                        visible: typeof($data.value_id()) === 'undefined',
-                        click: $root.open_OmniBox_for_RDF_value_in_statement, 
-                        attr: {id: 'add-RDF-value-in-statement--' + $data.id}">
-                    + rdf-value
-            </div>
-        </div>
-
-    </script>
-
-    <script type="text/html" id="rdf-entry-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element lisperanto-rdf"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
-            <div
-                data-bind="
-                    attr: 
-                    {
-                        id: 'rdf-entry-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            </div>
-            <div
-                class="lisperanto-rdf-key"
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-entry-id-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'id',
-                    attr: {id: 'rdf-entry-id-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span
-                    class="my-function-name lisperanto-rdf-value"
-                    data-bind="
-                        text: $data.id,
-                        attr: {id: 'rdf-entry-id-value--' + $data.id}"></span>
-            </div>
-            <div
-                class="lisperanto-rdf-key"
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-entry-creation_time-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'creation_time',
-                    attr: {id: 'rdf-entry-creation_time-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span
-                    class="my-function-name lisperanto-rdf-value"
-                    data-bind="
-                        text: $data.creation_time,
-                        attr: {id: 'rdf-entry-creation_time-value--' + $data.id}"></span>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-entry-name-statement--' + $data.id}">
-                <strong 
-                    class="lisperanto-rdf-key"
-                    data-bind="
-                        text: 'name',
-                        attr: {id: 'rdf-entry-name-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span data-bind="
-                    if: typeof($data.name()) !== 'undefined'
-                    ">
-                    <span class="lisperanto-rdf-value" 
-                        data-bind="
-                        text: $data.name,
-                        attr: {id: 'rdf-entry-name-value--' + $data.id}"></span>
-                </span>
-                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="
-                            visible: typeof($data.name()) === 'undefined',
-                            click: $root.open_OmniBox_for_adding_name_to_rdf_entry,
-                            attr: {id: 'add-rdf-entry-name-value--' + $data.id}">
-                        + name
-                </div>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                class="webpad-color-light-pink">
-                Statements:
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
-                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
-                    + statement
             </div>
         </div>
     </script>
 
     <script type="text/html" id="json-key-value-statement-template">
-        <div style="font-size: 0.8rem;" 
-            data-bind="click: $root.stopPropagation">
-            <strong 
+        <div style="font-size: 0.8rem;" >
+            <span 
                 class="webpad-color-orange"
                 data-bind="
                     text: $data,
                     click: $root.stopPropagation,
                     event:
                     {
-                        contextmenu: () => lookup.json_key_oncontextmenu($data, $parent)
-                    }
-                    attr: 
-                    {
-                        id:  $data + '--' + $parent.wrapped_one().id
-                    }"></strong>
+                        contextmenu: () => lookup.json_key_oncontextmenu($data, $parents[1])
+                    }"></span>
             <span class="webpad-color-orange">:</span>
-            <span class="lisperanto-read-only my-function-name "
+            <span style="outline: 0px solid transparent; white-space: pre;" class="lisperanto-read-only my-function-name "
+                onclick="lookup.stopPropagation()"
+                onkeydown="lookup.editorKeyDown(event)"
+                onkeyup="lookup.editorKeyUp(event)"
+                contenteditable="true"
                 data-bind="
-                    text: $parent.wrapped_one()[$data]
+                    text: $parent[$data],
+                    event: 
+                        {
+                            input: () => $root.editor_on_input($data, $parents[1])
+                        }
                     "></span>
         </div>
     </script>
@@ -329,167 +160,43 @@
             data-bind="
                 attr: 
                 {
-                    id: $data.wrapped_one().id
+                    id: $data.id
                 }">
-            <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data.wrapped_one()) }">
+            <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data) }">
             </div>
-            <!-- ko ifnot: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+            <!-- ko ifnot: ("new-key-holder@lisperanto" in $data) -->
             <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                 data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
-                    attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
+                    click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($parents[1]), 
+                    attr: {id: 'add-statement-to-json-entry--' + $data.id}">
                     + statement
             </div>
             <!-- /ko -->
-            <!-- ko if: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+            <!-- ko if: ("new-key-holder@lisperanto" in $data) -->
             <div>
-                <strong 
+                <span 
                     class="webpad-color-orange"
                     data-bind="
-                        text: $data.wrapped_one()['new-key-holder@lisperanto']"></strong>
+                        text: $data['new-key-holder@lisperanto']"></span>
                 <span class="webpad-color-orange">:</span>
                 <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
-                        click: $root.open_OmniBox_for_adding_text_value_to_json_entry, 
-                        attr: {id: 'add-text-value-to-json-entry--' + $data.wrapped_one().id}">
+                        click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($parents[1]), 
+                        attr: {id: 'add-text-value-to-json-entry--' + $data.id}">
                         + text value
                 </div>
             </div>
             <!-- /ko -->
-        </div>
-    </script>
-
-    <script type="text/html" id="rdf-real-statement-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
-            <div 
-                data-bind="
-                    attr: 
-                    {
-                        id: 'rdf-real-statement-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            </div>
-            <div
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-real-statement-id-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'id',
-                    attr: {id: 'rdf-real-statement-id-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span>
-                    <span 
-                        style="font-size: 1rem;"
-                        class="my-function-name"
-                        data-bind="
-                            text: $data.id,
-                            attr: {id: 'rdf-real-statement-id-value--' + $data.id}"></span>
-                </span>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-real-statement-object_id-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'object_id',
-                    attr: {id: 'rdf-real-statement-object_id-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span data-bind="
-                    if: typeof($data.object_id) !== 'undefined'
-                    ">
-                    <strong data-bind="
-                        text: $data.object_id,
-                        attr: {id: 'rdf-statement-object_id-value--' + $data.object_id}"></strong>
-                </span>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                class="webpad-color-light-pink">
-                Statements:
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+            <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
+                && $data["new_value@lisperanto"]() 
+                    != $data[$data["key_with_changes@lisperanto"]()] -->
+            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                 data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
-                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
-                    + statement
+                    click: $root.open_OmniBox_for_adding_statement_to_json_entry, 
+                    attr: {id: 'add-statement-to-json-entry--' + $data.id}">
+                    confirm change
             </div>
-        </div>
-    </script>
-
-    <script type="text/html" id="rdf-predicate-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
-            <div 
-                data-bind="
-                    attr: 
-                    {
-                        id: 'rdf-predicate-header--' + $data.id
-                    }" >
-                <span style="font-size: 1rem;" class="my-function" data-bind="text: type"></span>
-            </div>
-            <div
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-predicate-id-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'id',
-                    attr: {id: 'rdf-predicate-id-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span>
-                    <span 
-                        style="font-size: 1rem;"
-                        class="my-function-name"
-                        data-bind="
-                            text: $data.id,
-                            attr: {id: 'rdf-predicate-id-value--' + $data.id}"></span>
-                </span>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                data-bind="
-                    attr: {id: 'rdf-predicate-name-statement--' + $data.id}">
-                <strong data-bind="
-                    text: 'name',
-                    attr: {id: 'rdf-predicate-name-predicate--' + $data.id}"></strong>
-                <span class="webpad-color-orange">:</span>
-                <span data-bind="
-                    if: typeof($data.name()) !== 'undefined'
-                    ">
-                    <strong data-bind="
-                        text: $data.name,
-                        attr: {id: 'rdf-predicate-name-value--' + $data.id}"></strong>
-                </span>
-                <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="
-                            visible: typeof($data.name()) === 'undefined',
-                            attr: {id: 'add-rdf-predicate-name-value--' + $data.id}">
-                        + name
-                </div>
-            </div>
-            <div 
-                style="margin-left: 2rem;"
-                class="webpad-color-light-pink">
-                Statements:
-            </div>
-            <div style="margin-left: 2rem;" data-bind="template: { name: 'rdf-statement-template', foreach: statements }">
-            </div>
-            <div style="margin:0.5em; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                data-bind=" 
-                    click: $root.open_OmniBox_for_adding_statement_to_rdf_entry, 
-                    attr: {id: 'add-statement-to-rdf-entry--' + $data.id}">
-                    + statement
-            </div>
+            <!-- /ko -->
         </div>
     </script>
 
@@ -502,7 +209,7 @@
                     top: wrapped_one().inWorldOffsetY()
                 }">
                 <div>
-                    <!-- ko template: { name: 'json-entry-template', data: $data} -->
+                    <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
                     <!-- /ko -->
                 </div>
         </div>
