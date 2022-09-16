@@ -1298,12 +1298,13 @@ lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
 
 lookup.json_key_oncontextmenu = function(obj, parent)
 {
+    event.stopPropagation();
     const foundObj = parent.wrapped_one();
     console.log(obj);
     console.log(parent);
     lookup.desiredOffset = {
-        x: foundObj.offsetX() + event.originalTarget.offsetLeft,
-        y: foundObj.offsetY() + event.originalTarget.offsetTop + event.originalTarget.offsetHeight
+        x: foundObj.offsetX() + event.target.offsetLeft,
+        y: foundObj.offsetY() + event.target.offsetTop + event.target.offsetHeight
     };
     
     lookup.focusedObj(parent);
