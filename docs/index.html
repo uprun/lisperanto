@@ -142,15 +142,15 @@
                         }"></span><span class="webpad-color-orange">:</span>
             </div>
             <div style="display: inline;">
-                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block;" class="lisperanto-read-only"
+                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block;" class=""
                 onclick="lookup.stopPropagation()"
-                onkeydown="lookup.editorKeyDown(event)"
                 onkeyup="lookup.editorKeyUp(event)"
                 data-bind="
                     text: $parent[$data],
                     event: 
                         {
                             input: () => $root.editor_on_input($data, $parents[1]),
+                            keydown: () => lookup.editorKeyDown($parents[1])
                         },
                     css:
                     {

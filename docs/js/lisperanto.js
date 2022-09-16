@@ -1157,19 +1157,15 @@ lookup.editorKeyUp = function(event)
     }
 };
 
-lookup.editorKeyDown = function(event)
+lookup.editorKeyDown = function(parent)
 {
     event.stopPropagation();
-    if(
-        (
-            event.code === "AltLeft" ||
-            event.code === "AltRight" 
-        )
-        &&
-        !lookup.isOmniBoxOpen())
+    if (event.code == "Enter" && (event.metaKey || event.ctrlKey))
     {
-        lookup.allow_to_open_definition(true);
+        lookup.confirm_change_to_json(parent);
     }
+    console.log(event);
+    return true;
 };
 
 lookup.editor_on_input = function(key_name, parent)
