@@ -150,40 +150,6 @@ lookup.restore_RDF_predicates_array = function()
     }
 };
 
-
-//this is my personal list of people who inspire me
-lookup.defaultNamesForFunctions =
-[
-    "Edsger Dijkstra",
-    "Alan Mathison Turing",
-    "Alan Kay (Smalltalk)",
-    "Dan Ingalls (Smalltalk)", 
-    "Adele Goldberg (Smalltalk)", 
-    "Ted Kaehler (Smalltalk)", 
-    "Diana Merry (Smalltalk)", 
-    "Scott Wallace (Smalltalk)", 
-    "Peter Deutsch (Smalltalk)",
-    "Xerox PARC (Smalltalk)",
-    "John McCarthy (Lisp)",
-    "Steve Russell (Lisp)", 
-    "Timothy P. Hart (Lisp)",
-    "Mike Levin (Lisp)",
-    "Joe Armstrong (Erlang)",
-    "Robert Virding (Erlang)",
-    "Mike Williams (Erlang)",
-    "Bret Victor (The Future of Programming talk)",
-    "Carl Hewitt (Actor model, Planner)",
-    "Alain Colmerauer (Prolog)", 
-    "Robert Kowalski (Prolog)",
-    "Niklaus Wirth (Pascal)",
-    "Leonardo da Vinci",
-    "Donato di Niccolo di Betto Bardi",
-    "Raffaello Sanzio da Urbino",
-    "Michelangelo di Lodovico Buonarroti Simoni",
-    "Premature optimization is the root of all evil - Sir Tony Hoare",
-    "Do not think without examples - Oleksandr Kryvonos"
-];
-
 lookup.getRandomInt = function(max) {
     return Math.floor(Math.random() * max);
   };
