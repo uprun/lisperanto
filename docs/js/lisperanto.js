@@ -1388,7 +1388,15 @@ $(document).ready(function()
     
     ko.applyBindings(viewModel);
 
-    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: 0, y: 0});
+    const one_rem_in_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize)
+
+    const expected_witdh_of_omnibox = 20 * one_rem_in_pixels;
+    const delta_x = Math.max(0, (document.body.offsetWidth / 2 - expected_witdh_of_omnibox/2));
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: delta_x , y: document.body.offsetHeight / 3});
+
+    const width_of_omnibox = document.getElementById("contextual-omni-box").offsetWidth;
+    const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: delta_x_2 , y: document.body.offsetHeight / 3});
 
     //lookup.print_all_functions_from_lookup();
 });
