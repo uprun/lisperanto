@@ -22,6 +22,7 @@
     onmouseup="typeof(lookup) !== 'undefined' && lookup.body_onmouseup()"
     onmousemove="typeof(lookup) !== 'undefined' && lookup.body_onmousemove()"
     onmouseout="typeof(lookup) !== 'undefined' && lookup.body_onmouseout()"
+    onresize="typeof(lookup) !== 'undefined' && lookup.applyMovement(0,0)"
     data-bind=
         "click: $root.bodyOnClick,
         event: 
@@ -29,10 +30,14 @@
                 keydown: $root.bodyKeyDown,
                 keyup: $root.bodyKeyUp,
             },
+        css:
+            {
+                'background-grabbing': $root.body_is_dragged(),
+                'background-hover': !$root.body_is_dragged()
+            },
         style: 
             { 
                 background: $root.backgroundColor(),
-                cursor:  $root.body_is_dragged() ? 'grabbing' : 'grab'
             }">
 
     <script type="text/html" id="contextual-omni-box-template">
@@ -421,6 +426,19 @@
         </div>
     </div>
     <div class="lisperanto-global-container" >
+        <div class="dotted-background" 
+            style="width: 240rem; height: 240rem; position: absolute; left:0; top: 0;"
+            data-bind="
+                style:
+                {
+                    width: lookup.globalMaxX() - lookup.globalMinX(),
+                    height: lookup.globalMaxY() - lookup.globalMinY(),
+                    left: lookup.globalOffsetX(),
+                    top: lookup.globalOffsetY(),
+                    transform: () => 'translate(' + lookup.globalMinX() + 'px, ' + lookup.globalMinY() + 'px)'
+                }">
+
+        </div>
 
         <!-- ko foreach: $root.listOfOpenElements -->
             <!-- ko template: { name: 'ui-element-template', data: $data } -->

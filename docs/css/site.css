@@ -42,6 +42,17 @@ body {
   cursor: auto;
 }
 
+.dotted-background {
+  background-size: 20rem 20rem;
+  background-image: radial-gradient(
+      transparent 0.2rem,
+      #3350659d 0.2rem,
+      #3350659d 0.4rem,
+      transparent 0.4rem
+  );
+  background-position: 0 0 , 1rem 1rem;
+}
+
 .contextual-omni-wheel
 {
   position: absolute;
@@ -113,6 +124,19 @@ body {
   padding: 0.5rem;
   border: 0.2rem solid rgb(255, 66, 77);
   display: inline-block;
+}
+
+.background-grabbing
+{
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+  -webkit-user-select: none;
+}
+
+.background-hover
+{
+  cursor: grab;
 }
 
 
@@ -277,7 +301,6 @@ a
   height: 100vh;
   width: 100vw;
   max-height: 100vh;
-  cursor: grab;
 }
 
 .lisperanto-sandbox-evaluation-bar

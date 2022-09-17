@@ -985,6 +985,7 @@ lookup.body_onmousemove = function()
         const deltaY = event.movementY;
         lookup.globalOffsetX(lookup.globalOffsetX() + deltaX);
         lookup.globalOffsetY(lookup.globalOffsetY() + deltaY);
+        lookup.applyMovement(0,0);
         lookup.total_movement_while_body_drag(lookup.total_movement_while_body_drag() + Math.abs(deltaX) + Math.abs(deltaY));
     }
 };
