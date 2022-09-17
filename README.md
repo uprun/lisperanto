@@ -45,7 +45,7 @@ and talks by Chris Granger (creator of Eve programming environment)
 
 # This project previously was about and it is not anymore:
 
- in browser IDE, this project is for AST (Abstract Syntax Tree) based development environment plus version control system inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve
+ ~~in browser IDE, this project is for AST (Abstract Syntax Tree) based development environment plus version control system inspired by Lisp, Haxe, Smalltalk, Dion systems, Hazel, Scratch, Eve~~
 
 # license
 MIT
