@@ -39,6 +39,7 @@ body {
   top: 1rem;
   left: 2rem;
   z-index: 10;
+  cursor: auto;
 }
 
 .contextual-omni-wheel
@@ -277,6 +278,7 @@ a
   height: 100vh;
   width: 100vw;
   max-height: 100vh;
+  cursor: grab;
 }
 
 .lisperanto-sandbox-evaluation-bar

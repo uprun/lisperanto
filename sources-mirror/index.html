@@ -18,6 +18,10 @@
     ontouchend="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
     ontouchcancel="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
     ontouchleave="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
+    onmousedown="typeof(lookup) !== 'undefined' && lookup.body_onmousedown()"
+    onmouseup="typeof(lookup) !== 'undefined' && lookup.body_onmouseup()"
+    onmousemove="typeof(lookup) !== 'undefined' && lookup.body_onmousemove()"
+    onmouseout="typeof(lookup) !== 'undefined' && lookup.body_onmouseout()"
     data-bind=
         "click: $root.bodyOnClick,
         event: 
@@ -27,12 +31,18 @@
             },
         style: 
             { 
-                background: $root.backgroundColor() 
+                background: $root.backgroundColor(),
+                cursor:  $root.body_is_dragged() ? 'grabbing' : 'grab'
             }">
 
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
             onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
+            onmousedown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onmouseup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onmousemove="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onkeyup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onkeydown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
             data-bind="
                 visible: visible,
                 click: $root.omniBoxClick,
@@ -130,7 +140,7 @@
 
     <script type="text/html" id="json-key-value-statement-template">
         <div style="font-size: 0.8rem; display: flex;" >
-            <div style="display: inline; margin-right: 0.3rem;">
+            <div style="display: inline; margin-right: 0.3rem; cursor: auto;">
                 <span 
                     class="webpad-color-orange"
                     data-bind="
@@ -142,7 +152,7 @@
                         }"></span><span class="webpad-color-orange">:</span>
             </div>
             <div style="display: inline;">
-                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block;" class=""
+                <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block; cursor: auto;" class=""
                 onclick="lookup.stopPropagation()"
                 onkeyup="lookup.editorKeyUp(event)"
                 data-bind="
@@ -213,6 +223,9 @@
 
     <script type="text/html" id="ui-element-template">
         <div class="lisperanto-ui-element"
+            onmousedown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onmouseup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onmousemove="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
             data-bind="
                 style: 
                 { 
@@ -228,7 +241,7 @@
 
     <div 
         class="webpad-menu-absolute-position webpad-menu-animate-left" 
-        style="display: none;" 
+        style="display: none; cursor: auto;" 
         data-bind="
             visible:  $root.menuWasAlreadyOpen(),
             css: { 
@@ -330,7 +343,7 @@
     </div>
     <div 
         class="webpad-options-absolute-position webpad-options-animate-right" 
-        style="display: none;" 
+        style="display: none; cursor: auto;" 
         data-bind="
             visible:  $root.optionsWasAlreadyOpen(),
             css: { 

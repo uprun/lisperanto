@@ -23,10 +23,6 @@ lookup.bodyOnWheel = function() {
 lookup.bodyOnPointerMove = function()
 {
     //console.log(event);
-    if(event.shiftKey)
-    {
-        lookup.applyMovement(-event.movementY, -event.movementX);
-    }
 
 };
 
