@@ -1069,6 +1069,41 @@ lookup.omniBoxInputKeyPress = function(data, event)
     return true;
 };
 
+lookup.body_is_dragged = ko.observable(false);
+
+lookup.body_onmousedown = function()
+{
+    //console.log(event);
+    lookup.body_is_dragged(true);
+    lookup.total_movement_while_body_drag(0)
+};
+
+lookup.body_onmouseup = function()
+{
+    //console.log(event);
+    lookup.body_is_dragged(false);
+};
+
+lookup.body_onmouseout = function()
+{
+    lookup.body_is_dragged(false);
+};
+
+lookup.total_movement_while_body_drag = ko.observable(0);
+
+lookup.body_onmousemove = function()
+{
+    //console.log(event);
+    if(lookup.body_is_dragged())
+    {
+        const deltaX = event.movementX;
+        const deltaY = event.movementY;
+        lookup.globalOffsetX(lookup.globalOffsetX() + deltaX);
+        lookup.globalOffsetY(lookup.globalOffsetY() + deltaY);
+        lookup.total_movement_while_body_drag(lookup.total_movement_while_body_drag() + Math.abs(deltaX) + Math.abs(deltaY));
+    }
+};
+
 lookup.omniBoxInputKeyUp = function( data, event)
 {
     //console.log(event.code);
@@ -1095,17 +1130,17 @@ lookup.bodyKeyDown = function( data, event)
         lookup.hideOmniBox();
         lookup.hideMenu();
     }
-    if(event.code === "KeyI" && !lookup.isOmniBoxOpen())
+    if(event.code === "KeyI")
     {
         lookup.toggleMenu();
     }
 
-    if(event.code === "KeyO" && !lookup.isOmniBoxOpen())
+    if(event.code === "KeyO")
     {
         lookup.toggleOptions();
     }
 
-    if(event.code === "KeyF" && !lookup.isOmniBoxOpen())
+    if(event.code === "KeyF")
     {
         lookup.toggleFullScreen();
     }
@@ -1390,6 +1425,17 @@ lookup.bodyOnClick = function(e)
         x: event.pageX,
         y: event.pageY
     };
+
+    console.log(lookup.total_movement_while_body_drag())
+
+    const drag_threshold = 3 * lookup.anchorWidth();
+    console.log(drag_threshold);
+    if ( lookup.total_movement_while_body_drag() > drag_threshold )
+    {
+        // to prevent click handler after drag, but allow it if drag was small
+        lookup.total_movement_while_body_drag(0);
+        return;
+    }
     if(lookup.canvasOmniBox.visible())
     {
         lookup.hideOmniBox();
