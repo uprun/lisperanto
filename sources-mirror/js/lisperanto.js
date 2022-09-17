@@ -143,29 +143,6 @@ lookup.tryRestoreOffsetCoordinates = function(value)
     {
         return value.offsetY() + lookup.globalOffsetY();
     });
-    value.box = ko.computed(function(){
-        var x = value.inWorldOffsetX();
-        var y = value.inWorldOffsetY();
-        const anchorWidth = lookup.anchorWidth();
-        const margin = anchorWidth ;
-    
-        var box = {};
-        var bb = lookup.getUIBoxOfElement(value, margin);
-        box.left = x;
-        box.top = y;
-        box.width = 10;
-        box.height = 10;
-        
-        if(typeof(bb) !== 'undefined')
-        {
-            box.width = bb.width;
-            box.height = bb.height;
-            box.left = bb.left + lookup.globalOffsetX();
-            box.top = bb.top + + lookup.globalOffsetY();
-        }
-        
-        return box;
-    });
 };
 
 lookup.restore_RDF_predicates_array = function()
@@ -890,15 +867,6 @@ lookup.vectorBetweenBoxes = function(firstBox, secondBox)
 };
 
 lookup.desiredOffset = {x: 0, y: 0};
-
-lookup.calledObj = undefined;
-
-lookup.showBorders = ko.observable(false);
-
-lookup.toggleShowBorders = function()
-{
-    lookup.showBorders(!lookup.showBorders());
-};
 
 lookup.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
 {

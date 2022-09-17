@@ -327,6 +327,9 @@
                         <div class="webpad-color-yellow">
                             Lisperanto is a version control system.
                         </div>
+                        <div class="webpad-color-blue">
+                            Lisperanto is a knowledge management system.
+                        </div>
                         <div class="webpad-color-orange">
                             Lisperanto is a mono-repository.
                         </div>
@@ -401,10 +404,6 @@
                     onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
                     f - FullScreen
                 </div>
-                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
-                    onclick="typeof(lookup) !== 'undefined' && lookup.toggleShowBorders()">
-                    Borders
-                </div>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
                 <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
@@ -426,26 +425,6 @@
         <!-- ko foreach: $root.listOfOpenElements -->
             <!-- ko template: { name: 'ui-element-template', data: $data } -->
             <!-- /ko -->
-            <!-- ko if: $root.showBorders -->
-                <div style="
-                    position: absolute;
-                    border: aliceblue;
-                    border-width: 2px;
-                    border-style: dotted;
-                    z-index: 0;
-                    "
-                data-bind="style: 
-                { 
-                    left: wrapped_one().box().left, 
-                    top: wrapped_one().box().top, 
-                    width: wrapped_one().box().width,
-                    height: wrapped_one().box().height
-                }," >
-
-                </div>
-            <!-- /ko -->
-            
-
         <!-- /ko -->
 
         
