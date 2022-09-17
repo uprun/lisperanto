@@ -100,9 +100,6 @@ lookup.loadFromStorage = function()
         var parsed = JSON.parse(stored);
         for ([key, value] of Object.entries(parsed)) 
         {
-            lookup.tryRestoreOffsetCoordinates(value);
-            value["key_with_changes@lisperanto"] = ko.observable("");
-            value["new_value@lisperanto"] = ko.observable("");
             lookup.customObjects[key] = value;
             lookup.somethingChanged(lookup.somethingChanged() + 1);
         }
@@ -116,33 +113,27 @@ lookup.open_json_entry_from_search_list = function(obj)
     lookup.hideOmniBox();
 };
 
-lookup.tryRestoreOffsetCoordinates = function(value)
+lookup.create_wrapper_for_canvas = function(value)
 {
-    if(typeof(value.offsetX) === "undefined")
+    var wrapper_for_canvas = 
     {
-        value.offsetX = ko.observable(0);
-    }
-    else
+        wrapped_one: ko.observable(value),
+        "key_with_changes@lisperanto": ko.observable(""),
+        "new_value@lisperanto": ko.observable(""),
+        offsetX: ko.observable(0),
+        offsetY: ko.observable(0)
+    };
+
+    wrapper_for_canvas.inWorldOffsetX = ko.computed(function()
     {
-        value.offsetX = ko.observable(value.offsetX);
-    }
-    if(typeof(value.offsetY) === "undefined")
-    {
-        value.offsetY = ko.observable(0);
-    }
-    else
-    {
-        value.offsetY = ko.observable(value.offsetY);
-    }
-    value.inWorldOffsetX = ko.computed(function()
-    {
-        return value.offsetX() + lookup.globalOffsetX();
+        return wrapper_for_canvas.offsetX() + lookup.globalOffsetX();
     });
 
-    value.inWorldOffsetY = ko.computed(function()
+    wrapper_for_canvas.inWorldOffsetY = ko.computed(function()
     {
-        return value.offsetY() + lookup.globalOffsetY();
+        return wrapper_for_canvas.offsetY() + lookup.globalOffsetY();
     });
+    return wrapper_for_canvas;
 };
 
 lookup.restore_RDF_predicates_array = function()
@@ -231,17 +222,14 @@ lookup.getCurrentDateTimeString = function()
     return datetime;
 };
 
-lookup.createUIObject = function()
+lookup.create_object_with_id = function()
 {
     var guid = lookup.uuidv4();
     
     var toAdd = {
         id: guid,
-        creation_time: lookup.getCurrentDateTimeString(),
-        "key_with_changes@lisperanto": ko.observable(""),
-        "new_value@lisperanto": ko.observable("")
+        creation_time: lookup.getCurrentDateTimeString()
     };
-    lookup.tryRestoreOffsetCoordinates(toAdd);
 
     lookup.customObjects[guid] = toAdd;
     return toAdd;
@@ -250,8 +238,7 @@ lookup.createUIObject = function()
 
 lookup.create_RDF_Entry = function(name)
 {
-    var toAdd = lookup.createUIObject();
-    toAdd.type = "rdf-entry";
+    var toAdd = lookup.create_object_with_id();
     toAdd.name = name;
 
     var operation = 
@@ -343,7 +330,7 @@ lookup.find_or_create_rdf_entry_with_name = function(entry_name)
 
 lookup.create_RDF_predicate = function(predicate_name)
 {
-    var toAdd = lookup.createUIObject(predicate_name);
+    var toAdd = lookup.create_object_with_id(predicate_name);
     toAdd.type = "rdf-predicate";
     toAdd.name = predicate_name;
 
@@ -379,7 +366,7 @@ lookup.isOmniBoxOpen = ko.computed(function()
 
 lookup.copy_json_and_add_key_and_value = function(obj, key, value)
 {
-    var new_obj = lookup.createUIObject();
+    var new_obj = lookup.create_object_with_id();
     const available_keys = Object.keys(obj);
     available_keys.forEach(k =>
     {
@@ -389,16 +376,14 @@ lookup.copy_json_and_add_key_and_value = function(obj, key, value)
             new_obj[k] = k_value;
         }
     });
-    new_obj["offsetX"](obj["offsetX"]());
-    new_obj["offsetY"](obj["offsetY"]());
     new_obj[key] = value;
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
 
-lookup.copy_json_and_add_replace_key = function(obj, old_key, new_key)
+lookup.copy_json_and_replace_key = function(obj, old_key, new_key)
 {
-    var new_obj = lookup.createUIObject();
+    var new_obj = lookup.create_object_with_id();
     const available_keys = Object.keys(obj);
     available_keys.forEach(k =>
     {
@@ -415,8 +400,6 @@ lookup.copy_json_and_add_replace_key = function(obj, old_key, new_key)
             }
         }
     });
-    new_obj["offsetX"](obj["offsetX"]());
-    new_obj["offsetY"](obj["offsetY"]());
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
@@ -424,7 +407,7 @@ lookup.copy_json_and_add_replace_key = function(obj, old_key, new_key)
 
 lookup.create_plain_json_copy = function(obj)
 {
-    var new_obj = lookup.createUIObject();
+    var new_obj = lookup.create_object_with_id();
     const available_keys = Object.keys(obj);
     available_keys.forEach(k =>
     {
@@ -434,8 +417,6 @@ lookup.create_plain_json_copy = function(obj)
             new_obj[k] = k_value;
         }
     });
-    new_obj["offsetX"](obj["offsetX"]());
-    new_obj["offsetY"](obj["offsetY"]());
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
@@ -462,7 +443,6 @@ lookup.add_text_value_to_json_entry = function()
     const key = obj["new-key-holder@lisperanto"];
     var created_copy = lookup.copy_json_and_add_key_and_value(obj, key, text_value);
     delete created_copy["new-key-holder@lisperanto"];
-    lookup.customObjects[created_copy["id"]] = created_copy;
     var operation = {
         operation: "set-json-key-text-value",
         key: key,
@@ -482,35 +462,16 @@ lookup.add_statement_key_to_json_entry_by_name = function(statement_key)
     return created_copy;
 };
 
-lookup.add_maybe_existing_RDF_value_in_statement = function()
-{
-    var obj = lookup.focusedObj();
-    const rdf_name = lookup.omniBoxTextInput().trim();
-    if ( typeof(obj.value_id()) === 'undefined')
-    {
-        var value_id = lookup.find_or_create_rdf_entry_with_name(rdf_name);
-        obj.value_id(value_id);
-        var operation = 
-        {
-            operation: "complete-rdf-statement-with-previously-missing-value",
-            statement_id: obj.id,
-            value_id: value_id,
-            value_name: rdf_name
-        };
-        lookup.operationsPush(operation);
-    }
-
-
-    lookup.hideOmniBox();
-
-};
-
 lookup.listOfOpenElements = ko.observableArray([]);
 lookup.mapOfOpenElements = {};
 lookup.closeElement = function(obj)
 {
-    delete lookup.mapOfOpenElements[obj.id];
-    lookup.listOfOpenElements.remove(obj);
+    if(obj.id in lookup.mapOfOpenElements)
+    {
+        const wrapper = lookup.mapOfOpenElements[obj.id];
+        lookup.listOfOpenElements.remove(wrapper);
+        delete lookup.mapOfOpenElements[obj.id];
+    }
 };
 
 lookup.openElement = function(obj)
@@ -520,28 +481,26 @@ lookup.openElement = function(obj)
     {
         obj["id"] = lookup.uuidv4();
     }
-    lookup.tryRestoreOffsetCoordinates(obj);
-    if(typeof(lookup.mapOfOpenElements[obj.id]) === "undefined")
+    var wrapper = lookup.create_wrapper_for_canvas(obj);
+    if( !(obj.id in lookup.mapOfOpenElements))
     {
-        var wrapper = {
-            wrapped_one : ko.observable(obj)
-        };
         lookup.listOfOpenElements.push(wrapper);
-        lookup.mapOfOpenElements[obj.id] = true;
+        lookup.mapOfOpenElements[obj.id] = wrapper;
     }
+
     if(typeof(lookup.desiredOffset) !== "undefined")
     {
-        obj.offsetX(lookup.desiredOffset.x);
-        obj.offsetY(lookup.desiredOffset.y);
+        wrapper.offsetX(lookup.desiredOffset.x);
+        wrapper.offsetY(lookup.desiredOffset.y);
         console.log("set coordinates to desired offset: " + JSON.stringify(lookup.desiredOffset));
         lookup.desiredOffset = undefined;
     }
     else
     {
         const newLocalX = -lookup.globalOffsetX();
-        obj.offsetX(newLocalX);
+        wrapper.offsetX(newLocalX);
         const newLocalY = -lookup.globalOffsetY();
-        obj.offsetY(newLocalY);
+        wrapper.offsetY(newLocalY);
         console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
     }
     console.log("finished openElement");
@@ -586,7 +545,7 @@ lookup.moveElementsOnCanvasIteration = function()
     {
         const value = wrapper.wrapped_one();
 
-        var box = lookup.getUIBoxOfElement(value, margin);
+        var box = lookup.getUIBoxOfElement(wrapper, margin);
         if(typeof(box) === "undefined")
         {
             continue;
@@ -599,7 +558,7 @@ lookup.moveElementsOnCanvasIteration = function()
             {
                 continue;
             }
-            var boxToAvoid = lookup.getUIBoxOfElement(innerValue, margin);
+            var boxToAvoid = lookup.getUIBoxOfElement(inner_wrapper, margin);
             if(typeof(boxToAvoid) === "undefined")
             {
                 continue;
@@ -614,8 +573,8 @@ lookup.moveElementsOnCanvasIteration = function()
                     var factor = anchorWidth / 10.0;
                     offset.x *= factor;
                     offset.y *= factor;
-                    value.offsetX(value.offsetX() + offset.x);
-                    value.offsetY(value.offsetY() + offset.y);
+                    wrapper.offsetX(wrapper.offsetX() + offset.x);
+                    wrapper.offsetY(wrapper.offsetY() + offset.y);
                 }
             }
         }
@@ -667,7 +626,7 @@ lookup.filloutGlobalOmniBox = function(omniBox, offset)
 
 lookup.getUIBoxOfElement = function(obj, margin = 0.0)
 {
-    var objId = obj.id
+    var objId = obj.wrapped_one().id
     var foundUI = document.getElementById(objId);//$("#" + objId)[0];
     if(foundUI == null || typeof(foundUI) === "undefined")
     {
@@ -683,9 +642,7 @@ lookup.getUIBoxOfElement = function(obj, margin = 0.0)
             height: foundUI.offsetHeight + 2 * margin
         };
         return toReturn;
-
     }
-    
 };
 
 lookup.isPointInsideTheBox = function(point, box, margin = 0)
@@ -874,9 +831,7 @@ lookup.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
     lookup.focusedObj(caller);
     lookup.activeOperation("add-statement-key-to-json-entry");
 
-    caller = caller.wrapped_one();
-
-    lookup.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.id, lookup.canvasOmniBox, caller);
+    lookup.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.wrapped_one().id, lookup.canvasOmniBox, caller);
 };
 
 lookup.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
@@ -885,9 +840,7 @@ lookup.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
     lookup.focusedObj(caller);
     lookup.activeOperation("add-text-value-to-json-entry");
 
-    caller = caller.wrapped_one();
-
-    lookup.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.id, lookup.canvasOmniBox, caller);
+    lookup.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.wrapped_one().id, lookup.canvasOmniBox, caller);
 };
 
 lookup.hideOmniBox = function()
@@ -1003,8 +956,6 @@ lookup.omniBoxInputKeyPress = function(data, event)
             {
                 "add-statement-key-to-json-entry": () => lookup.add_statement_key_to_json_entry(),
                 'add-text-value-to-json-entry': () => lookup.add_text_value_to_json_entry(),
-                "add_RDF_value_in_statement": () => lookup.add_maybe_existing_RDF_value_in_statement(),
-                "add-name-to-rdf-entry": () => lookup.add_name_to_rdf_entry(),
                 'replace-existing-json-key': () => lookup.replace_existing_json_key_from_omnibox_text()
             };
 
@@ -1092,7 +1043,7 @@ lookup.bodyKeyDown = function( data, event)
         console.log("Fixign composing bug in Firefox")
         return;
     }
-    console.log(event.code);
+    //console.log(event.code);
     if(event.code === "Escape")
     {
         lookup.hideOmniBox();
@@ -1167,7 +1118,7 @@ lookup.editorKeyDown = function(parent)
     {
         lookup.confirm_change_to_json(parent);
     }
-    console.log(event);
+    //console.log(event);
     return true;
 };
 
@@ -1175,20 +1126,20 @@ lookup.editor_on_input = function(key_name, parent)
 {
     // console.log(event);
     // console.log(key_name);
-    console.log(event.target.innerText);
+    //console.log(event.target.innerText);
     var inner_text = event.target.innerText;
-    console.log(inner_text);
+    //console.log(inner_text);
 
     const obj = parent.wrapped_one();
     if (inner_text === obj[key_name])
     {
-        obj["key_with_changes@lisperanto"]("");
-        obj["new_value@lisperanto"]("");
+        parent["key_with_changes@lisperanto"]("");
+        parent["new_value@lisperanto"]("");
     }
     else
     {
-        obj["key_with_changes@lisperanto"](key_name);
-        obj["new_value@lisperanto"](inner_text);
+        parent["key_with_changes@lisperanto"](key_name);
+        parent["new_value@lisperanto"](inner_text);
     }
 };
 
@@ -1290,7 +1241,6 @@ lookup.add_to_be_added_key_to_json = function (predicateName, obj) {
         toAdd_id: toAdd_id,
         object_id: obj.id
     };
-    lookup.customObjects[created_copy["id"]] = created_copy;
     lookup.operationsPush(operation);
     return created_copy;
 };
@@ -1299,18 +1249,18 @@ lookup.json_key_oncontextmenu = function(obj, parent)
 {
     event.stopPropagation();
     const foundObj = parent.wrapped_one();
-    console.log(obj);
-    console.log(parent);
+    //console.log(obj);
+    //console.log(parent);
     lookup.desiredOffset = {
-        x: foundObj.offsetX() + event.target.offsetLeft,
-        y: foundObj.offsetY() + event.target.offsetTop + event.target.offsetHeight
+        x: parent.offsetX() + event.target.offsetLeft,
+        y: parent.offsetY() + event.target.offsetTop + event.target.offsetHeight
     };
     
     lookup.focusedObj(parent);
     lookup.key_in_json_to_focus = obj;
     lookup.activeOperation("focused-on-existing-json-key");
     event.stopPropagation();
-    console.log(event);
+    //console.log(event);
     lookup.canvasOmniBox.visible(true);
     lookup.canvasOmniBox.left(lookup.desiredOffset.x);
     lookup.canvasOmniBox.top(lookup.desiredOffset.y);
@@ -1327,7 +1277,6 @@ lookup.delete_json_key = function()
         object_id: lookup.focusedObj().wrapped_one().id,
         remove_key: lookup.key_in_json_to_focus
     };
-    lookup.customObjects[copy["id"]] = copy;
     lookup.operationsPush(operation);
     lookup.hideOmniBox();
 };
@@ -1336,17 +1285,18 @@ lookup.confirm_change_to_json = function(parent)
 {
     event.stopPropagation();
     var obj = parent.wrapped_one();
-    const updated_key = obj["key_with_changes@lisperanto"]();
-    const new_value = obj["new_value@lisperanto"]();
+    const updated_key = parent["key_with_changes@lisperanto"]();
+    const new_value = parent["new_value@lisperanto"]();
     const copy = lookup.copy_json_and_add_key_and_value(obj, updated_key, new_value);
     parent.wrapped_one(copy);
-    lookup.customObjects[copy["id"]] = copy;
     var operation = {
         operation: "change_value_of_json_key",
         object_id: copy.id,
         updated_key: lookup.key_in_json_to_focus
     };
     lookup.operationsPush(operation);
+    parent["key_with_changes@lisperanto"]("");
+    parent["new_value@lisperanto"]("")
 };
 
 lookup.activate_replace_json_key = function()
@@ -1357,7 +1307,7 @@ lookup.activate_replace_json_key = function()
 
 lookup.replace_focused_json_key_with_new = function(new_key) {
     const old_key = lookup.key_in_json_to_focus;
-    var copy = lookup.copy_json_and_add_replace_key(lookup.focusedObj().wrapped_one(), old_key, new_key);
+    var copy = lookup.copy_json_and_replace_key(lookup.focusedObj().wrapped_one(), old_key, new_key);
     lookup.focusedObj().wrapped_one(copy);
     var operation = {
         operation: "replace_json_key",
@@ -1365,7 +1315,6 @@ lookup.replace_focused_json_key_with_new = function(new_key) {
         new_key: new_key,
         old_key: old_key
     };
-    lookup.customObjects[copy["id"]] = copy;
     lookup.operationsPush(operation);
 };
 
@@ -1394,10 +1343,7 @@ lookup.bodyOnClick = function(e)
         y: event.pageY
     };
 
-    console.log(lookup.total_movement_while_body_drag())
-
     const drag_threshold = 3 * lookup.anchorWidth();
-    console.log(drag_threshold);
     if ( lookup.total_movement_while_body_drag() > drag_threshold )
     {
         // to prevent click handler after drag, but allow it if drag was small

@@ -164,11 +164,11 @@
                         },
                     css:
                     {
-                        'my-function-name': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                        'my-function-name': $parents[1]['key_with_changes@lisperanto']() == '' || $parents[1]['key_with_changes@lisperanto']() == $data
                     },
                     attr:
                     {
-                        'contenteditable': $parent['key_with_changes@lisperanto']() == '' || $parent['key_with_changes@lisperanto']() == $data
+                        'contenteditable': $parents[1]['key_with_changes@lisperanto']() == '' || $parents[1]['key_with_changes@lisperanto']() == $data
                     }
                     "></div>
             </div>
@@ -176,48 +176,9 @@
     </script>
 
     <script type="text/html" id="json-entry-template">
-        <div class="lisperanto-function-definition lisperanto-ui-element lisperanto-rdf"
-            data-bind="
-                attr: 
-                {
-                    id: $data.id
-                }">
+        <div class="lisperanto-function-definition lisperanto-rdf">
             <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data) }">
             </div>
-            <!-- ko if: $data["key_with_changes@lisperanto"]() == ""-->
-                <!-- ko ifnot: ("new-key-holder@lisperanto" in $data) -->
-                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                    data-bind=" 
-                        click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($parents[1]), 
-                        attr: {id: 'add-statement-to-json-entry--' + $data.id}">
-                        + statement
-                </div>
-                <!-- /ko -->
-                <!-- ko if: ("new-key-holder@lisperanto" in $data) -->
-                <div>
-                    <span 
-                        class="webpad-color-orange"
-                        data-bind="
-                            text: $data['new-key-holder@lisperanto']"></span>
-                    <span class="webpad-color-orange">:</span>
-                    <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind=" 
-                            click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($parents[1]), 
-                            attr: {id: 'add-text-value-to-json-entry--' + $data.id}">
-                            + text value
-                    </div>
-                </div>
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
-                && $data["new_value@lisperanto"]() 
-                    != $data[$data["key_with_changes@lisperanto"]()] -->
-            <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                data-bind=" 
-                    click: () => $root.confirm_change_to_json($parents[1])">
-                    confirm change
-            </div>
-            <!-- /ko -->
         </div>
     </script>
 
@@ -229,13 +190,49 @@
             data-bind="
                 style: 
                 { 
-                    left: wrapped_one().inWorldOffsetX(), 
-                    top: wrapped_one().inWorldOffsetY()
+                    left: inWorldOffsetX(), 
+                    top: inWorldOffsetY()
+                },
+                attr: 
+                {
+                    id: $data.wrapped_one().id
                 }">
-                <div>
-                    <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
+                <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
+                <!-- /ko -->
+                <!-- ko if: $data["key_with_changes@lisperanto"]() == ""-->
+                    <!-- ko ifnot: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+                    <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind=" 
+                            click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($data), 
+                            attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
+                            + statement
+                    </div>
                     <!-- /ko -->
+                    <!-- ko if: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+                    <div>
+                        <span 
+                            class="webpad-color-orange"
+                            data-bind="
+                                text: $data.wrapped_one()['new-key-holder@lisperanto']"></span>
+                        <span class="webpad-color-orange">:</span>
+                        <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                            data-bind=" 
+                                click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($data), 
+                                attr: {id: 'add-text-value-to-json-entry--' + $data.wrapped_one().id}">
+                                + text value
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                <!-- /ko -->
+                <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
+                    && $data["new_value@lisperanto"]() 
+                        != $data.wrapped_one()[$data["key_with_changes@lisperanto"]()] -->
+                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: () => $root.confirm_change_to_json($data)">
+                        confirm change
                 </div>
+                <!-- /ko -->
         </div>
     </script>
 
@@ -329,6 +326,9 @@
                         </div>
                         <div class="webpad-color-blue">
                             Lisperanto is a knowledge management system.
+                        </div>
+                        <div class="webpad-color-green">
+                            Lisperanto is your canvas for ideas.
                         </div>
                         <div class="webpad-color-orange">
                             Lisperanto is a mono-repository.
