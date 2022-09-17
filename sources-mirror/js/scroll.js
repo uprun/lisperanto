@@ -5,10 +5,10 @@ if(typeof(lookup) === 'undefined')
 lookup.globalOffsetX = ko.observable(0.0);
 lookup.globalOffsetY = ko.observable(0.0);
 lookup.globalOffsetZ = ko.observable(1.0);
-lookup.globalMaxX = ko.observable(2048);
-lookup.globalMaxY = ko.observable(2048);
-lookup.globalMinX = ko.observable(-2048);
-lookup.globalMinY = ko.observable(-2048);
+lookup.globalMaxX = ko.observable(screen.width);
+lookup.globalMaxY = ko.observable(screen.height);
+lookup.globalMinX = ko.observable(-screen.width * 2);
+lookup.globalMinY = ko.observable(-screen.height * 2);
 
 lookup.bodyOnWheel = function() {
     event.preventDefault();

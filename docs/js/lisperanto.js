@@ -1317,22 +1317,14 @@ lookup.bodyOnClick = function(e)
         lookup.total_movement_while_body_drag(0);
         return;
     }
-    if(lookup.canvasOmniBox.visible())
+
+    if(lookup.menuIsOpen() || lookup.optionsIsOpen())
     {
-        lookup.hideOmniBox();
+        lookup.hideMenu();
+        lookup.hideOptions();
     }
-    else
-    {
-        if(lookup.menuIsOpen() || lookup.optionsIsOpen())
-        {
-            lookup.hideMenu();
-            lookup.hideOptions();
-        }
-        else
-        {
-            lookup.showOmniBox();
-        }
-    }
+
+    lookup.showOmniBox();
 };
 
 lookup.stopPropagation = function()
