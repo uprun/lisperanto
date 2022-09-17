@@ -19,6 +19,10 @@ https://discord.gg/W5HFSKVXgc
 
 https://twitter.com/o_kryvonos
 
+# First time load image
+
+![alt text](https://github.com/uprun/lisperanto/blob/main/docs/2022-09-17--23.57.20.png?raw=true)
+
 # inspiration
 
 inspired by:
