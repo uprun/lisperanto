@@ -5,10 +5,10 @@ if(typeof(lookup) === 'undefined')
 lookup.globalOffsetX = ko.observable(0.0);
 lookup.globalOffsetY = ko.observable(0.0);
 lookup.globalOffsetZ = ko.observable(1.0);
-lookup.globalMaxX = ko.observable(2048);
-lookup.globalMaxY = ko.observable(2048);
-lookup.globalMinX = ko.observable(-2048);
-lookup.globalMinY = ko.observable(-2048);
+lookup.globalMaxX = ko.observable(screen.width);
+lookup.globalMaxY = ko.observable(screen.height);
+lookup.globalMinX = ko.observable(-screen.width * 2);
+lookup.globalMinY = ko.observable(-screen.height * 2);
 
 lookup.bodyOnWheel = function() {
     event.preventDefault();
@@ -29,14 +29,19 @@ lookup.bodyOnPointerMove = function()
 lookup.applyMovement = function (deltaY, deltaX) 
 {
     var newOffsetY = lookup.globalOffsetY() - deltaY * lookup.globalOffsetZ();
-    newOffsetY = Math.min(newOffsetY, lookup.globalMaxY());
-    newOffsetY = Math.max(newOffsetY, lookup.globalMinY());
+    const max_Y = lookup.globalMaxY();
+    newOffsetY = Math.min(newOffsetY, max_Y);
+    const min_Y = lookup.globalMinY() + document.body.offsetHeight;
+    newOffsetY = Math.max(newOffsetY, min_Y);
     lookup.globalOffsetY(newOffsetY);
 
     var newOffsetX = lookup.globalOffsetX() - deltaX * lookup.globalOffsetZ();
-    newOffsetX = Math.min(newOffsetX, lookup.globalMaxX());
-    newOffsetX = Math.max(newOffsetX, lookup.globalMinX());
+    const max_X = lookup.globalMaxX();
+    newOffsetX = Math.min(newOffsetX, max_X);
+    const min_X = lookup.globalMinX() + document.body.offsetWidth;
+    newOffsetX = Math.max(newOffsetX, min_X);
     lookup.globalOffsetX(newOffsetX);
+    console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
 };
 
 lookup.previosTouch = undefined;

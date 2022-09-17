@@ -22,6 +22,7 @@
     onmouseup="typeof(lookup) !== 'undefined' && lookup.body_onmouseup()"
     onmousemove="typeof(lookup) !== 'undefined' && lookup.body_onmousemove()"
     onmouseout="typeof(lookup) !== 'undefined' && lookup.body_onmouseout()"
+    onresize="typeof(lookup) !== 'undefined' && lookup.applyMovement(0,0)"
     data-bind=
         "click: $root.bodyOnClick,
         event: 
@@ -29,14 +30,19 @@
                 keydown: $root.bodyKeyDown,
                 keyup: $root.bodyKeyUp,
             },
+        css:
+            {
+                'background-grabbing': $root.body_is_dragged(),
+                'background-hover': !$root.body_is_dragged()
+            },
         style: 
             { 
                 background: $root.backgroundColor(),
-                cursor:  $root.body_is_dragged() ? 'grabbing' : 'grab'
             }">
 
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
+            id="contextual-omni-box"
             onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
             onmousedown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
             onmouseup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
@@ -266,8 +272,11 @@
             </div>
             <div class="w3-col w3-container s12 m12 l12">
                 <div class="text-left" style="padding-left: 0.5rem;">
+                    <div class="webpad-color-coral" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is canvas for ideas.
+                    </div>
                     <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
-                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine.
+                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine &#127482;&#127462;
                     </div>
                     <div 
                         class="webpad-color-purple" 
@@ -278,6 +287,10 @@
                             rel="noopener noreferrer"
                             onclick="lookup.stopPropagation(event)"
                             >oleksandr.kryvonos.ods.ua@gmail.com</a>
+                    </div>
+                    <div class="webpad-color-green"
+                        style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                        Lisperanto was inspired by Smalltalk and Lisp.
                     </div>
                     <div
                         class="lisperanto-patreon">
@@ -298,46 +311,12 @@
                         </span>
                     </div>
                     <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
-                        <div class="webpad-color-light-pink" style="margin-top: 0.5rem;">
-                            Lisperanto is distributed under MIT license.
-                        </div>
-                        <div class="webpad-color-blue">
-                            Lisperanto is an open-source project: <a 
-                                href="https://github.com/uprun/lisperanto" 
+                        <div class="webpad-color-light-pink" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                            <a href="https://github.com/uprun/lisperanto" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 onclick="lookup.stopPropagation(event)"
                                 >https://github.com/uprun/lisperanto</a>
-                        </div>
-                    </div>
-
-                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
-                        <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
-                                General information:
-                        </span>
-                    </div>
-
-                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
-                        <div class="webpad-color-coral">
-                            Lisperanto is a JavaScript programming environment.
-                        </div>
-                        <div class="webpad-color-yellow">
-                            Lisperanto is a version control system.
-                        </div>
-                        <div class="webpad-color-blue">
-                            Lisperanto is a knowledge management system.
-                        </div>
-                        <div class="webpad-color-green">
-                            Lisperanto is your canvas for ideas.
-                        </div>
-                        <div class="webpad-color-orange">
-                            Lisperanto is a mono-repository.
-                        </div>
-                        <div class="webpad-color-green">
-                            Lisperanto was inspired by Lisp.
-                        </div>
-                        <div class="webpad-color-coral">
-                            Lisperanto was inspired by Smalltalk.
                         </div>
                     </div>
                 </div>
@@ -393,10 +372,6 @@
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
                 <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    data-bind="click: $root.createFunction">
-                    create function
-                </div>
-                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
                     onclick="typeof(lookup) !== 'undefined' && lookup.removeEverything()">
                     Reset
                 </div>
@@ -411,9 +386,6 @@
                 </span>
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 2rem;">
-                <div class="webpad-color-orange">
-                    Pan with [shift + mouse-move] or for MacBooks - use scroll gesture.
-                </div>
                 <div class="webpad-color-coral">
                     Use [Tab] key to autocomplete.
                 </div>
@@ -421,6 +393,19 @@
         </div>
     </div>
     <div class="lisperanto-global-container" >
+        <div class="dotted-background" 
+            style="width: 240rem; height: 240rem; position: absolute; left:0; top: 0;"
+            data-bind="
+                style:
+                {
+                    width: lookup.globalMaxX() - lookup.globalMinX(),
+                    height: lookup.globalMaxY() - lookup.globalMinY(),
+                    left: lookup.globalOffsetX(),
+                    top: lookup.globalOffsetY(),
+                    transform: () => 'translate(' + (-lookup.globalMaxX()) + 'px, ' + (-lookup.globalMaxY()) + 'px)'
+                }">
+
+        </div>
 
         <!-- ko foreach: $root.listOfOpenElements -->
             <!-- ko template: { name: 'ui-element-template', data: $data } -->

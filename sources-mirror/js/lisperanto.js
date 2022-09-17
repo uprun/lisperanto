@@ -150,40 +150,6 @@ lookup.restore_RDF_predicates_array = function()
     }
 };
 
-
-//this is my personal list of people who inspire me
-lookup.defaultNamesForFunctions =
-[
-    "Edsger Dijkstra",
-    "Alan Mathison Turing",
-    "Alan Kay (Smalltalk)",
-    "Dan Ingalls (Smalltalk)", 
-    "Adele Goldberg (Smalltalk)", 
-    "Ted Kaehler (Smalltalk)", 
-    "Diana Merry (Smalltalk)", 
-    "Scott Wallace (Smalltalk)", 
-    "Peter Deutsch (Smalltalk)",
-    "Xerox PARC (Smalltalk)",
-    "John McCarthy (Lisp)",
-    "Steve Russell (Lisp)", 
-    "Timothy P. Hart (Lisp)",
-    "Mike Levin (Lisp)",
-    "Joe Armstrong (Erlang)",
-    "Robert Virding (Erlang)",
-    "Mike Williams (Erlang)",
-    "Bret Victor (The Future of Programming talk)",
-    "Carl Hewitt (Actor model, Planner)",
-    "Alain Colmerauer (Prolog)", 
-    "Robert Kowalski (Prolog)",
-    "Niklaus Wirth (Pascal)",
-    "Leonardo da Vinci",
-    "Donato di Niccolo di Betto Bardi",
-    "Raffaello Sanzio da Urbino",
-    "Michelangelo di Lodovico Buonarroti Simoni",
-    "Premature optimization is the root of all evil - Sir Tony Hoare",
-    "Do not think without examples - Oleksandr Kryvonos"
-];
-
 lookup.getRandomInt = function(max) {
     return Math.floor(Math.random() * max);
   };
@@ -1019,6 +985,7 @@ lookup.body_onmousemove = function()
         const deltaY = event.movementY;
         lookup.globalOffsetX(lookup.globalOffsetX() + deltaX);
         lookup.globalOffsetY(lookup.globalOffsetY() + deltaY);
+        lookup.applyMovement(0,0);
         lookup.total_movement_while_body_drag(lookup.total_movement_while_body_drag() + Math.abs(deltaX) + Math.abs(deltaY));
     }
 };
@@ -1350,22 +1317,14 @@ lookup.bodyOnClick = function(e)
         lookup.total_movement_while_body_drag(0);
         return;
     }
-    if(lookup.canvasOmniBox.visible())
+
+    if(lookup.menuIsOpen() || lookup.optionsIsOpen())
     {
-        lookup.hideOmniBox();
+        lookup.hideMenu();
+        lookup.hideOptions();
     }
-    else
-    {
-        if(lookup.menuIsOpen() || lookup.optionsIsOpen())
-        {
-            lookup.hideMenu();
-            lookup.hideOptions();
-        }
-        else
-        {
-            lookup.showOmniBox();
-        }
-    }
+
+    lookup.showOmniBox();
 };
 
 lookup.stopPropagation = function()
@@ -1429,7 +1388,15 @@ $(document).ready(function()
     
     ko.applyBindings(viewModel);
 
-    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: 0, y: 0});
+    const one_rem_in_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize)
+
+    const expected_witdh_of_omnibox = 20 * one_rem_in_pixels;
+    const delta_x = Math.max(0, (document.body.offsetWidth / 2 - expected_witdh_of_omnibox/2));
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: delta_x , y: document.body.offsetHeight / 3});
+
+    const width_of_omnibox = document.getElementById("contextual-omni-box").offsetWidth;
+    const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
+    lookup.filloutGlobalOmniBox(lookup.canvasOmniBox, {x: delta_x_2 , y: document.body.offsetHeight / 3});
 
     //lookup.print_all_functions_from_lookup();
 });
