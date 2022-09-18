@@ -41,7 +41,7 @@ lisperanto.applyMovement = function (deltaY, deltaX)
     const min_X = lisperanto.globalMinX() + document.body.offsetWidth;
     newOffsetX = Math.max(newOffsetX, min_X);
     lisperanto.globalOffsetX(newOffsetX);
-    console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
+    //console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
 };
 
 lisperanto.previosTouch = undefined;

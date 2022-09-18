@@ -19,7 +19,9 @@ lisperanto.filteredSearch = ko.computed(
         const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
             {
                 const obj = lisperanto.customObjects[key];
-                return obj.type !== "rdf-statement";
+                const id = obj["id"];
+                const has_new_version =  id in lisperanto.has_new_version_map;
+                return has_new_version == false;
             });
 
         const mapped = ko.utils.arrayMap(non_statements, function(key) {
@@ -40,10 +42,15 @@ lisperanto.filteredSearch = ko.computed(
                 name = "no-name " + obj.id;
             }
             
-            return { 
-                id: key, 
-                text: name
+            var toReturn = {
+                id: key,
+                text: name,
+                full_text: JSON.stringify(obj).toLowerCase()
             };
+
+            toReturn["search_index_text"] = toReturn.text.toLowerCase().indexOf(searchQuery);
+            toReturn["search_index_full_text"] = toReturn.full_text.indexOf(searchQuery);
+            return toReturn;
             
         });
 
@@ -55,15 +62,17 @@ lisperanto.filteredSearch = ko.computed(
         {
             filtered = ko.utils.arrayFilter(mapped, function(item)
             {
-                return item.text.toLowerCase().indexOf(searchQuery) >= 0;
+                return item["search_index_text"] >= 0 || item["search_index_full_text"]  >= 0;
             });
         }
 
-        filtered = filtered.map(element => { 
-
-            const index = element.text.toLowerCase().indexOf(searchQuery);
-            const new_text = element.text.substring(index - 50, index + 50);
-            element.text = new_text;
+        filtered = filtered.map(element => {
+            const index = element["search_index_full_text"];
+            if (searchQuery !== "" && element["search_index_text"] < 0 &&  index >= 0)
+            {
+                const new_text = element.full_text.substring(index - 5, index + searchQuery.length + 5);
+                element.text = element.text + "  ..." + new_text;
+            }
             return element;
         });
 
@@ -75,12 +84,19 @@ lisperanto.filteredSearch = ko.computed(
 
 lisperanto.operations = [];
 
+lisperanto.has_new_version_map = {};
+
 lisperanto.operationsPush = function(some)
 {
     lisperanto.operations.push(some);
-    var toSerialize = {};
     const key = some["id"];
     const value = lisperanto.customObjects[key];
+
+    if ("previous-version@lisperanto" in value)
+    {
+        const previous_version = value["previous-version@lisperanto"];
+        lisperanto.has_new_version_map[previous_version] = true;
+    }
 
     var toAdd = {};
     for (const [keyInner, valueInner] of Object.entries(value)) {
@@ -105,6 +121,11 @@ lisperanto.loadFromStorage = function()
         try 
         {
             var parsed = JSON.parse(valueInner);
+            if ("previous-version@lisperanto" in parsed)
+            {
+                const previous_version = parsed["previous-version@lisperanto"];
+                lisperanto.has_new_version_map[previous_version] = true;
+            }
             lisperanto.customObjects[keyInner] = parsed;
             lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
         } catch(e) 
@@ -1311,7 +1332,7 @@ lisperanto.print_all_functions_from_lookup = function()
             created_rdf_object["programming-language@lisperanto"] = "javascript";
             created_rdf_object["javascript-function-definition@lisperanto"] = entry_in_lisperanto.toString();
         }
-        created_rdf_object["project@lisperanto"] = "lisperanto";
+        created_rdf_object["module@lisperanto"] = "lisperanto";
     }
 };
 
