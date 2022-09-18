@@ -29,7 +29,13 @@ lisperanto.filteredSearch = ko.computed(
             {
                 name = obj["name@lisperanto"];
             }
-            else
+
+            if( "name" in obj )
+            {
+                name = obj["name"]
+            }
+
+            if(name === "")
             {
                 name = "no-name " + obj.id;
             }
