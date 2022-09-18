@@ -1,24 +1,24 @@
-lookup.menuIsOpen = ko.observable(false);
-lookup.menuWasAlreadyOpen=ko.observable(false);
-lookup.toggleMenu = function() 
+lisperanto.menuIsOpen = ko.observable(false);
+lisperanto.menuWasAlreadyOpen=ko.observable(false);
+lisperanto.toggleMenu = function() 
 {
     event.stopPropagation();
-    lookup.menuIsOpen(!lookup.menuIsOpen());
-    lookup.menuWasAlreadyOpen(true);
+    lisperanto.menuIsOpen(!lisperanto.menuIsOpen());
+    lisperanto.menuWasAlreadyOpen(true);
 };
 
-lookup.hideMenu = function()
+lisperanto.hideMenu = function()
 {
-    if(lookup.menuIsOpen())
+    if(lisperanto.menuIsOpen())
     {
-        lookup.toggleMenu();
+        lisperanto.toggleMenu();
     }
 };
 
-lookup.showMenu = function()
+lisperanto.showMenu = function()
 {
-    if(!lookup.menuIsOpen())
+    if(!lisperanto.menuIsOpen())
     {
-        lookup.toggleMenu();
+        lisperanto.toggleMenu();
     }
 };

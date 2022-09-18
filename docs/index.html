@@ -12,17 +12,17 @@
 <body 
     class="lisperanto-main-body" 
     style="background-color: #000000; " 
-    onwheel="typeof(lookup) !== 'undefined' && lookup.bodyOnWheel()"
-    onpointermove="typeof(lookup) !== 'undefined' && lookup.bodyOnPointerMove()"
-    ontouchmove="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchMove()"
-    ontouchend="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
-    ontouchcancel="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
-    ontouchleave="typeof(lookup) !== 'undefined' && lookup.bodyOnTouchEnd()"
-    onmousedown="typeof(lookup) !== 'undefined' && lookup.body_onmousedown()"
-    onmouseup="typeof(lookup) !== 'undefined' && lookup.body_onmouseup()"
-    onmousemove="typeof(lookup) !== 'undefined' && lookup.body_onmousemove()"
-    onmouseout="typeof(lookup) !== 'undefined' && lookup.body_onmouseout()"
-    onresize="typeof(lookup) !== 'undefined' && lookup.applyMovement(0,0)"
+    onwheel="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnWheel()"
+    onpointermove="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnPointerMove()"
+    ontouchmove="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchMove()"
+    ontouchend="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    ontouchcancel="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    ontouchleave="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmousedown()"
+    onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmouseup()"
+    onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmousemove()"
+    onmouseout="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmouseout()"
+    onresize="typeof(lisperanto) !== 'undefined' && lisperanto.applyMovement(0,0)"
     data-bind=
         "click: $root.bodyOnClick,
         event: 
@@ -43,12 +43,12 @@
     <script type="text/html" id="contextual-omni-box-template">
         <div class="contextual-omni-box" 
             id="contextual-omni-box"
-            onwheel="typeof(lookup) !== 'undefined' && lookup.omniBoxOnWheel()"
-            onmousedown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onmouseup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onmousemove="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onkeyup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onkeydown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onwheel="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxOnWheel()"
+            onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onkeyup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onkeydown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
             data-bind="
                 visible: visible,
                 click: $root.omniBoxClick,
@@ -154,19 +154,19 @@
                         click: $root.stopPropagation,
                         event:
                         {
-                            contextmenu: () => lookup.json_key_oncontextmenu($data, $parents[1])
+                            contextmenu: () => lisperanto.json_key_oncontextmenu($data, $parents[1])
                         }"></span><span class="webpad-color-orange">:</span>
             </div>
             <div style="display: inline;">
                 <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block; cursor: auto;" class=""
-                onclick="lookup.stopPropagation()"
-                onkeyup="lookup.editorKeyUp(event)"
+                onclick="lisperanto.stopPropagation()"
+                onkeyup="lisperanto.editorKeyUp(event)"
                 data-bind="
                     text: $parent[$data],
                     event: 
                         {
                             input: () => $root.editor_on_input($data, $parents[1]),
-                            keydown: () => lookup.editorKeyDown($parents[1])
+                            keydown: () => lisperanto.editorKeyDown($parents[1])
                         },
                     css:
                     {
@@ -190,9 +190,9 @@
 
     <script type="text/html" id="ui-element-template">
         <div class="lisperanto-ui-element"
-            onmousedown="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onmouseup="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
-            onmousemove="typeof(lookup) !== 'undefined' && lookup.stopPropagation()"
+            onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
             data-bind="
                 style: 
                 { 
@@ -285,7 +285,7 @@
                             href="mailto:oleksandr.kryvonos.ods.ua@gmail.com" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.stopPropagation(event)"
+                            onclick="lisperanto.stopPropagation(event)"
                             >oleksandr.kryvonos.ods.ua@gmail.com</a>
                     </div>
                     <div class="webpad-color-green"
@@ -298,7 +298,7 @@
                             href="https://www.patreon.com/o_kryvonos" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            onclick="lookup.stopPropagation(event)"
+                            onclick="lisperanto.stopPropagation(event)"
                             >
                             Support on Patreon
                         </a>
@@ -315,7 +315,7 @@
                             <a href="https://github.com/uprun/lisperanto" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                onclick="lookup.stopPropagation(event)"
+                                onclick="lisperanto.stopPropagation(event)"
                                 >https://github.com/uprun/lisperanto</a>
                         </div>
                     </div>
@@ -372,11 +372,11 @@
             </div>
             <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
                 <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    onclick="typeof(lookup) !== 'undefined' && lookup.removeEverything()">
+                    onclick="typeof(lisperanto) !== 'undefined' && lisperanto.removeEverything()">
                     Reset
                 </div>
                 <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
-                    onclick="typeof(lookup) !== 'undefined' && lookup.toggleFullScreen()">
+                    onclick="typeof(lisperanto) !== 'undefined' && lisperanto.toggleFullScreen()">
                     f - FullScreen
                 </div>
             </div>
@@ -398,11 +398,11 @@
             data-bind="
                 style:
                 {
-                    width: lookup.globalMaxX() - lookup.globalMinX(),
-                    height: lookup.globalMaxY() - lookup.globalMinY(),
-                    left: lookup.globalOffsetX(),
-                    top: lookup.globalOffsetY(),
-                    transform: () => 'translate(' + (-lookup.globalMaxX()) + 'px, ' + (-lookup.globalMaxY()) + 'px)'
+                    width: lisperanto.globalMaxX() - lisperanto.globalMinX(),
+                    height: lisperanto.globalMaxY() - lisperanto.globalMinY(),
+                    left: lisperanto.globalOffsetX(),
+                    top: lisperanto.globalOffsetY(),
+                    transform: () => 'translate(' + (-lisperanto.globalMaxX()) + 'px, ' + (-lisperanto.globalMaxY()) + 'px)'
                 }">
 
         </div>

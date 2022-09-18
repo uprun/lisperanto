@@ -1,8 +1,8 @@
-if(typeof(lookup) === 'undefined')
+if(typeof(lisperanto) === 'undefined')
 {
-    lookup = {};
+    lisperanto = {};
 }
-lookup.toggleFullScreen = function() 
+lisperanto.toggleFullScreen = function() 
 {
     var element = document.documentElement;
     const rfs = element.requestFullscreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;

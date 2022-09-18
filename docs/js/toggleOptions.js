@@ -1,24 +1,24 @@
-lookup.optionsIsOpen = ko.observable(false);
-lookup.optionsWasAlreadyOpen=ko.observable(false);
-lookup.toggleOptions = function() 
+lisperanto.optionsIsOpen = ko.observable(false);
+lisperanto.optionsWasAlreadyOpen=ko.observable(false);
+lisperanto.toggleOptions = function() 
 {
     event.stopPropagation();
-    lookup.optionsIsOpen(!lookup.optionsIsOpen());
-    lookup.optionsWasAlreadyOpen(true);
+    lisperanto.optionsIsOpen(!lisperanto.optionsIsOpen());
+    lisperanto.optionsWasAlreadyOpen(true);
 };
 
-lookup.hideOptions = function()
+lisperanto.hideOptions = function()
 {
-    if(lookup.optionsIsOpen())
+    if(lisperanto.optionsIsOpen())
     {
-        lookup.toggleOptions();
+        lisperanto.toggleOptions();
     }
 };
 
-lookup.showMenu = function()
+lisperanto.showMenu = function()
 {
-    if(!lookup.optionsIsOpen())
+    if(!lisperanto.optionsIsOpen())
     {
-        lookup.toggleOptions();
+        lisperanto.toggleOptions();
     }
 };

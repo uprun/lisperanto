@@ -1,22 +1,22 @@
-lookup.backgroundColor = ko.observable("#000000");
-lookup.changeBackground = function() 
+lisperanto.backgroundColor = ko.observable("#000000");
+lisperanto.changeBackground = function() 
 {
     var background = "#333333";
-    lookup.backgroundColor(background);
-    lookup.localStorage["backgroundColor"] = background;
+    lisperanto.backgroundColor(background);
+    lisperanto.localStorage["backgroundColor"] = background;
     event.stopPropagation();
 };
 
-lookup.changeBackgroundToDefault = function() 
+lisperanto.changeBackgroundToDefault = function() 
 {
     var background = "#000000";
-    lookup.backgroundColor(background);
-    lookup.localStorage["backgroundColor"] = background;
+    lisperanto.backgroundColor(background);
+    lisperanto.localStorage["backgroundColor"] = background;
     event.stopPropagation();
 };
 
-lookup.backgroundApplySaved = function() 
+lisperanto.backgroundApplySaved = function() 
 {
-    var background = lookup.localStorage["backgroundColor"] || "#000000";
-    lookup.backgroundColor(background);
+    var background = lisperanto.localStorage["backgroundColor"] || "#000000";
+    lisperanto.backgroundColor(background);
 };
