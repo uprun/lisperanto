@@ -79,38 +79,39 @@ lisperanto.operationsPush = function(some)
 {
     lisperanto.operations.push(some);
     var toSerialize = {};
-    for (const [key, value] of Object.entries(lisperanto.customObjects)) {
-        var toAdd = {};
-        for (const [keyInner, valueInner] of Object.entries(value)) {
-            if(typeof(valueInner) === 'function')
-            {
-                toAdd[keyInner] = valueInner();
-            }else
-            {
-                toAdd[keyInner] = valueInner;
-            }
+    const key = some["id"];
+    const value = lisperanto.customObjects[key];
+
+    var toAdd = {};
+    for (const [keyInner, valueInner] of Object.entries(value)) {
+        if(typeof(valueInner) === 'function')
+        {
+            toAdd[keyInner] = valueInner();
+        }else
+        {
+            toAdd[keyInner] = valueInner;
         }
-        toSerialize[key] = toAdd;
     }
-    var data = JSON.stringify(toSerialize);
-    localStorage.setItem('customObjects', data);
+    var data = JSON.stringify(toAdd);
+    localStorage.setItem(key, data);
     lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
 };
 
 lisperanto.loadFromStorage = function()
 {
     lisperanto.localStorage = localStorage;
-    var stored = localStorage.getItem('customObjects');
-    if(typeof(stored) !== 'undefined' && stored != null)
+    for (const [keyInner, valueInner] of Object.entries(localStorage)) 
     {
-        var parsed = JSON.parse(stored);
-        for ([key, value] of Object.entries(parsed)) 
+        try 
         {
-            lisperanto.customObjects[key] = value;
+            var parsed = JSON.parse(valueInner);
+            lisperanto.customObjects[keyInner] = parsed;
             lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
+        } catch(e) 
+        {
+            console.log("Failed to parse: ", {key: keyInner, value: valueInner});
         }
     }
-    
 };
 
 lisperanto.open_json_entry_from_search_list = function(obj)
@@ -416,6 +417,7 @@ lisperanto.add_text_value_to_json_entry = function()
     var created_copy = lisperanto.copy_json_and_add_key_and_value(obj, key, text_value);
     delete created_copy["new-key-holder@lisperanto"];
     var operation = {
+        id: created_copy["id"],
         operation: "set-json-key-text-value",
         key: key,
         text_value: text_value
@@ -1142,7 +1144,7 @@ lisperanto.add_to_be_added_key_to_json = function (predicateName, obj) {
     var operation = {
         operation: "hold-json-key",
         toAdd_id: toAdd_id,
-        object_id: obj.id
+        id: created_copy["id"]
     };
     lisperanto.operationsPush(operation);
     return created_copy;
@@ -1177,7 +1179,7 @@ lisperanto.delete_json_key = function()
     lisperanto.focusedObj().wrapped_one(copy);
     var operation = {
         operation: "delete_json_key",
-        object_id: lisperanto.focusedObj().wrapped_one().id,
+        id: copy["id"],
         remove_key: lisperanto.key_in_json_to_focus
     };
     lisperanto.operationsPush(operation);
@@ -1194,7 +1196,7 @@ lisperanto.confirm_change_to_json = function(parent)
     parent.wrapped_one(copy);
     var operation = {
         operation: "change_value_of_json_key",
-        object_id: copy.id,
+        id: copy["id"],
         updated_key: lisperanto.key_in_json_to_focus
     };
     lisperanto.operationsPush(operation);
@@ -1214,7 +1216,7 @@ lisperanto.replace_focused_json_key_with_new = function(new_key) {
     lisperanto.focusedObj().wrapped_one(copy);
     var operation = {
         operation: "replace_json_key",
-        new_version_id: lisperanto.focusedObj().wrapped_one().id,
+        id: copy["id"],
         new_key: new_key,
         old_key: old_key
     };
