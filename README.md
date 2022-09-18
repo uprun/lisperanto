@@ -5,6 +5,8 @@ Lisperanto is a spatial canvas for knowledge
 
 Lisperanto is a spatial canvas for ideas
 
+designed &#127912; and made &#127959;&#65039; in Ukraine &#127482;&#127462;
+
 you can check live version https://uprun.github.io/lisperanto/
 
 edit your code as json with built-in version control on a spatial canvas in a browser
