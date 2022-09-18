@@ -1,5 +1,9 @@
 # lisperanto
-Lisperanto - programming on spatial canvas
+Lisperanto is a spatial canvas for programming
+
+Lisperanto is a spatial canvas for knowledge
+
+Lisperanto is a spatial canvas for ideas
 
 you can check live version https://uprun.github.io/lisperanto/
 
