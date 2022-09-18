@@ -1,52 +1,52 @@
-if(typeof(lookup) === 'undefined')
+if(typeof(lisperanto) === 'undefined')
 {
-    lookup = {};
+    lisperanto = {};
 }
-lookup.globalOffsetX = ko.observable(0.0);
-lookup.globalOffsetY = ko.observable(0.0);
-lookup.globalOffsetZ = ko.observable(1.0);
-lookup.globalMaxX = ko.observable(screen.width);
-lookup.globalMaxY = ko.observable(screen.height);
-lookup.globalMinX = ko.observable(-screen.width * 2);
-lookup.globalMinY = ko.observable(-screen.height * 2);
+lisperanto.globalOffsetX = ko.observable(0.0);
+lisperanto.globalOffsetY = ko.observable(0.0);
+lisperanto.globalOffsetZ = ko.observable(1.0);
+lisperanto.globalMaxX = ko.observable(screen.width);
+lisperanto.globalMaxY = ko.observable(screen.height);
+lisperanto.globalMinX = ko.observable(-screen.width * 2);
+lisperanto.globalMinY = ko.observable(-screen.height * 2);
 
-lookup.bodyOnWheel = function() {
+lisperanto.bodyOnWheel = function() {
     event.preventDefault();
     const deltaY = event.deltaY;
     const deltaX = event.deltaX;
     //console.log(event);
-    lookup.applyMovement(deltaY, deltaX);
+    lisperanto.applyMovement(deltaY, deltaX);
   
     //scale += event.deltaY * -0.01;
 };
 
-lookup.bodyOnPointerMove = function()
+lisperanto.bodyOnPointerMove = function()
 {
     //console.log(event);
 
 };
 
-lookup.applyMovement = function (deltaY, deltaX) 
+lisperanto.applyMovement = function (deltaY, deltaX) 
 {
-    var newOffsetY = lookup.globalOffsetY() - deltaY * lookup.globalOffsetZ();
-    const max_Y = lookup.globalMaxY();
+    var newOffsetY = lisperanto.globalOffsetY() - deltaY * lisperanto.globalOffsetZ();
+    const max_Y = lisperanto.globalMaxY();
     newOffsetY = Math.min(newOffsetY, max_Y);
-    const min_Y = lookup.globalMinY() + document.body.offsetHeight;
+    const min_Y = lisperanto.globalMinY() + document.body.offsetHeight;
     newOffsetY = Math.max(newOffsetY, min_Y);
-    lookup.globalOffsetY(newOffsetY);
+    lisperanto.globalOffsetY(newOffsetY);
 
-    var newOffsetX = lookup.globalOffsetX() - deltaX * lookup.globalOffsetZ();
-    const max_X = lookup.globalMaxX();
+    var newOffsetX = lisperanto.globalOffsetX() - deltaX * lisperanto.globalOffsetZ();
+    const max_X = lisperanto.globalMaxX();
     newOffsetX = Math.min(newOffsetX, max_X);
-    const min_X = lookup.globalMinX() + document.body.offsetWidth;
+    const min_X = lisperanto.globalMinX() + document.body.offsetWidth;
     newOffsetX = Math.max(newOffsetX, min_X);
-    lookup.globalOffsetX(newOffsetX);
+    lisperanto.globalOffsetX(newOffsetX);
     console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
 };
 
-lookup.previosTouch = undefined;
+lisperanto.previosTouch = undefined;
 
-lookup.bodyOnTouchMove = function()
+lisperanto.bodyOnTouchMove = function()
 {
     //console.log(event);
     var touches = event.changedTouches;
@@ -54,17 +54,17 @@ lookup.bodyOnTouchMove = function()
     {
         const clientX = touches[0].clientX;
         const clientY = touches[0].clientY;
-        if(typeof(lookup.previosTouch) !== "undefined")
+        if(typeof(lisperanto.previosTouch) !== "undefined")
         {
-            var deltaX = lookup.previosTouch.x - clientX;
-            var deltaY = lookup.previosTouch.y - clientY;
-            lookup.applyMovement(deltaY, deltaX);
+            var deltaX = lisperanto.previosTouch.x - clientX;
+            var deltaY = lisperanto.previosTouch.y - clientY;
+            lisperanto.applyMovement(deltaY, deltaX);
         }
-        lookup.previosTouch = {x: clientX, y: clientY};
+        lisperanto.previosTouch = {x: clientX, y: clientY};
     }
 };
 
-lookup.bodyOnTouchEnd = function()
+lisperanto.bodyOnTouchEnd = function()
 {
-    lookup.previosTouch = undefined;
+    lisperanto.previosTouch = undefined;
 };

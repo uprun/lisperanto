@@ -1,4 +1,4 @@
-var guid = lookup.uuidv4();
+var guid = lisperanto.uuidv4();
 
 (let 
     "guid"
