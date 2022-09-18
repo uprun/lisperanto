@@ -1,8 +1,8 @@
-if(typeof(lookup) === 'undefined')
+if(typeof(lisperanto) === 'undefined')
 {
-    lookup = {};
+    lisperanto = {};
 }
-lookup.removeEverything = function()
+lisperanto.removeEverything = function()
 {
     localStorage.clear();
     location.reload();

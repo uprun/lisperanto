@@ -25,11 +25,11 @@ lisperanto.filteredSearch = ko.computed(
         const mapped = ko.utils.arrayMap(non_statements, function(key) {
             const obj = lisperanto.customObjects[key];
             var name = "";
-            if("name" in obj)
+            if("name@lisperanto" in obj)
             {
-                name = obj["name"];
+                name = obj["name@lisperanto"];
             }
-            if(typeof(name) === "undefined" || name === "")
+            else
             {
                 name = "no-name " + obj.id;
             }
@@ -205,7 +205,7 @@ lisperanto.create_object_with_id = function()
 lisperanto.create_RDF_Entry = function(name)
 {
     var toAdd = lisperanto.create_object_with_id();
-    toAdd.name = name;
+    toAdd["name@lisperanto"] = name;
 
     var operation = 
     {
@@ -233,7 +233,7 @@ lisperanto.filtered_rdf_predicates_Array = ko.computed(function()
     var filtered = [];
 
     const mapped = ko.utils.arrayMap(lisperanto.rdf_predicates_Array(), function(obj) {
-        var name = obj["name"];
+        var name = obj["name@lisperanto"];
         return { 
             id: obj.id, 
             text: name
@@ -260,7 +260,7 @@ lisperanto.find_or_create_rdf_predicate = function(predicate)
     const predicateNameInLowerCase = predicate.toLowerCase();
     var filtered = ko.utils.arrayFilter(lisperanto.rdf_predicates_Array(), function(item)
         {
-            return item.name.toLowerCase() === predicateNameInLowerCase;
+            return item["name@lisperanto"].toLowerCase() === predicateNameInLowerCase;
         });
     if(filtered.length === 1)
     {
@@ -280,8 +280,8 @@ lisperanto.find_or_create_rdf_entry_with_name = function(entry_name)
     var filtered = objects.filter(function(entry)
     {
         const item = entry[1];
-        return  ("name" in item) &&
-                item.name.toLowerCase() === nameInLowerCase;
+        return  ("name@lisperanto" in item) &&
+                item["name@lisperanto"].toLowerCase() === nameInLowerCase;
     });
     if(filtered.length > 0)
     {
@@ -297,8 +297,8 @@ lisperanto.find_or_create_rdf_entry_with_name = function(entry_name)
 lisperanto.create_RDF_predicate = function(predicate_name)
 {
     var toAdd = lisperanto.create_object_with_id(predicate_name);
-    toAdd.type = "rdf-predicate";
-    toAdd.name = predicate_name;
+    toAdd["type"] = "rdf-predicate";
+    toAdd["name@lisperanto"] = predicate_name;
 
     var operation = 
     {
@@ -883,14 +883,7 @@ lisperanto.omniBoxInputKeyDown = function(data, event)
     //console.log(event.originalEvent);
     if(event.originalEvent.code == "Tab")
     {
-        // const availableFunctions = lisperanto.functionsLookup();
-        // if(availableFunctions.length === 1)
-        // {
-        //     var autocompleteName = lisperanto.customObjects[availableFunctions[0].id].name();
-        //     lisperanto.omniBoxTextInput(autocompleteName);
-        //     event.stopPropagation();
-        //     return false;
-        // }
+        // here I will need to cycle through available options
     }
     return true;
 };
@@ -1110,21 +1103,6 @@ lisperanto.editor_on_input = function(key_name, parent)
     }
 };
 
-lisperanto.getAllKeysWithName = function(predicateKey)
-{
-    var result = [predicateKey];
-    var sub = lisperanto.rdf_predicates_Array()
-        .filter(element => element.name === predicateKey)
-        .map(element => element.id);
-    return result.concat(sub);
-};
-
-lisperanto.checkIfAnyVersionOfKeyIsPresent = function(predicateKey, obj)
-{
-    var all_possible_keys = lisperanto.getAllKeysWithName(predicateKey);
-    return all_possible_keys.some(key => key in obj);
-};
-
 lisperanto.open_rdf_value_by_id_on_the_left = function(statement)
 {
     event.stopPropagation();
@@ -1140,19 +1118,6 @@ lisperanto.open_rdf_value_by_id_on_the_left = function(statement)
     lisperanto.openElement(rdf_entry);
 };
 
-lisperanto.findRoot = function(obj) 
-{
-    // var ui_object = document.getElementById(obj.id);
-    // const found_parent_id = ui_object.offsetParent.id;
-    // const found_parent_object = lisperanto.customObjects[found_parent_id];
-    // return found_parent_object;
-    var currentObj = obj;
-    for (var k = 0; typeof (currentObj.assignedToGuid) !== 'undefined' && k < 10000; k++) {
-        currentObj = lisperanto.customObjects[currentObj.assignedToGuid];
-    }
-    return currentObj;
-};
-
 lisperanto.defineOmniBox = function() {
     var omniBox = {
         visible: ko.observable(false),
@@ -1164,41 +1129,6 @@ lisperanto.defineOmniBox = function() {
 };
 
 lisperanto.canvasOmniBox = lisperanto.defineOmniBox();
-
-lisperanto.rejoin = function(name, splitBy) {
-    var result = [];
-    while(name != "")
-    {
-        const index = name.indexOf(splitBy);
-        if(index < 0 )
-        {
-            result.push(name);
-            break;
-        }
-
-        if(index > 0)
-        {
-            var toAdd = name.substring(0, index);
-            result.push(toAdd);
-        }
-        var middle = name.substring(index, index + splitBy.length);
-        result.push(middle);
-        name = name.substring(index + splitBy.length);
-    }
-    return result;
-};
-
-lisperanto.rejoin_many = function(newRejoined, splitBy)
-{
-    var result = [];
-    for (var k = 0; k < newRejoined.length; k++) {
-        var sub_name = newRejoined[k];
-        var sub_array = lisperanto.rejoin(sub_name, splitBy);
-        result = result.concat(sub_array);
-    }
-    return result;
-};
-
 
 lisperanto.add_to_be_added_key_to_json = function (predicateName, obj) {
     var toAdd_id = lisperanto.find_or_create_rdf_predicate(predicateName);
