@@ -1,5 +1,5 @@
 # lisperanto
-Lisperanto is canvas for ideas
+Lisperanto is programmable canvas for ideas
 
 you can check live version https://uprun.github.io/lisperanto/
 
