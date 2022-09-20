@@ -1,84 +1,92 @@
-﻿var lisperanto = {};
+﻿if(typeof(lisperanto) === 'undefined')
+{
+    lisperanto = {};
+} 
 lisperanto.customObjects = {};
-lisperanto.omniBoxTextInput = ko.observable("");
+lisperanto.define_omniBoxTextInput = () => {
+    lisperanto.omniBoxTextInput = ko.observable("");
+    lisperanto.omniBoxTextInput
+        .extend({ rateLimit: 100 });
+};
 
-lisperanto.omniBoxTextInput
-    .extend({ rateLimit: 100 });
+lisperanto.define_somethingChanged = () => {
+    lisperanto.somethingChanged = ko.observable(0);
+    lisperanto.somethingChanged.extend({ rateLimit: 100 });
+};
 
-
-lisperanto.somethingChanged = ko.observable(0);
-
-lisperanto.filteredSearch = ko.computed(
-    function()
-    {
-        var changeOccured = lisperanto.somethingChanged();
-        var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
-        var filtered = [];
-        const availableKeys = Object.keys(lisperanto.customObjects);
-
-        const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
-            {
+lisperanto.define_filteredSearch = () => {
+    lisperanto.filteredSearch = ko.computed(
+        function()
+        {
+            var changeOccured = lisperanto.somethingChanged();
+            var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
+            var filtered = [];
+            const availableKeys = Object.keys(lisperanto.customObjects);
+    
+            const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
+                {
+                    const obj = lisperanto.customObjects[key];
+                    const id = obj["id"];
+                    const has_new_version =  id in lisperanto.has_new_version_map;
+                    return has_new_version == false;
+                });
+    
+            const mapped = ko.utils.arrayMap(non_statements, function(key) {
                 const obj = lisperanto.customObjects[key];
-                const id = obj["id"];
-                const has_new_version =  id in lisperanto.has_new_version_map;
-                return has_new_version == false;
+                var name = "";
+                if("name@lisperanto" in obj)
+                {
+                    name = obj["name@lisperanto"];
+                }
+    
+                if( "name" in obj )
+                {
+                    name = obj["name"]
+                }
+    
+                if(name === "")
+                {
+                    name = "no-name " + obj.id;
+                }
+                
+                var toReturn = {
+                    id: key,
+                    text: name,
+                    full_text: JSON.stringify(obj).toLowerCase()
+                };
+    
+                toReturn["search_index_text"] = toReturn.text.toLowerCase().indexOf(searchQuery);
+                toReturn["search_index_full_text"] = toReturn.full_text.indexOf(searchQuery);
+                return toReturn;
+                
             });
-
-        const mapped = ko.utils.arrayMap(non_statements, function(key) {
-            const obj = lisperanto.customObjects[key];
-            var name = "";
-            if("name@lisperanto" in obj)
+    
+            if(searchQuery === "")
             {
-                name = obj["name@lisperanto"];
+                filtered = mapped;
             }
-
-            if( "name" in obj )
+            else
             {
-                name = obj["name"]
+                filtered = ko.utils.arrayFilter(mapped, function(item)
+                {
+                    return item["search_index_text"] >= 0 || item["search_index_full_text"]  >= 0;
+                });
             }
-
-            if(name === "")
-            {
-                name = "no-name " + obj.id;
-            }
-            
-            var toReturn = {
-                id: key,
-                text: name,
-                full_text: JSON.stringify(obj).toLowerCase()
-            };
-
-            toReturn["search_index_text"] = toReturn.text.toLowerCase().indexOf(searchQuery);
-            toReturn["search_index_full_text"] = toReturn.full_text.indexOf(searchQuery);
-            return toReturn;
-            
-        });
-
-        if(searchQuery === "")
-        {
-            filtered = mapped;
-        }
-        else
-        {
-            filtered = ko.utils.arrayFilter(mapped, function(item)
-            {
-                return item["search_index_text"] >= 0 || item["search_index_full_text"]  >= 0;
+    
+            filtered = filtered.map(element => {
+                const index = element["search_index_full_text"];
+                if (searchQuery !== "" && element["search_index_text"] < 0 &&  index >= 0)
+                {
+                    const new_text = element.full_text.substring(index - 5, index + searchQuery.length + 5);
+                    element.text = element.text + "  ..." + new_text;
+                }
+                return element;
             });
+    
+            return filtered;
         }
-
-        filtered = filtered.map(element => {
-            const index = element["search_index_full_text"];
-            if (searchQuery !== "" && element["search_index_text"] < 0 &&  index >= 0)
-            {
-                const new_text = element.full_text.substring(index - 5, index + searchQuery.length + 5);
-                element.text = element.text + "  ..." + new_text;
-            }
-            return element;
-        });
-
-        return filtered;
-    }
-);
+    );
+}; 
 
 
 
@@ -102,7 +110,6 @@ lisperanto.operationsPush = function(some)
     for (const [keyInner, valueInner] of Object.entries(value)) {
         if(typeof(valueInner) === 'function')
         {
-            toAdd[keyInner] = valueInner();
         }else
         {
             toAdd[keyInner] = valueInner;
@@ -115,7 +122,6 @@ lisperanto.operationsPush = function(some)
 
 lisperanto.loadFromStorage = function()
 {
-    lisperanto.localStorage = localStorage;
     for (const [keyInner, valueInner] of Object.entries(localStorage)) 
     {
         try 
@@ -218,7 +224,7 @@ lisperanto.getCurrentDateTimeString = function()
 
 lisperanto.create_object_with_id = function()
 {
-    var guid = lisperanto.uuidv4();
+    var guid = crypto.randomUUID();
     
     var toAdd = {
         id: guid,
@@ -253,35 +259,39 @@ lisperanto.create_and_show_RDF_entry = function(name)
 };
 
 
-lisperanto.rdf_predicates_Array = ko.observableArray([]);
+lisperanto.define_rdf_predicates_Array = () => lisperanto.rdf_predicates_Array = ko.observableArray([]);
 
-lisperanto.filtered_rdf_predicates_Array = ko.computed(function()
+lisperanto.define_filtered_rdf_predicates_Array = () =>
 {
-    var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
-    var filtered = [];
+    lisperanto.filtered_rdf_predicates_Array = ko.computed(function()
+    {
+        var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
+        var filtered = [];
 
-    const mapped = ko.utils.arrayMap(lisperanto.rdf_predicates_Array(), function(obj) {
-        var name = obj["name@lisperanto"];
-        return { 
-            id: obj.id, 
-            text: name
-        };
+        const mapped = ko.utils.arrayMap(lisperanto.rdf_predicates_Array(), function(obj) {
+            var name = obj["name@lisperanto"];
+            return { 
+                id: obj.id, 
+                text: name
+            };
+        });
+
+        if(searchQuery === "")
+        {
+            filtered = mapped;
+        }
+        else
+        {
+            filtered = ko.utils.arrayFilter(mapped, function(item)
+            {
+                return item.text.toLowerCase().indexOf(searchQuery) >= 0;
+            });
+        }
+
+        return filtered;
     });
 
-    if(searchQuery === "")
-    {
-        filtered = mapped;
-    }
-    else
-    {
-        filtered = ko.utils.arrayFilter(mapped, function(item)
-        {
-            return item.text.toLowerCase().indexOf(searchQuery) >= 0;
-        });
-    }
-
-    return filtered;
-});
+}; 
 
 lisperanto.find_or_create_rdf_predicate = function(predicate)
 {
@@ -301,25 +311,26 @@ lisperanto.find_or_create_rdf_predicate = function(predicate)
 
 };
 
-lisperanto.find_or_create_rdf_entry_with_name = function(entry_name)
+lisperanto.equal_exists = function(obj)
 {
-    const nameInLowerCase = entry_name.toLowerCase();
     const objects = Object.entries(lisperanto.customObjects);
-    var filtered = objects.filter(function(entry)
+    var result = objects.some(function(entry_key)
     {
-        const item = entry[1];
-        return  ("name@lisperanto" in item) &&
-                item["name@lisperanto"].toLowerCase() === nameInLowerCase;
+        const entry = lisperanto.customObjects[entry_key[0]];
+        for( var key in obj)
+        {
+            if (! (key in entry))
+            {
+                return false;
+            }
+            if (obj[key] !== entry[key])
+            {
+                return false;
+            }
+        }
+        return true;
     });
-    if(filtered.length > 0)
-    {
-        return filtered[0][1].id;
-    }
-    else
-    {
-        var object = lisperanto.create_RDF_Entry(entry_name);
-        return object.id;
-    }
+    return result;
 };
 
 lisperanto.create_RDF_predicate = function(predicate_name)
@@ -339,24 +350,14 @@ lisperanto.create_RDF_predicate = function(predicate_name)
 
     lisperanto.operationsPush(operation);
     return toAdd.id;
-}
+};
 
 
-lisperanto.uuidv4 = function() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
-  };
-
-lisperanto.activeOperation = ko.observable("");
+lisperanto.define_activeOperation = () => lisperanto.activeOperation = ko.observable("");
 
 
-lisperanto.focusedObj = ko.observable({});
+lisperanto.define_focusedObj = () => lisperanto.focusedObj = ko.observable({});
 
-lisperanto.isOmniBoxOpen = ko.computed(function()
-{
-    return lisperanto.activeOperation() !== "" ;
-});
 
 lisperanto.copy_json_and_add_key_and_value = function(obj, key, value)
 {
@@ -374,6 +375,23 @@ lisperanto.copy_json_and_add_key_and_value = function(obj, key, value)
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
 };
+
+lisperanto.create_json_entry_from_object = function(obj)
+{
+    var new_obj = lisperanto.create_object_with_id();
+    for(var k in obj)
+    {
+        if(!(k in new_obj))
+        {
+            var k_value = obj[k];
+            if(typeof(k_value) !== "function")
+            {
+                new_obj[k] = k_value;
+            }
+        }
+    }
+    return new_obj;
+}
 
 lisperanto.copy_json_and_replace_key = function(obj, old_key, new_key)
 {
@@ -457,7 +475,7 @@ lisperanto.add_statement_key_to_json_entry_by_name = function(statement_key)
     return created_copy;
 };
 
-lisperanto.listOfOpenElements = ko.observableArray([]);
+lisperanto.define_listOfOpenElements = () => lisperanto.listOfOpenElements = ko.observableArray([]);
 lisperanto.mapOfOpenElements = {};
 lisperanto.closeElement = function(obj)
 {
@@ -474,7 +492,7 @@ lisperanto.openElement = function(obj)
     lisperanto.closeElement(obj);
     if ( !( "id" in obj))
     {
-        obj["id"] = lisperanto.uuidv4();
+        obj["id"] = crypto.randomUUID();
     }
     var wrapper = lisperanto.create_wrapper_for_canvas(obj);
     if( !(obj.id in lisperanto.mapOfOpenElements))
@@ -501,8 +519,6 @@ lisperanto.openElement = function(obj)
     console.log("finished openElement");
 };
 
-
-lisperanto.timerForFunctions = undefined;
 
 lisperanto.vectorLengthSquared = function(point)
 {
@@ -787,7 +803,6 @@ lisperanto.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
         }
         return minimalOffset;
     }
-    
 };
 
 lisperanto.createVector = function(a, b)
@@ -797,7 +812,6 @@ lisperanto.createVector = function(a, b)
         y: b.y - a.y
     };
     return result;
-    
 };
 
 lisperanto.vectorBetweenBoxes = function(firstBox, secondBox)
@@ -815,7 +829,6 @@ lisperanto.vectorBetweenBoxes = function(firstBox, secondBox)
     };
     var v = lisperanto.createVector(a, b);
     return v;
-
 };
 
 lisperanto.desiredOffset = {x: 0, y: 0};
@@ -901,11 +914,6 @@ lisperanto.stopPropagation = function()
     event.stopPropagation();
 };
 
-lisperanto.stopPropagation2 = function(data, event)
-{
-    event.stopPropagation();
-};
-
 
 lisperanto.omniBoxInputKeyDown = function(data, event)
 {
@@ -976,7 +984,7 @@ lisperanto.omniBoxInputKeyPress = function(data, event)
     return true;
 };
 
-lisperanto.body_is_dragged = ko.observable(false);
+lisperanto.define_body_is_dragged = () => lisperanto.body_is_dragged = ko.observable(false);
 
 lisperanto.body_onmousedown = function()
 {
@@ -996,7 +1004,7 @@ lisperanto.body_onmouseout = function()
     lisperanto.body_is_dragged(false);
 };
 
-lisperanto.total_movement_while_body_drag = ko.observable(0);
+lisperanto.define_total_movement_while_body_drag = () => lisperanto.total_movement_while_body_drag = ko.observable(0);
 
 lisperanto.body_onmousemove = function()
 {
@@ -1021,8 +1029,6 @@ lisperanto.omniBoxInputKeyUp = function( data, event)
     }
     event.stopPropagation();
 };
-
-lisperanto.allow_to_open_definition = ko.observable(false);
 
 lisperanto.bodyKeyDown = function( data, event)
 {
@@ -1053,33 +1059,12 @@ lisperanto.bodyKeyDown = function( data, event)
         lisperanto.toggleFullScreen();
     }
 
-    if(
-        (
-            event.code === "AltLeft" ||
-            event.code === "AltRight" 
-        )
-        &&
-        !lisperanto.isOmniBoxOpen())
-    {
-        lisperanto.allow_to_open_definition(true);
-    }
-
     return true;
 
 };
 
 lisperanto.bodyKeyUp = function( data, event)
 {
-    if(
-        (
-            event.code === "AltLeft" ||
-            event.code === "AltRight" 
-        )
-        &&
-        !lisperanto.isOmniBoxOpen())
-    {
-        lisperanto.allow_to_open_definition(false);
-    }
 
     return true;
 
@@ -1088,16 +1073,6 @@ lisperanto.bodyKeyUp = function( data, event)
 lisperanto.editorKeyUp = function(event)
 {
     event.stopPropagation();
-    if(
-        (
-            event.code === "AltLeft" ||
-            event.code === "AltRight" 
-        )
-        &&
-        !lisperanto.isOmniBoxOpen())
-    {
-        lisperanto.allow_to_open_definition(false);
-    }
 };
 
 lisperanto.editorKeyDown = function(parent)
@@ -1157,7 +1132,7 @@ lisperanto.defineOmniBox = function() {
     return omniBox;
 };
 
-lisperanto.canvasOmniBox = lisperanto.defineOmniBox();
+lisperanto.define_canvasOmniBox = () => lisperanto.canvasOmniBox = lisperanto.defineOmniBox();
 
 lisperanto.add_to_be_added_key_to_json = function (predicateName, obj) {
     var toAdd_id = lisperanto.find_or_create_rdf_predicate(predicateName);
@@ -1244,21 +1219,7 @@ lisperanto.replace_focused_json_key_with_new = function(new_key) {
     lisperanto.operationsPush(operation);
 };
 
-function Lisperanto()
-{
-    var self = this;
-
-    self.ApplyLookupToSelf = function()
-    {
-        for(var x in lisperanto)
-        {
-            self[x] = lisperanto[x];
-        }
-    };
-
-};
-
-lisperanto.anchorWidth = ko.observable(2 * parseFloat(getComputedStyle(document.documentElement).fontSize));
+lisperanto.define_anchorWidth = () => lisperanto.anchorWidth = ko.observable(2 * parseFloat(getComputedStyle(document.documentElement).fontSize));
 
 lisperanto.bodyOnClick = function(e)
 {
@@ -1315,39 +1276,97 @@ lisperanto.omniWheelOnWheelEvent = function()
 };
 
 
-lisperanto.print_all_functions_from_lookup = function()
+lisperanto.migrate_all_function_to_storage = function()
 {
     for(var key_name in lisperanto)
     {
         console.log(key_name);
         const rdf_entry_name = key_name;
-        var created_rdf_object_id = lisperanto.find_or_create_rdf_entry_with_name(rdf_entry_name);
-        var created_rdf_object = lisperanto.customObjects[created_rdf_object_id];
         const entry_in_lisperanto = lisperanto[key_name];
         const type_of_entry = typeof(entry_in_lisperanto);
-        created_rdf_object["type@lisperanto"] = type_of_entry;
+        var expected_object = {};
+        expected_object["type@lisperanto"] = type_of_entry;
+        expected_object["module@lisperanto"] = "lisperanto";
+        expected_object["name@lisperanto"] = rdf_entry_name;
 
         if(type_of_entry === "function")
         {
-            created_rdf_object["programming-language@lisperanto"] = "javascript";
-            created_rdf_object["javascript-function-definition@lisperanto"] = entry_in_lisperanto.toString();
+            const function_definition = entry_in_lisperanto.toString();
+            expected_object["programming-language@lisperanto"] = "javascript";
+            expected_object["javascript-function-definition@lisperanto"] = function_definition;
         }
-        created_rdf_object["module@lisperanto"] = "lisperanto";
+        else
+        {
+            for(var k in entry_in_lisperanto)
+            {
+                expected_object[k] = entry_in_lisperanto[k];
+            }
+        }
+
+        if (!lisperanto.equal_exists(expected_object))
+        {
+            var created = lisperanto.create_json_entry_from_object(expected_object);
+            var copy =  JSON.parse(JSON.stringify(created));
+            var operation = 
+            {
+                "id": copy["id"],
+                "operation": "initial-version",
+                object: copy
+            };
+            lisperanto.operationsPush(operation);
+            console.log("creating json entry for", expected_object);
+        }
+        
     }
 };
 
 $(document).ready(function()
 {
-    var viewModel = new Lisperanto();
+
+    lisperanto.define_omniBoxTextInput(); // initialization
+    lisperanto.define_somethingChanged(); // initialization
+    lisperanto.define_filteredSearch(); // initialization
+
+    lisperanto.define_rdf_predicates_Array(); // initialization
+    lisperanto.define_filtered_rdf_predicates_Array(); // initialization
+
+    lisperanto.define_activeOperation(); // initialization
+    lisperanto.define_focusedObj(); // initialization
+
+    lisperanto.define_listOfOpenElements(); // initialization
+
+    lisperanto.define_body_is_dragged(); // initialization
+
+    lisperanto.define_total_movement_while_body_drag(); // initialization
+
+    lisperanto.define_canvasOmniBox(); // initialization
+
+    lisperanto.define_anchorWidth(); // initialization
+
+    lisperanto.define_backgroundColor(); // initialization
+
+    lisperanto.define_globalOffsetX(); // initialization
+    lisperanto.define_globalOffsetY(); // initialization
+    lisperanto.define_globalOffsetZ(); // initialization
+    lisperanto.define_globalMaxX(); // initialization
+    lisperanto.define_globalMaxY(); // initialization
+    lisperanto.define_globalMinX(); // initialization
+    lisperanto.define_globalMinY(); // initialization
+
+    lisperanto.define_menuIsOpen(); // initialization
+    lisperanto.define_menuWasAlreadyOpen(); // initialization
+
+    lisperanto.define_optionsIsOpen(); // initialization
+    lisperanto.define_optionsWasAlreadyOpen(); // initialization
+    
     lisperanto.loadFromStorage();
     lisperanto.backgroundApplySaved();
-    viewModel.ApplyLookupToSelf();
     lisperanto.restore_RDF_predicates_array();
     lisperanto.defineTimerForFunctions();
     
-    ko.applyBindings(viewModel);
+    ko.applyBindings(lisperanto);
 
-    const one_rem_in_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const one_rem_in_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     const expected_witdh_of_omnibox = 20 * one_rem_in_pixels;
     const delta_x = Math.max(0, (document.body.offsetWidth / 2 - expected_witdh_of_omnibox/2));
@@ -1357,5 +1376,5 @@ $(document).ready(function()
     const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
     lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, {x: delta_x_2 , y: document.body.offsetHeight / 3});
 
-    //lisperanto.print_all_functions_from_lookup();
+    lisperanto.migrate_all_function_to_storage();
 });

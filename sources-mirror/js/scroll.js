@@ -2,13 +2,13 @@ if(typeof(lisperanto) === 'undefined')
 {
     lisperanto = {};
 }
-lisperanto.globalOffsetX = ko.observable(0.0);
-lisperanto.globalOffsetY = ko.observable(0.0);
-lisperanto.globalOffsetZ = ko.observable(1.0);
-lisperanto.globalMaxX = ko.observable(screen.width);
-lisperanto.globalMaxY = ko.observable(screen.height);
-lisperanto.globalMinX = ko.observable(-screen.width * 2);
-lisperanto.globalMinY = ko.observable(-screen.height * 2);
+lisperanto.define_globalOffsetX = () => lisperanto.globalOffsetX = ko.observable(0.0);
+lisperanto.define_globalOffsetY = () => lisperanto.globalOffsetY = ko.observable(0.0);
+lisperanto.define_globalOffsetZ = () => lisperanto.globalOffsetZ = ko.observable(1.0);
+lisperanto.define_globalMaxX = () => lisperanto.globalMaxX = ko.observable(screen.width);
+lisperanto.define_globalMaxY = () => lisperanto.globalMaxY = ko.observable(screen.height);
+lisperanto.define_globalMinX = () => lisperanto.globalMinX = ko.observable(-screen.width * 2);
+lisperanto.define_globalMinY = () => lisperanto.globalMinY = ko.observable(-screen.height * 2);
 
 lisperanto.bodyOnWheel = function() {
     event.preventDefault();
@@ -43,8 +43,6 @@ lisperanto.applyMovement = function (deltaY, deltaX)
     lisperanto.globalOffsetX(newOffsetX);
     //console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
 };
-
-lisperanto.previosTouch = undefined;
 
 lisperanto.bodyOnTouchMove = function()
 {

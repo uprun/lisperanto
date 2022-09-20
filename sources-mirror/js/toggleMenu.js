@@ -1,5 +1,10 @@
-lisperanto.menuIsOpen = ko.observable(false);
-lisperanto.menuWasAlreadyOpen=ko.observable(false);
+if(typeof(lisperanto) === 'undefined')
+{
+    lisperanto = {};
+}
+
+lisperanto.define_menuIsOpen = () => lisperanto.menuIsOpen = ko.observable(false);
+lisperanto.define_menuWasAlreadyOpen = () => lisperanto.menuWasAlreadyOpen = ko.observable(false);
 lisperanto.toggleMenu = function() 
 {
     event.stopPropagation();
