@@ -2,7 +2,15 @@
 {
     lisperanto = {};
 } 
-lisperanto.customObjects = {};
+
+lisperanto.define_objects = function()
+{
+    lisperanto.customObjects = {};
+    lisperanto.operations = [];
+    lisperanto.has_new_version_map = {};
+    lisperanto.mapOfOpenElements = {};
+    lisperanto.desiredOffset = {x: 0, y: 0};
+};
 lisperanto.define_omniBoxTextInput = () => {
     lisperanto.omniBoxTextInput = ko.observable("");
     lisperanto.omniBoxTextInput
@@ -86,13 +94,7 @@ lisperanto.define_filteredSearch = () => {
             return filtered;
         }
     );
-}; 
-
-
-
-lisperanto.operations = [];
-
-lisperanto.has_new_version_map = {};
+};
 
 lisperanto.operationsPush = function(some)
 {
@@ -184,10 +186,6 @@ lisperanto.restore_RDF_predicates_array = function()
     }
 };
 
-lisperanto.getRandomInt = function(max) {
-    return Math.floor(Math.random() * max);
-  };
-
 lisperanto.getCurrentDateTimeString = function()
 {
     var currentdate = new Date(); 
@@ -201,23 +199,18 @@ lisperanto.getCurrentDateTimeString = function()
     {
         timeZoneString = " (-" + timeZone + ")";
     }
-    var day = currentdate.getDate();
-    if(day < 10)
-    {
-        day = "0" + day;
-    }
-    var month = currentdate.getMonth() + 1;
-    if(month < 10)
-    {
-        month = "0" + month;
-    }
+    var day = currentdate.getDate().toString().padStart(2, '0');
+    var month = (currentdate.getMonth() + 1).toString().padStart(2, '0');
+    const hours = currentdate.getHours().toString().padStart(2, '0');
+    const minutes = currentdate.getMinutes().toString().padStart(2, '0');
+    const seconds = currentdate.getSeconds().toString().padStart(2, '0');
     var datetime = 
         currentdate.getFullYear() + "-"
         + month + "-"
         + day + " "
-        + currentdate.getHours() + ":"  
-        + currentdate.getMinutes() + ":" 
-        + currentdate.getSeconds()
+        + hours + ":"  
+        + minutes + ":" 
+        + seconds
         + timeZoneString;
     return datetime;
 };
@@ -235,25 +228,76 @@ lisperanto.create_object_with_id = function()
     return toAdd;
 };
 
-
-lisperanto.create_RDF_Entry = function(name)
+lisperanto.calculate_hash_promise = function(obj)
 {
-    var toAdd = lisperanto.create_object_with_id();
-    toAdd["name@lisperanto"] = name;
+    // from stackoverflow site I read that you can firt sort keys alphabetically then apply hash
+    // but will do this later .. maybe 2022-09-21
+    const string = JSON.stringify(obj);
 
-    var operation = 
-    {
-        operation: "create-rdf-entry",
-        id: toAdd.id,
-        name: name
-    };
-    lisperanto.operationsPush(operation);
-    return toAdd;
+    //https://remarkablemark.medium.com/how-to-generate-a-sha-256-hash-with-javascript-d3b2696382fd
+
+    const utf8 = new TextEncoder().encode(string);
+    return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+            .map((bytes) => bytes.toString(16).padStart(2, '0'))
+            .join('');
+        return hashHex;
+    });
 };
 
-lisperanto.create_and_show_RDF_entry = function(name)
+lisperanto.clone = (obj) => JSON.parse(JSON.stringify(obj));
+
+
+lisperanto.create_RDF_Entry = async function(name)
 {
-    var toShow = lisperanto.create_RDF_Entry(name);
+    var toAdd = {};
+    toAdd["name@lisperanto"] = name;
+    return await lisperanto.create_object_with_hash_async(toAdd);
+};
+
+lisperanto.create_object_with_hash_async = async function(original_object)
+{
+    const hash = await lisperanto.calculate_hash_promise(original_object);
+    if ( !(hash in lisperanto.customObjects))
+    {
+        lisperanto.customObjects[hash] = original_object;
+        var operation = 
+        {
+            operation: "create-initial-version",
+            id: hash,
+            'initial-data': JSON.stringify(original_object)
+        };
+        lisperanto.operationsPush(operation);
+    }
+
+    var clone = lisperanto.clone(original_object);
+    clone["creation_time@lisperanto"] = lisperanto.getCurrentDateTimeString();
+    clone["previous-version@lisperanto"] = hash;
+
+    const hash_with_time = await lisperanto.calculate_hash_promise(clone);
+
+    if ( !(hash_with_time in lisperanto.customObjects))
+    {
+        lisperanto.customObjects[hash_with_time] = clone;
+        var operation = 
+        {
+            operation: "create-initial-version-with-time-stamp",
+            id: hash_with_time,
+            time: clone["creation_time@lisperanto"]
+        };
+        lisperanto.operationsPush(operation);
+        return clone;
+    }
+    else
+    {
+        return lisperanto.customObjects[hash_with_time];
+    }
+}
+
+lisperanto.create_and_show_RDF_entry = async function(name)
+{
+    var toShow = await lisperanto.create_RDF_Entry(name);
     lisperanto.openElement(toShow);
     lisperanto.hideOmniBox();
 };
@@ -331,6 +375,12 @@ lisperanto.equal_exists = function(obj)
         return true;
     });
     return result;
+};
+
+lisperanto.equal_exists_async = async function(obj)
+{
+    const hash = await lisperanto.calculate_hash_promise(obj);
+    return hash in lisperanto.customObjects;
 };
 
 lisperanto.create_RDF_predicate = function(predicate_name)
@@ -476,7 +526,7 @@ lisperanto.add_statement_key_to_json_entry_by_name = function(statement_key)
 };
 
 lisperanto.define_listOfOpenElements = () => lisperanto.listOfOpenElements = ko.observableArray([]);
-lisperanto.mapOfOpenElements = {};
+
 lisperanto.closeElement = function(obj)
 {
     if(obj.id in lisperanto.mapOfOpenElements)
@@ -831,7 +881,7 @@ lisperanto.vectorBetweenBoxes = function(firstBox, secondBox)
     return v;
 };
 
-lisperanto.desiredOffset = {x: 0, y: 0};
+
 
 lisperanto.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
 {
@@ -857,27 +907,6 @@ lisperanto.hideOmniBox = function()
     lisperanto.focusedObj(undefined);
     lisperanto.activeOperation("");
     lisperanto.omniBoxTextInput("");
-};
-
-
-lisperanto.omniBox_open_predicate_definition_from_statement = function()
-{
-    var predicateToOpen = lisperanto.focusedObj();
-    lisperanto.hideOmniBox();
-    lisperanto.hideMenu();
-    lisperanto.hideOptions();
-    event.stopPropagation();
-    lisperanto.openElement(predicateToOpen);
-};
-
-lisperanto.omniBox_open_value_definition_from_statement = function()
-{
-    var valueToOpen = lisperanto.focusedObj();
-    lisperanto.hideOmniBox();
-    lisperanto.hideMenu();
-    lisperanto.hideOptions();
-    event.stopPropagation();
-    lisperanto.openElement(valueToOpen);
 };
 
 lisperanto.add_existing_RDF_predicate_to_json_from_omnibox = function(obj)
@@ -925,13 +954,13 @@ lisperanto.omniBoxInputKeyDown = function(data, event)
     return true;
 };
 
-lisperanto.create_RDF_entry_with_name_from_omnibox = function()
+lisperanto.create_RDF_entry_with_name_from_omnibox = async function()
 {
     const name = lisperanto.omniBoxTextInput().trim();
     if(name.length === 0)
         return;
 
-    lisperanto.create_and_show_RDF_entry(name);
+    await lisperanto.create_and_show_RDF_entry(name);
 };
 
 lisperanto.omniBoxInputKeyPress = function(data, event) 
@@ -1276,53 +1305,54 @@ lisperanto.omniWheelOnWheelEvent = function()
 };
 
 
-lisperanto.migrate_all_function_to_storage = function()
+lisperanto.migrate_all_function_to_storage_async = async function()
 {
     for(var key_name in lisperanto)
     {
-        console.log(key_name);
+        if (key_name == "customObjects")
+        {
+            // ignore customObjects
+            continue;
+        }
         const rdf_entry_name = key_name;
         const entry_in_lisperanto = lisperanto[key_name];
         const type_of_entry = typeof(entry_in_lisperanto);
         var expected_object = {};
+        expected_object["name@lisperanto"] = rdf_entry_name;
         expected_object["type@lisperanto"] = type_of_entry;
         expected_object["module@lisperanto"] = "lisperanto";
-        expected_object["name@lisperanto"] = rdf_entry_name;
 
         if(type_of_entry === "function")
         {
             const function_definition = entry_in_lisperanto.toString();
+            if(function_definition.toLowerCase().indexOf("[object") == 0 )
+            {
+                continue;
+            }
             expected_object["programming-language@lisperanto"] = "javascript";
             expected_object["javascript-function-definition@lisperanto"] = function_definition;
         }
         else
         {
-            for(var k in entry_in_lisperanto)
-            {
-                expected_object[k] = entry_in_lisperanto[k];
-            }
+            console.log("Non function found")
+            console.log(key_name);
+            continue;
         }
 
-        if (!lisperanto.equal_exists(expected_object))
+        
+        const present = await lisperanto.equal_exists_async(expected_object);
+        if (!present)
         {
-            var created = lisperanto.create_json_entry_from_object(expected_object);
-            var copy =  JSON.parse(JSON.stringify(created));
-            var operation = 
-            {
-                "id": copy["id"],
-                "operation": "initial-version",
-                object: copy
-            };
-            lisperanto.operationsPush(operation);
+            await lisperanto.create_object_with_hash_async(expected_object);
             console.log("creating json entry for", expected_object);
         }
         
     }
 };
 
-$(document).ready(function()
+lisperanto.body_onload_async = async function()
 {
-
+    lisperanto.define_objects();
     lisperanto.define_omniBoxTextInput(); // initialization
     lisperanto.define_somethingChanged(); // initialization
     lisperanto.define_filteredSearch(); // initialization
@@ -1376,5 +1406,5 @@ $(document).ready(function()
     const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
     lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, {x: delta_x_2 , y: document.body.offsetHeight / 3});
 
-    lisperanto.migrate_all_function_to_storage();
-});
+    await lisperanto.migrate_all_function_to_storage_async();
+};

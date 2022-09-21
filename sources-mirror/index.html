@@ -23,6 +23,7 @@
     onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmousemove()"
     onmouseout="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmouseout()"
     onresize="typeof(lisperanto) !== 'undefined' && lisperanto.applyMovement(0,0)"
+    onload="typeof(lisperanto) !== 'undefined' && lisperanto.body_onload_async()"
     data-bind=
         "click: $root.bodyOnClick,
         event: 
