@@ -69,6 +69,7 @@
                         style="font-size: 1.2rem; margin: 0.2em;" 
                         class="omni-box-input" 
                         placeholder="type something here" 
+                        onkeypress="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxInputKeyPress_async()"
                         data-bind="
                             textInput: $root.omniBoxTextInput,
                             attr: 
@@ -78,7 +79,6 @@
                             event: 
                                 {
                                     keydown: $root.omniBoxInputKeyDown,
-                                    keypress: $root.omniBoxInputKeyPress,
                                     keyup: $root.omniBoxInputKeyUp,
                                 }" />
                 </div>
@@ -92,7 +92,7 @@
                 <div 
                     data-bind="if: $root.activeOperation() === 'add-text-value-to-json-entry'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.add_text_value_to_json_entry">
+                        data-bind="click: $root.add_text_value_to_json_entry_async">
                             add text
                     </div>
                 </div>
@@ -126,7 +126,7 @@
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
                         <div data-bind="foreach: $root.filteredSearch">
-                            <div data-bind="text: $data.text, click: $root.open_json_entry_from_search_list"></div>
+                            <div data-bind="text: $data.text, click: $root.open_json_entry_from_search_list_async"></div>
                         </div>
                     </div>
                     <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
@@ -162,12 +162,12 @@
                 <div style="outline: 0px solid transparent; white-space: pre-wrap; display: block; cursor: auto;" class=""
                 onclick="lisperanto.stopPropagation()"
                 onkeyup="lisperanto.editorKeyUp(event)"
+                onkeydown="lisperanto.editorKeyDown_async()"
                 data-bind="
                     text: $parent[$data],
                     event: 
                         {
                             input: () => $root.editor_on_input($data, $parents[1]),
-                            keydown: () => lisperanto.editorKeyDown($parents[1])
                         },
                     css:
                     {
@@ -202,7 +202,7 @@
                 },
                 attr: 
                 {
-                    id: $data.wrapped_one().id
+                    id: $data.id
                 }">
                 <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
                 <!-- /ko -->
@@ -211,7 +211,7 @@
                     <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind=" 
                             click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($data), 
-                            attr: {id: 'add-statement-to-json-entry--' + $data.wrapped_one().id}">
+                            attr: {id: 'add-statement-to-json-entry--' + $data.id()}">
                             + statement
                     </div>
                     <!-- /ko -->
@@ -225,7 +225,7 @@
                         <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                             data-bind=" 
                                 click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($data), 
-                                attr: {id: 'add-text-value-to-json-entry--' + $data.wrapped_one().id}">
+                                attr: {id: 'add-text-value-to-json-entry--' + $data.id()}">
                                 + text value
                         </div>
                     </div>
@@ -236,7 +236,7 @@
                         != $data.wrapped_one()[$data["key_with_changes@lisperanto"]()] -->
                 <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
-                        click: () => $root.confirm_change_to_json($data)">
+                        click: () => $root.confirm_change_to_json_async($data)">
                         confirm change
                 </div>
                 <!-- /ko -->

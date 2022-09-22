@@ -99,7 +99,7 @@ lisperanto.define_filteredSearch = () => {
 lisperanto.operationsPush = function(some)
 {
     lisperanto.operations.push(some);
-    const key = some["id"];
+    const key = some["id_to"] ;
     const value = lisperanto.customObjects[key];
 
     if ("previous-version@lisperanto" in value)
@@ -143,13 +143,13 @@ lisperanto.loadFromStorage = function()
     }
 };
 
-lisperanto.open_json_entry_from_search_list = function(obj)
+lisperanto.open_json_entry_from_search_list_async = async function(obj)
 {
-    lisperanto.openElement(lisperanto.customObjects[obj.id]);
+    await lisperanto.openElement_async(lisperanto.customObjects[obj.id]);
     lisperanto.hideOmniBox();
 };
 
-lisperanto.create_wrapper_for_canvas = function(value)
+lisperanto.create_wrapper_for_canvas_async = async function(value)
 {
     var wrapper_for_canvas = 
     {
@@ -157,7 +157,8 @@ lisperanto.create_wrapper_for_canvas = function(value)
         "key_with_changes@lisperanto": ko.observable(""),
         "new_value@lisperanto": ko.observable(""),
         offsetX: ko.observable(0),
-        offsetY: ko.observable(0)
+        offsetY: ko.observable(0),
+        id: ko.observable(await lisperanto.calculate_hash_promise(value))
     };
 
     wrapper_for_canvas.inWorldOffsetX = ko.computed(function()
@@ -265,34 +266,13 @@ lisperanto.create_object_with_hash_async = async function(original_object)
         var operation = 
         {
             operation: "create-initial-version",
-            id: hash,
-            'initial-data': JSON.stringify(original_object)
+            id_to: hash,
+            'initial-data': lisperanto.clone(original_object),
+            'time': lisperanto.getCurrentDateTimeString()
         };
         lisperanto.operationsPush(operation);
     }
-
-    var clone = lisperanto.clone(original_object);
-    clone["creation_time@lisperanto"] = lisperanto.getCurrentDateTimeString();
-    clone["previous-version@lisperanto"] = hash;
-
-    const hash_with_time = await lisperanto.calculate_hash_promise(clone);
-
-    if ( !(hash_with_time in lisperanto.customObjects))
-    {
-        lisperanto.customObjects[hash_with_time] = clone;
-        var operation = 
-        {
-            operation: "create-initial-version-with-time-stamp",
-            id: hash_with_time,
-            time: clone["creation_time@lisperanto"]
-        };
-        lisperanto.operationsPush(operation);
-        return clone;
-    }
-    else
-    {
-        return lisperanto.customObjects[hash_with_time];
-    }
+    return original_object;
 }
 
 lisperanto.create_and_show_RDF_entry = async function(name)
@@ -392,7 +372,7 @@ lisperanto.create_RDF_predicate = function(predicate_name)
     var operation = 
     {
         operation: "create-rdf-predicate",
-        id: toAdd.id,
+        id_to: toAdd.id,
         predicate_name: predicate_name
     };
 
@@ -409,9 +389,9 @@ lisperanto.define_activeOperation = () => lisperanto.activeOperation = ko.observ
 lisperanto.define_focusedObj = () => lisperanto.focusedObj = ko.observable({});
 
 
-lisperanto.copy_json_and_add_key_and_value = function(obj, key, value)
+lisperanto.copy_json_and_add_key_and_value_async = async function(obj, key, value)
 {
-    var new_obj = lisperanto.create_object_with_id();
+    var new_obj = {};
     const available_keys = Object.keys(obj);
     available_keys.forEach(k =>
     {
@@ -422,8 +402,8 @@ lisperanto.copy_json_and_add_key_and_value = function(obj, key, value)
         }
     });
     new_obj[key] = value;
-    new_obj["previous-version@lisperanto"] = obj["id"];
-    return new_obj;
+    new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
+    return await lisperanto.create_object_with_hash_async(new_obj);
 };
 
 lisperanto.create_json_entry_from_object = function(obj)
@@ -483,7 +463,7 @@ lisperanto.create_plain_json_copy = function(obj)
     return new_obj;
 };
 
-lisperanto.add_statement_key_to_json_entry = function()
+lisperanto.add_statement_key_to_json_entry = async function()
 {
     // [lives-in] [Odesa]
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field 
@@ -492,34 +472,38 @@ lisperanto.add_statement_key_to_json_entry = function()
     const predicateName = lisperanto.omniBoxTextInput().trim();
     if(predicateName === "")
         return;
-    var created_copy = lisperanto.add_to_be_added_key_to_json(predicateName, obj);
+    var created_copy = await lisperanto.add_to_be_added_key_to_json_async(predicateName, obj);
     lisperanto.focusedObj().wrapped_one(created_copy);
     lisperanto.hideOmniBox();
     return created_copy;
 };
 
-lisperanto.add_text_value_to_json_entry = function()
+lisperanto.add_text_value_to_json_entry_async = async function()
 {
     var obj = lisperanto.focusedObj().wrapped_one();
     const text_value = lisperanto.omniBoxTextInput().trim();
     const key = obj["new-key-holder@lisperanto"];
-    var created_copy = lisperanto.copy_json_and_add_key_and_value(obj, key, text_value);
-    delete created_copy["new-key-holder@lisperanto"];
+    var clone = lisperanto.clone(obj);
+    delete clone["new-key-holder@lisperanto"];
+    var created_copy = await lisperanto.copy_json_and_add_key_and_value_async(clone, key, text_value);
+    
     var operation = {
-        id: created_copy["id"],
+        id_from: await lisperanto.calculate_hash_promise(obj),
+        id_to: await lisperanto.calculate_hash_promise(created_copy),
         operation: "set-json-key-text-value",
         key: key,
-        text_value: text_value
+        text_value: text_value,
+        time: lisperanto.getCurrentDateTimeString()
     };
     lisperanto.focusedObj().wrapped_one(created_copy);
     lisperanto.operationsPush(operation);
     lisperanto.hideOmniBox();
 };
 
-lisperanto.add_statement_key_to_json_entry_by_name = function(statement_key)
+lisperanto.add_statement_key_to_json_entry_by_name = async function(statement_key)
 {
     var obj = lisperanto.focusedObj().wrapped_one();
-    var created_copy = lisperanto.add_to_be_added_key_to_json(statement_key, obj);
+    var created_copy = await lisperanto.add_to_be_added_key_to_json_async(statement_key, obj);
     lisperanto.focusedObj().wrapped_one(created_copy);
     lisperanto.hideOmniBox();
     return created_copy;
@@ -537,18 +521,14 @@ lisperanto.closeElement = function(obj)
     }
 };
 
-lisperanto.openElement = function(obj)
+lisperanto.openElement_async = async function(obj)
 {
-    lisperanto.closeElement(obj);
-    if ( !( "id" in obj))
-    {
-        obj["id"] = crypto.randomUUID();
-    }
-    var wrapper = lisperanto.create_wrapper_for_canvas(obj);
-    if( !(obj.id in lisperanto.mapOfOpenElements))
+    await lisperanto.closeElement(obj);
+    var wrapper = await lisperanto.create_wrapper_for_canvas_async(obj);
+    if( !(wrapper.id() in lisperanto.mapOfOpenElements))
     {
         lisperanto.listOfOpenElements.push(wrapper);
-        lisperanto.mapOfOpenElements[obj.id] = wrapper;
+        lisperanto.mapOfOpenElements[wrapper.id()] = wrapper;
     }
 
     if(typeof(lisperanto.desiredOffset) !== "undefined")
@@ -687,7 +667,7 @@ lisperanto.filloutGlobalOmniBox = function(omniBox, offset)
 
 lisperanto.getUIBoxOfElement = function(obj, margin = 0.0)
 {
-    var objId = obj.wrapped_one().id
+    var objId = obj.id()
     var foundUI = document.getElementById(objId);//$("#" + objId)[0];
     if(foundUI == null || typeof(foundUI) === "undefined")
     {
@@ -889,7 +869,7 @@ lisperanto.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
     lisperanto.focusedObj(caller);
     lisperanto.activeOperation("add-statement-key-to-json-entry");
 
-    lisperanto.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.wrapped_one().id, lisperanto.canvasOmniBox, caller);
+    lisperanto.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.id(), lisperanto.canvasOmniBox, caller);
 };
 
 lisperanto.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
@@ -898,7 +878,7 @@ lisperanto.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
     lisperanto.focusedObj(caller);
     lisperanto.activeOperation("add-text-value-to-json-entry");
 
-    lisperanto.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.wrapped_one().id, lisperanto.canvasOmniBox, caller);
+    lisperanto.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.id(), lisperanto.canvasOmniBox, caller);
 };
 
 lisperanto.hideOmniBox = function()
@@ -963,7 +943,7 @@ lisperanto.create_RDF_entry_with_name_from_omnibox = async function()
     await lisperanto.create_and_show_RDF_entry(name);
 };
 
-lisperanto.omniBoxInputKeyPress = function(data, event) 
+lisperanto.omniBoxInputKeyPress_async = async function() 
 {
     if(event.shiftKey && event.keyCode === 13)
     {
@@ -980,7 +960,7 @@ lisperanto.omniBoxInputKeyPress = function(data, event)
             var map = 
             {
                 "add-statement-key-to-json-entry": () => lisperanto.add_statement_key_to_json_entry(),
-                'add-text-value-to-json-entry': () => lisperanto.add_text_value_to_json_entry(),
+                'add-text-value-to-json-entry':async () => await lisperanto.add_text_value_to_json_entry_async(),
                 'replace-existing-json-key': () => lisperanto.replace_existing_json_key_from_omnibox_text()
             };
 
@@ -1104,12 +1084,14 @@ lisperanto.editorKeyUp = function(event)
     event.stopPropagation();
 };
 
-lisperanto.editorKeyDown = function(parent)
+lisperanto.editorKeyDown_async = async function()
 {
     event.stopPropagation();
     if (event.code == "Enter" && (event.metaKey || event.ctrlKey))
     {
-        lisperanto.confirm_change_to_json(parent);
+        const id = event.target.offsetParent.id;
+        const parent = lisperanto.mapOfOpenElements[id];
+        await lisperanto.confirm_change_to_json_async(parent);
     }
     //console.log(event);
     return true;
@@ -1163,13 +1145,14 @@ lisperanto.defineOmniBox = function() {
 
 lisperanto.define_canvasOmniBox = () => lisperanto.canvasOmniBox = lisperanto.defineOmniBox();
 
-lisperanto.add_to_be_added_key_to_json = function (predicateName, obj) {
+lisperanto.add_to_be_added_key_to_json_async = async function (predicateName, obj) {
     var toAdd_id = lisperanto.find_or_create_rdf_predicate(predicateName);
-    var created_copy = lisperanto.copy_json_and_add_key_and_value(obj, "new-key-holder@lisperanto", predicateName);
+    var created_copy = await lisperanto.copy_json_and_add_key_and_value_async(obj, "new-key-holder@lisperanto", predicateName);
     var operation = {
         operation: "hold-json-key",
-        toAdd_id: toAdd_id,
-        id: created_copy["id"]
+        id_from: await lisperanto.calculate_hash_promise(obj),
+        id_to: await lisperanto.calculate_hash_promise(created_copy),
+        time: lisperanto.getCurrentDateTimeString()
     };
     lisperanto.operationsPush(operation);
     return created_copy;
@@ -1211,18 +1194,21 @@ lisperanto.delete_json_key = function()
     lisperanto.hideOmniBox();
 };
 
-lisperanto.confirm_change_to_json = function(parent)
+lisperanto.confirm_change_to_json_async = async function(parent)
 {
     event.stopPropagation();
     var obj = parent.wrapped_one();
     const updated_key = parent["key_with_changes@lisperanto"]();
     const new_value = parent["new_value@lisperanto"]();
-    const copy = lisperanto.copy_json_and_add_key_and_value(obj, updated_key, new_value);
+    const copy = await lisperanto.copy_json_and_add_key_and_value_async(obj, updated_key, new_value);
     parent.wrapped_one(copy);
     var operation = {
         operation: "change_value_of_json_key",
-        id: copy["id"],
-        updated_key: lisperanto.key_in_json_to_focus
+        id_from: await lisperanto.calculate_hash_promise(obj),
+        id_to: await lisperanto.calculate_hash_promise(copy),
+        updated_key: updated_key,
+        new_value: new_value,
+        time: lisperanto.getCurrentDateTimeString()
     };
     lisperanto.operationsPush(operation);
     parent["key_with_changes@lisperanto"]("");
