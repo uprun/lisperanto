@@ -512,7 +512,8 @@ lisperanto.add_statement_key_to_json_entry = async function()
 
 lisperanto.add_text_value_to_json_entry_async = async function()
 {
-    var obj = lisperanto.focusedObj().wrapped_one();
+    const wrapper = lisperanto.focusedObj();
+    var obj = wrapper.wrapped_one();
     const text_value = lisperanto.omniBoxTextInput().trim();
     var created_copy = await lisperanto.copy_json_and_transform_keyholder_async(obj, text_value);
     
@@ -523,9 +524,10 @@ lisperanto.add_text_value_to_json_entry_async = async function()
         value: text_value,
         time: lisperanto.getCurrentDateTimeString()
     };
-    lisperanto.focusedObj().wrapped_one(created_copy);
+    wrapper.wrapped_one(created_copy);
     lisperanto.operationsPush(operation);
     lisperanto.hideOmniBox();
+    lisperanto.open_OmniBox_for_adding_statement_to_json_entry(wrapper);
 };
 
 lisperanto.add_statement_key_to_json_entry_by_name = async function(statement_key)
