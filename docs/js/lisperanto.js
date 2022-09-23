@@ -1381,8 +1381,35 @@ lisperanto.define_lookups = function()
 
 lisperanto.body_onload_async = async function()
 {
-    lisperanto.define_objects();
+    lisperanto.main_initialization(); // initialization
     
+    lisperanto.loadFromStorage();
+    lisperanto.backgroundApplySaved();
+    lisperanto.restore_RDF_predicates_array();
+    lisperanto.defineTimerForFunctions();
+    
+    ko.applyBindings(lisperanto);
+
+    lisperanto.center_omni_box();
+
+    // this is for getting new version from text to storage
+
+    await lisperanto.migrate_all_function_to_storage_async();
+};
+
+lisperanto.define_global_offsets = function() {
+    lisperanto.define_globalOffsetX(); // initialization
+    lisperanto.define_globalOffsetY(); // initialization
+    lisperanto.define_globalOffsetZ(); // initialization
+    lisperanto.define_globalMaxX(); // initialization
+    lisperanto.define_globalMaxY(); // initialization
+    lisperanto.define_globalMinX(); // initialization
+    lisperanto.define_globalMinY();
+};
+
+lisperanto.main_initialization = function () {
+    lisperanto.define_objects();
+
     lisperanto.define_lookups();
 
     lisperanto.define_activeOperation(); // initialization
@@ -1406,41 +1433,22 @@ lisperanto.body_onload_async = async function()
     lisperanto.define_menuWasAlreadyOpen(); // initialization
 
     lisperanto.define_optionsIsOpen(); // initialization
-    lisperanto.define_optionsWasAlreadyOpen(); // initialization
-    
-    lisperanto.loadFromStorage();
-    lisperanto.backgroundApplySaved();
-    lisperanto.restore_RDF_predicates_array();
-    lisperanto.defineTimerForFunctions();
-    
-    ko.applyBindings(lisperanto);
+    lisperanto.define_optionsWasAlreadyOpen();
+};
 
-    
-    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, 
+lisperanto.center_omni_box = function () {
+    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox,
         {
             x: 0,
             y: document.body.offsetHeight / 3
         });
 
     const width_of_omnibox = document.getElementById("contextual-omni-box").offsetWidth;
-    const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
-    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, 
+    const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox / 2));
+    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox,
         {
             x: delta_x_2,
             y: document.body.offsetHeight / 3
         });
-
-    // this is for getting new version from text to storage
-
-    await lisperanto.migrate_all_function_to_storage_async();
 };
 
-lisperanto.define_global_offsets = function() {
-    lisperanto.define_globalOffsetX(); // initialization
-    lisperanto.define_globalOffsetY(); // initialization
-    lisperanto.define_globalOffsetZ(); // initialization
-    lisperanto.define_globalMaxX(); // initialization
-    lisperanto.define_globalMaxY(); // initialization
-    lisperanto.define_globalMinX(); // initialization
-    lisperanto.define_globalMinY();
-};
