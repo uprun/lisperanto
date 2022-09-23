@@ -541,13 +541,14 @@ lisperanto.add_statement_key_to_json_entry_by_name = async function(statement_ke
 
 lisperanto.define_listOfOpenElements = () => lisperanto.listOfOpenElements = ko.observableArray([]);
 
-lisperanto.closeElement = function(obj)
+lisperanto.closeElement = async function(obj)
 {
-    if(obj.id in lisperanto.mapOfOpenElements)
+    const hash = await lisperanto.calculate_hash_promise(obj);
+    if(hash in lisperanto.mapOfOpenElements)
     {
-        const wrapper = lisperanto.mapOfOpenElements[obj.id];
+        const wrapper = lisperanto.mapOfOpenElements[hash];
         lisperanto.listOfOpenElements.remove(wrapper);
-        delete lisperanto.mapOfOpenElements[obj.id];
+        delete lisperanto.mapOfOpenElements[hash];
     }
 };
 
@@ -973,14 +974,23 @@ lisperanto.create_RDF_entry_with_name_from_omnibox = async function()
     await lisperanto.create_and_show_RDF_entry(name);
 };
 
-lisperanto.omniBoxInputKeyPress_async = async function() 
+lisperanto.omniBoxClick_on_keydown = function()
 {
-    if(event.shiftKey && event.keyCode === 13)
+    event.stopPropagation();
+    if(event.code == "Enter" && (event.metaKey || event.ctrlKey))
     {
         if(lisperanto.activeOperation() === "global-omni-box-activated")
         {
             lisperanto.create_RDF_entry_with_name_from_omnibox();
         }
+    }
+    return true;
+};
+
+lisperanto.omniBoxInputKeyPress_async = async function() 
+{
+    if(event.code == "Enter" && (event.metaKey || event.ctrlKey))
+    {
     }
     else
     {
@@ -1003,7 +1013,7 @@ lisperanto.omniBoxInputKeyPress_async = async function()
                 const availableEntries = lisperanto.filteredSearch();
                 var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
                 const exactMatch = availableEntries.filter(entry => entry.text === searchQuery);
-                if(exactMatch.length > 0)
+                if(exactMatch.length === 1)
                 {
                     var functionToOpen = lisperanto.customObjects[exactMatch[0].id];
                     await lisperanto.openElement_async(functionToOpen);

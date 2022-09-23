@@ -70,6 +70,7 @@
                         class="omni-box-input" 
                         placeholder="type something here" 
                         onkeypress="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxInputKeyPress_async()"
+                        onkeydown="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxClick_on_keydown()"
                         data-bind="
                             textInput: $root.omniBoxTextInput,
                             attr: 
@@ -109,7 +110,7 @@
                     data-bind="if: $root.activeOperation() === 'global-omni-box-activated' && $root.omniBoxTextInput().trim().length != 0">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind="click: $root.create_RDF_entry_with_name_from_omnibox">
-                            add [Shift + &#9166;]
+                            add [ctrl + &#9166;] [cmnd + &#9166;]
                     </div>
                 </div>
                 
@@ -237,7 +238,7 @@
                 <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                     data-bind=" 
                         click: () => $root.confirm_change_to_json_async($data)">
-                        confirm change  [ ctrl + &#9166;] [cmnd + &#9166;]
+                        confirm change  [ctrl + &#9166;] [cmnd + &#9166;]
                 </div>
                 <!-- /ko -->
         </div>
