@@ -33,9 +33,7 @@ lisperanto.define_filteredSearch = () => {
     
             const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
                 {
-                    const obj = lisperanto.customObjects[key];
-                    const id = obj["id"];
-                    const has_new_version =  id in lisperanto.has_new_version_map;
+                    const has_new_version = key in lisperanto.has_new_version_map;
                     return has_new_version == false;
                 });
     
@@ -105,7 +103,7 @@ lisperanto.operationsPush = function(some)
     if ("previous-version@lisperanto" in value)
     {
         const previous_version = value["previous-version@lisperanto"];
-        lisperanto.has_new_version_map[previous_version] = true;
+        lisperanto.has_new_version_map[previous_version] = key;
     }
 
     var toAdd = {};
@@ -122,6 +120,18 @@ lisperanto.operationsPush = function(some)
     lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
 };
 
+lisperanto.find_latest_version = function(key)
+{
+    if (key in lisperanto.has_new_version_map)
+    {
+        return lisperanto.find_latest_version(lisperanto.has_new_version_map[key])
+    }
+    else
+    {
+        return key;
+    }
+};
+
 lisperanto.loadFromStorage = function()
 {
     for (const [keyInner, valueInner] of Object.entries(localStorage)) 
@@ -132,7 +142,7 @@ lisperanto.loadFromStorage = function()
             if ("previous-version@lisperanto" in parsed)
             {
                 const previous_version = parsed["previous-version@lisperanto"];
-                lisperanto.has_new_version_map[previous_version] = true;
+                lisperanto.has_new_version_map[previous_version] = keyInner;
             }
             lisperanto.customObjects[keyInner] = parsed;
             lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
@@ -278,7 +288,7 @@ lisperanto.create_object_with_hash_async = async function(original_object)
 lisperanto.create_and_show_RDF_entry = async function(name)
 {
     var toShow = await lisperanto.create_RDF_Entry(name);
-    lisperanto.openElement(toShow);
+    await lisperanto.openElement_async(toShow);
     lisperanto.hideOmniBox();
 };
 
@@ -406,6 +416,26 @@ lisperanto.copy_json_and_add_key_and_value_async = async function(obj, key, valu
     return await lisperanto.create_object_with_hash_async(new_obj);
 };
 
+
+lisperanto.copy_json_and_transform_keyholder_async = async function(obj, value)
+{
+    var new_obj = {};
+    const available_keys = Object.keys(obj);
+    const key = obj["new-key-holder@lisperanto"];
+    available_keys.forEach(k =>
+    {
+        if(!(k in new_obj))
+        {
+            var k_value = obj[k];
+            new_obj[k] = k_value;
+        }
+    });
+    delete new_obj["new-key-holder@lisperanto"];
+    new_obj[key] = value;
+    new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
+    return await lisperanto.create_object_with_hash_async(new_obj);
+};
+
 lisperanto.create_json_entry_from_object = function(obj)
 {
     var new_obj = lisperanto.create_object_with_id();
@@ -465,16 +495,18 @@ lisperanto.create_plain_json_copy = function(obj)
 
 lisperanto.add_statement_key_to_json_entry = async function()
 {
+    const wrapper = lisperanto.focusedObj();
     // [lives-in] [Odesa]
     // I decided that by convention every rdf-entry and rdf-predicate will have a name field 
 
-    var obj = lisperanto.focusedObj().wrapped_one();
+    var obj = wrapper.wrapped_one();
     const predicateName = lisperanto.omniBoxTextInput().trim();
     if(predicateName === "")
         return;
     var created_copy = await lisperanto.add_to_be_added_key_to_json_async(predicateName, obj);
     lisperanto.focusedObj().wrapped_one(created_copy);
     lisperanto.hideOmniBox();
+    lisperanto.open_OmniBox_for_adding_text_value_to_json_entry(wrapper);
     return created_copy;
 };
 
@@ -482,17 +514,13 @@ lisperanto.add_text_value_to_json_entry_async = async function()
 {
     var obj = lisperanto.focusedObj().wrapped_one();
     const text_value = lisperanto.omniBoxTextInput().trim();
-    const key = obj["new-key-holder@lisperanto"];
-    var clone = lisperanto.clone(obj);
-    delete clone["new-key-holder@lisperanto"];
-    var created_copy = await lisperanto.copy_json_and_add_key_and_value_async(clone, key, text_value);
+    var created_copy = await lisperanto.copy_json_and_transform_keyholder_async(obj, text_value);
     
     var operation = {
         id_from: await lisperanto.calculate_hash_promise(obj),
         id_to: await lisperanto.calculate_hash_promise(created_copy),
-        operation: "set-json-key-text-value",
-        key: key,
-        text_value: text_value,
+        operation: "set-value-to-holded-key",
+        value: text_value,
         time: lisperanto.getCurrentDateTimeString()
     };
     lisperanto.focusedObj().wrapped_one(created_copy);
@@ -595,7 +623,7 @@ lisperanto.moveElementsOnCanvasIteration = function()
         for (const [innerKey, inner_wrapper] of Object.entries(elements)) 
         {
             const innerValue = inner_wrapper.wrapped_one();
-            if(value.id == innerValue.id)
+            if(wrapper.id() == inner_wrapper.id())
             {
                 continue;
             }
@@ -641,7 +669,7 @@ lisperanto.filloutOmniBoxDataForFunction = function(callerId, omniBox, root)
     omniBox.top(offsetY);
 
     $("#" + omniBox.id ).focus();
-    event.stopPropagation();
+    event && event.stopPropagation();
 };
 
 lisperanto.filloutGlobalOmniBox = function(omniBox, offset) 
@@ -976,12 +1004,8 @@ lisperanto.omniBoxInputKeyPress_async = async function()
                 if(exactMatch.length > 0)
                 {
                     var functionToOpen = lisperanto.customObjects[exactMatch[0].id];
-                    lisperanto.openElement(functionToOpen);
+                    await lisperanto.openElement_async(functionToOpen);
                     lisperanto.hideOmniBox();
-                }
-                else
-                {
-                    lisperanto.create_RDF_entry_with_name_from_omnibox();
                 }
             }
         }
@@ -1316,35 +1340,48 @@ lisperanto.migrate_all_function_to_storage_async = async function()
                 continue;
             }
             expected_object["programming-language@lisperanto"] = "javascript";
+
+            const headers_only = lisperanto.clone(expected_object);
+            const initial_hash = await lisperanto.calculate_hash_promise(headers_only);
+            if (!(initial_hash in lisperanto.customObjects))
+            {
+                await lisperanto.create_object_with_hash_async(headers_only);
+            }
+            const latest_version_hash = lisperanto.find_latest_version(initial_hash);
+            expected_object["previous-version@lisperanto"] = latest_version_hash;
+
             expected_object["javascript-function-definition@lisperanto"] = function_definition;
+            const present = await lisperanto.equal_exists_async(expected_object);
+
+            if (!present)
+            {
+                await lisperanto.create_object_with_hash_async(expected_object);
+                console.log("creating json entry for", expected_object);
+            }
         }
         else
         {
             console.log("Non function found")
             console.log(key_name);
-            continue;
         }
-
-        
-        const present = await lisperanto.equal_exists_async(expected_object);
-        if (!present)
-        {
-            await lisperanto.create_object_with_hash_async(expected_object);
-            console.log("creating json entry for", expected_object);
-        }
-        
     }
 };
 
-lisperanto.body_onload_async = async function()
+lisperanto.define_lookups = function()
 {
-    lisperanto.define_objects();
     lisperanto.define_omniBoxTextInput(); // initialization
     lisperanto.define_somethingChanged(); // initialization
     lisperanto.define_filteredSearch(); // initialization
 
     lisperanto.define_rdf_predicates_Array(); // initialization
     lisperanto.define_filtered_rdf_predicates_Array(); // initialization
+};
+
+lisperanto.body_onload_async = async function()
+{
+    lisperanto.define_objects();
+    
+    lisperanto.define_lookups();
 
     lisperanto.define_activeOperation(); // initialization
     lisperanto.define_focusedObj(); // initialization
@@ -1361,13 +1398,7 @@ lisperanto.body_onload_async = async function()
 
     lisperanto.define_backgroundColor(); // initialization
 
-    lisperanto.define_globalOffsetX(); // initialization
-    lisperanto.define_globalOffsetY(); // initialization
-    lisperanto.define_globalOffsetZ(); // initialization
-    lisperanto.define_globalMaxX(); // initialization
-    lisperanto.define_globalMaxY(); // initialization
-    lisperanto.define_globalMinX(); // initialization
-    lisperanto.define_globalMinY(); // initialization
+    lisperanto.define_global_offsets(); // initialization
 
     lisperanto.define_menuIsOpen(); // initialization
     lisperanto.define_menuWasAlreadyOpen(); // initialization
@@ -1382,15 +1413,32 @@ lisperanto.body_onload_async = async function()
     
     ko.applyBindings(lisperanto);
 
-    const one_rem_in_pixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-    const expected_witdh_of_omnibox = 20 * one_rem_in_pixels;
-    const delta_x = Math.max(0, (document.body.offsetWidth / 2 - expected_witdh_of_omnibox/2));
-    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, {x: delta_x , y: document.body.offsetHeight / 3});
+    
+    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, 
+        {
+            x: 0,
+            y: document.body.offsetHeight / 3
+        });
 
     const width_of_omnibox = document.getElementById("contextual-omni-box").offsetWidth;
     const delta_x_2 = Math.max(0, (document.body.offsetWidth / 2 - width_of_omnibox/2));
-    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, {x: delta_x_2 , y: document.body.offsetHeight / 3});
+    lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, 
+        {
+            x: delta_x_2,
+            y: document.body.offsetHeight / 3
+        });
+
+    // this is for getting new version from text to storage
 
     await lisperanto.migrate_all_function_to_storage_async();
+};
+
+lisperanto.define_global_offsets = function() {
+    lisperanto.define_globalOffsetX(); // initialization
+    lisperanto.define_globalOffsetY(); // initialization
+    lisperanto.define_globalOffsetZ(); // initialization
+    lisperanto.define_globalMaxX(); // initialization
+    lisperanto.define_globalMaxY(); // initialization
+    lisperanto.define_globalMinX(); // initialization
+    lisperanto.define_globalMinY();
 };
