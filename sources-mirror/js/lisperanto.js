@@ -118,6 +118,11 @@ lisperanto.operationsPush = function(some)
     var data = JSON.stringify(toAdd);
     localStorage.setItem(key, data);
     lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
+    $.post("Home/SaveCustomObject",
+    {
+        hash: key,
+        value: data
+    });
 };
 
 lisperanto.find_latest_version = function(key)
