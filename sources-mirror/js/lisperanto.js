@@ -1365,7 +1365,15 @@ lisperanto.migrate_all_function_to_storage_async = async function()
                 await lisperanto.create_object_with_hash_async(headers_only);
             }
             const latest_version_hash = lisperanto.find_latest_version(initial_hash);
-            expected_object["previous-version@lisperanto"] = latest_version_hash;
+            const latest_object = lisperanto.customObjects[latest_version_hash];
+            if( "previous-version@lisperanto" in latest_object)
+            {
+                expected_object["previous-version@lisperanto"] = latest_object["previous-version@lisperanto"];
+            }
+            else
+            {
+                expected_object["previous-version@lisperanto"] = latest_version_hash;
+            }
 
             expected_object["javascript-function-definition@lisperanto"] = function_definition;
             const present = await lisperanto.equal_exists_async(expected_object);
