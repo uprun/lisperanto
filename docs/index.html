@@ -101,7 +101,7 @@
                 <div 
                     data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
                     <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
-                        data-bind="click: $root.replace_existing_json_key_from_omnibox_text">
+                        data-bind="click: $root.replace_existing_json_key_from_omnibox_text_async">
                             replace
                     </div>
                 </div>
@@ -211,8 +211,8 @@
                     <!-- ko ifnot: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
                     <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                         data-bind=" 
-                            click: () => $root.open_OmniBox_for_adding_statement_to_json_entry($data), 
-                            attr: {id: 'add-statement-to-json-entry--' + $data.id()}">
+                            click: () => $root.open_OmniBox_for_adding_statement_to_json_entry_async($data), 
+                            attr: {id: 'add-statement-to-json-entry--'}">
                             + statement
                     </div>
                     <!-- /ko -->
@@ -226,7 +226,7 @@
                         <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
                             data-bind=" 
                                 click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($data), 
-                                attr: {id: 'add-text-value-to-json-entry--' + $data.id()}">
+                                attr: {id: 'add-text-value-to-json-entry--'}">
                                 + text value
                         </div>
                     </div>

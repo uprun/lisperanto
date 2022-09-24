@@ -37,5 +37,19 @@ namespace lisperanto.Controllers
             }
             
         }
+
+        [HttpPost]
+        public async Task SaveOperation(string hash, string value)
+        {
+            var directory_info = Directory.CreateDirectory("operations");
+            using(var file_stream = System.IO.File.Create(Path.Combine(directory_info.FullName, $"{hash}.json")))
+            {
+                using(StreamWriter stream_writer = new StreamWriter(file_stream, System.Text.Encoding.UTF8))
+                {
+                    await stream_writer.WriteAsync(value);
+                }
+            }
+            
+        }
     }
 }

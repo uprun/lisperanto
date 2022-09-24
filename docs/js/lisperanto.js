@@ -94,7 +94,7 @@ lisperanto.define_filteredSearch = () => {
     );
 };
 
-lisperanto.operationsPush = function(some)
+lisperanto.operationsPush_async = async function(some)
 {
     lisperanto.operations.push(some);
     const key = some["id_to"] ;
@@ -123,6 +123,15 @@ lisperanto.operationsPush = function(some)
         hash: key,
         value: data
     });
+    if ("time" in some)
+    {
+        const operation_hash = await lisperanto.calculate_hash_promise(some);
+        $.post("Home/SaveOperation",
+        {
+            hash: some["time"] + " " + operation_hash,
+            value: JSON.stringify(some)
+        });
+    }
 };
 
 lisperanto.find_latest_version = function(key)
@@ -173,8 +182,10 @@ lisperanto.create_wrapper_for_canvas_async = async function(value)
         "new_value@lisperanto": ko.observable(""),
         offsetX: ko.observable(0),
         offsetY: ko.observable(0),
-        id: ko.observable(await lisperanto.calculate_hash_promise(value))
     };
+
+    wrapper_for_canvas["id"] = ko.observable(await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]()));
+    wrapper_for_canvas["wrapped_one"].subscribe(async () => wrapper_for_canvas["id"](await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]())));
 
     wrapper_for_canvas.inWorldOffsetX = ko.computed(function()
     {
@@ -285,7 +296,7 @@ lisperanto.create_object_with_hash_async = async function(original_object)
             'initial-data': lisperanto.clone(original_object),
             'time': lisperanto.getCurrentDateTimeString()
         };
-        lisperanto.operationsPush(operation);
+        await lisperanto.operationsPush_async(operation);
     }
     return original_object;
 }
@@ -332,7 +343,7 @@ lisperanto.define_filtered_rdf_predicates_Array = () =>
 
 }; 
 
-lisperanto.find_or_create_rdf_predicate = function(predicate)
+lisperanto.find_or_create_rdf_predicate_async = async function(predicate)
 {
     const predicateNameInLowerCase = predicate.toLowerCase();
     var filtered = ko.utils.arrayFilter(lisperanto.rdf_predicates_Array(), function(item)
@@ -345,7 +356,7 @@ lisperanto.find_or_create_rdf_predicate = function(predicate)
     }
     else
     {
-        return lisperanto.create_RDF_predicate(predicate);
+        return await lisperanto.create_RDF_predicate_async(predicate);
     }
 
 };
@@ -378,22 +389,20 @@ lisperanto.equal_exists_async = async function(obj)
     return hash in lisperanto.customObjects;
 };
 
-lisperanto.create_RDF_predicate = function(predicate_name)
+lisperanto.create_RDF_predicate_async = async function(predicate_name)
 {
-    var toAdd = lisperanto.create_object_with_id(predicate_name);
-    toAdd["type"] = "rdf-predicate";
+    var toAdd = {};
     toAdd["name@lisperanto"] = predicate_name;
+    toAdd["type"] = "rdf-predicate";
 
-    var operation = 
-    {
-        operation: "create-rdf-predicate",
-        id_to: toAdd.id,
-        predicate_name: predicate_name
-    };
+    const created = await lisperanto.create_object_with_hash_async(toAdd);
 
-    lisperanto.rdf_predicates_Array.push(toAdd);
-
-    lisperanto.operationsPush(operation);
+    lisperanto.rdf_predicates_Array.push(
+        {
+            id: await lisperanto.calculate_hash_promise(toAdd),
+            "name@lisperanto": toAdd["name@lisperanto"]
+        }
+    );
     return toAdd.id;
 };
 
@@ -530,9 +539,9 @@ lisperanto.add_text_value_to_json_entry_async = async function()
         time: lisperanto.getCurrentDateTimeString()
     };
     wrapper.wrapped_one(created_copy);
-    lisperanto.operationsPush(operation);
+    await lisperanto.operationsPush_async(operation);
     lisperanto.hideOmniBox();
-    lisperanto.open_OmniBox_for_adding_statement_to_json_entry(wrapper);
+    await lisperanto.open_OmniBox_for_adding_statement_to_json_entry_async(wrapper);
 };
 
 lisperanto.add_statement_key_to_json_entry_by_name = async function(statement_key)
@@ -665,9 +674,9 @@ lisperanto.defineTimerForFunctions = function()
 };
 
 
-lisperanto.filloutOmniBoxDataForFunction = function(callerId, omniBox, root) 
+lisperanto.filloutOmniBoxDataForFunction = function(query, omniBox, root) 
 {
-    var foundUI = $("#" + callerId)[0];
+    var foundUI = $(query)[0];
     omniBox.visible(true);
     var offsetX = foundUI.offsetLeft;
         offsetX += root.offsetX();
@@ -899,22 +908,25 @@ lisperanto.vectorBetweenBoxes = function(firstBox, secondBox)
 
 
 
-lisperanto.open_OmniBox_for_adding_statement_to_json_entry = function(caller)
+lisperanto.open_OmniBox_for_adding_statement_to_json_entry_async = async function(caller)
 {
     lisperanto.hideOmniBox();
     lisperanto.focusedObj(caller);
     lisperanto.activeOperation("add-statement-key-to-json-entry");
 
-    lisperanto.filloutOmniBoxDataForFunction('add-statement-to-json-entry--' + caller.id(), lisperanto.canvasOmniBox, caller);
+    const id = await caller.id();
+    lisperanto.filloutOmniBoxDataForFunction(`#${id} #add-statement-to-json-entry--`, lisperanto.canvasOmniBox, caller);
 };
 
-lisperanto.open_OmniBox_for_adding_text_value_to_json_entry = function(caller)
+lisperanto.open_OmniBox_for_adding_text_value_to_json_entry = async function(caller)
 {
     lisperanto.hideOmniBox();
     lisperanto.focusedObj(caller);
     lisperanto.activeOperation("add-text-value-to-json-entry");
 
-    lisperanto.filloutOmniBoxDataForFunction('add-text-value-to-json-entry--' + caller.id(), lisperanto.canvasOmniBox, caller);
+    const id = await caller.id();
+
+    lisperanto.filloutOmniBoxDataForFunction(`#${id} #add-text-value-to-json-entry--`, lisperanto.canvasOmniBox, caller);
 };
 
 lisperanto.hideOmniBox = function()
@@ -925,10 +937,10 @@ lisperanto.hideOmniBox = function()
     lisperanto.omniBoxTextInput("");
 };
 
-lisperanto.add_existing_RDF_predicate_to_json_from_omnibox = function(obj)
+lisperanto.add_existing_RDF_predicate_to_json_from_omnibox = async function(obj)
 {
     event.stopPropagation();
-    lisperanto.add_statement_key_to_json_entry_by_name(obj.text);
+    await lisperanto.add_statement_key_to_json_entry_by_name(obj.text);
     lisperanto.hideOmniBox();
 };
 
@@ -941,10 +953,10 @@ lisperanto.replace_existing_json_key_from_omnibox = function(obj)
 
 };
 
-lisperanto.replace_existing_json_key_from_omnibox_text = function()
+lisperanto.replace_existing_json_key_from_omnibox_text_async = async function()
 {
     const new_key = lisperanto.omniBoxTextInput().trim();
-    var new_key_id = lisperanto.find_or_create_rdf_predicate(new_key);
+    var new_key_id = await lisperanto.find_or_create_rdf_predicate_async(new_key);
     lisperanto.replace_focused_json_key_with_new(new_key);
     lisperanto.hideOmniBox();
 };
@@ -1006,7 +1018,7 @@ lisperanto.omniBoxInputKeyPress_async = async function()
             {
                 "add-statement-key-to-json-entry": () => lisperanto.add_statement_key_to_json_entry(),
                 'add-text-value-to-json-entry':async () => await lisperanto.add_text_value_to_json_entry_async(),
-                'replace-existing-json-key': () => lisperanto.replace_existing_json_key_from_omnibox_text()
+                'replace-existing-json-key': async () => await lisperanto.replace_existing_json_key_from_omnibox_text_async()
             };
 
             if ( key in map)
@@ -1187,7 +1199,7 @@ lisperanto.defineOmniBox = function() {
 lisperanto.define_canvasOmniBox = () => lisperanto.canvasOmniBox = lisperanto.defineOmniBox();
 
 lisperanto.add_to_be_added_key_to_json_async = async function (predicateName, obj) {
-    var toAdd_id = lisperanto.find_or_create_rdf_predicate(predicateName);
+    var toAdd_id = await lisperanto.find_or_create_rdf_predicate_async(predicateName);
     var created_copy = await lisperanto.copy_json_and_add_key_and_value_async(obj, "new-key-holder@lisperanto", predicateName);
     var operation = {
         operation: "hold-json-key",
@@ -1195,7 +1207,7 @@ lisperanto.add_to_be_added_key_to_json_async = async function (predicateName, ob
         id_to: await lisperanto.calculate_hash_promise(created_copy),
         time: lisperanto.getCurrentDateTimeString()
     };
-    lisperanto.operationsPush(operation);
+    await lisperanto.operationsPush_async(operation);
     return created_copy;
 };
 
@@ -1229,7 +1241,8 @@ lisperanto.delete_json_key = function()
     var operation = {
         operation: "delete_json_key",
         id: copy["id"],
-        remove_key: lisperanto.key_in_json_to_focus
+        remove_key: lisperanto.key_in_json_to_focus,
+        'time': lisperanto.getCurrentDateTimeString()
     };
     lisperanto.operationsPush(operation);
     lisperanto.hideOmniBox();
@@ -1251,7 +1264,7 @@ lisperanto.confirm_change_to_json_async = async function(parent)
         new_value: new_value,
         time: lisperanto.getCurrentDateTimeString()
     };
-    lisperanto.operationsPush(operation);
+    await lisperanto.operationsPush_async(operation);
     parent["key_with_changes@lisperanto"]("");
     parent["new_value@lisperanto"]("")
 };
@@ -1262,17 +1275,19 @@ lisperanto.activate_replace_json_key = function()
     $("#" + lisperanto.canvasOmniBox.id ).focus();
 };
 
-lisperanto.replace_focused_json_key_with_new = function(new_key) {
+lisperanto.replace_focused_json_key_with_new = async function(new_key) {
     const old_key = lisperanto.key_in_json_to_focus;
-    var copy = lisperanto.copy_json_and_replace_key(lisperanto.focusedObj().wrapped_one(), old_key, new_key);
-    lisperanto.focusedObj().wrapped_one(copy);
+    const wrapper = lisperanto.focusedObj();
+    var copy = lisperanto.copy_json_and_replace_key(wrapper.wrapped_one(), old_key, new_key);
+    wrapper.wrapped_one(copy);
     var operation = {
         operation: "replace_json_key",
         id: copy["id"],
         new_key: new_key,
-        old_key: old_key
+        old_key: old_key,
+        'time': lisperanto.getCurrentDateTimeString()
     };
-    lisperanto.operationsPush(operation);
+    await lisperanto.operationsPush_async(operation);
 };
 
 lisperanto.define_anchorWidth = () => lisperanto.anchorWidth = ko.observable(2 * parseFloat(getComputedStyle(document.documentElement).fontSize));
