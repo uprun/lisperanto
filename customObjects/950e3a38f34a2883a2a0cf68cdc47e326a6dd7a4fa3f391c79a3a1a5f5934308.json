@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_menuIsOpen","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"f15f921d58b2196f7a61ca2943d7cbfe48540c0ff60f98a1bd06884b253eb25f","javascript-function-definition@lisperanto":"() => lisperanto.menuIsOpen = ko.observable(false)"}

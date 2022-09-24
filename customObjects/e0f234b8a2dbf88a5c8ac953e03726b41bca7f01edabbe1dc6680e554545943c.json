@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"clone","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"f81031751e9d0464fa9e364058a07dd217e6bb50c5e820ac2efa88dd2d642e81","javascript-function-definition@lisperanto":"(obj) => JSON.parse(JSON.stringify(obj))"}

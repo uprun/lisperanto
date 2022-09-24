@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_globalOffsetZ","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"f7d2816404e460f889bf1748c7306ba410a8696bf4fa5aa3f73df438b1b9d48e","javascript-function-definition@lisperanto":"() => lisperanto.globalOffsetZ = ko.observable(1.0)"}

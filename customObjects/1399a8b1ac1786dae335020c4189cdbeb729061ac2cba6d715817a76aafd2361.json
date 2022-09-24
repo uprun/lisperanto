@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_activeOperation","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"21cbbb94beae581bdb5e4c84fcb07c607ae47b36237dab81c17498dec33ee5e2","javascript-function-definition@lisperanto":"() => lisperanto.activeOperation = ko.observable(\"\")"}

@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_rdf_predicates_Array","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"4ba0382ab0efff7f0054672b189012dee1042f215712a6193b7ba5377d461c82","javascript-function-definition@lisperanto":"() => lisperanto.rdf_predicates_Array = ko.observableArray([])"}

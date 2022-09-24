@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_backgroundColor","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"e359e05db834df4a97f1ae74139b09ed11471c97f1cf2f9eea6ec8f48a0ff9fc","javascript-function-definition@lisperanto":"() => lisperanto.backgroundColor = ko.observable(\"#000000\")"}

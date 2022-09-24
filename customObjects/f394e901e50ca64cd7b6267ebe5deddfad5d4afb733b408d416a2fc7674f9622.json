@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_menuWasAlreadyOpen","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"dfb74fd5d99923e5cd73959b6331977956962551ccad9e32f4e76bc2c3c8bf84","javascript-function-definition@lisperanto":"() => lisperanto.menuWasAlreadyOpen = ko.observable(false)"}

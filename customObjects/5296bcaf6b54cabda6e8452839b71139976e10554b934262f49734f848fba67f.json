@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"stopPropagation","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"ce6e1e1aa04474f7dd2cf6586085a59d5fc99791b8a1334b2f6e9a60ac819e30","javascript-function-definition@lisperanto":"function()\r\n{\r\n    event.stopPropagation();\r\n}"}
