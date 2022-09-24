@@ -185,7 +185,15 @@ lisperanto.create_wrapper_for_canvas_async = async function(value)
     };
 
     wrapper_for_canvas["id"] = ko.observable(await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]()));
-    wrapper_for_canvas["wrapped_one"].subscribe(async () => wrapper_for_canvas["id"](await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]())));
+    wrapper_for_canvas["wrapped_one"].subscribe(async () => 
+        {
+            
+            const previous_hash = wrapper_for_canvas["id"]();
+            lisperanto.mapOfOpenElements[new_hash] = lisperanto.mapOfOpenElements[previous_hash];
+            delete lisperanto.mapOfOpenElements[previous_hash];
+            const new_hash = await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]());
+            return wrapper_for_canvas["id"](new_hash);
+        });
 
     wrapper_for_canvas.inWorldOffsetX = ko.computed(function()
     {
