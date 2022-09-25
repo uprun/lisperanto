@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"editorKeyUp","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"d72a8dfa2fc7d1f4e20eef0e3054b74d4380293753ad6d2fe27ec54afb85b9be","javascript-function-definition@lisperanto":"function(event)\r\n{\r\n    event.stopPropagation();\r\n}"}

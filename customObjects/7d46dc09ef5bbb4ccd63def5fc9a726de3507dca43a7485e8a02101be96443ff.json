@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_globalMinX","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"7e845118d83a00b8e936c8e41e5fc6bd0eef7b91bb3faad9c739f2c0ae7ddb0a","javascript-function-definition@lisperanto":"() => lisperanto.globalMinX = ko.observable(-screen.width * 2)"}

@@ -21,6 +21,7 @@ namespace lisperanto.Controllers
         public IActionResult Index()
         {
             Response.Redirect("/index.html");
+            GenerateLisperanto();
             return View();
         }
 
@@ -64,7 +65,26 @@ namespace lisperanto.Controllers
             }
             catch(KeyNotFoundException _)
             {}
+        }
+
+        private void GenerateLisperanto()
+        {
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "js", "lisperanto");
+            string target_path = Path.Combine(Directory.GetCurrentDirectory(), "docs","js", "lisperanto_test.js");
+            var files = Directory.GetFiles(directory_path).OrderBy(path => path);
+            using(StreamWriter stream_writer = new StreamWriter(target_path))
+            {
+                foreach(var path in files)
+                {
+                    Console.WriteLine(path);
+                    using(StreamReader stream_reader = new StreamReader(path))
+                    {
+                        stream_writer.Write(stream_reader.ReadToEnd());
+                    }
+                }
+            }
             
+
         }
 
         [HttpPost]

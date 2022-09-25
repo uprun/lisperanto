@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"bodyKeyUp","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"d4cce64ac06683bd7c98e956e4318f2b0f408e70d56656fb2817ccf83015abd8","javascript-function-definition@lisperanto":"function( data, event)\r\n{\r\n\r\n    return true;\r\n\r\n}"}

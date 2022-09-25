@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_globalMinY","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"38a33d0e4579a09b3cf3750630ee584a5c6be99ede5c09207814cfa030751eb8","javascript-function-definition@lisperanto":"() => lisperanto.globalMinY = ko.observable(-screen.height * 2)"}

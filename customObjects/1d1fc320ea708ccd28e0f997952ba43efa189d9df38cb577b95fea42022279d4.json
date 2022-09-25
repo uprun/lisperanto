@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_optionsIsOpen","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"64f3f587c66864dd78d81604ee280ca8af755204dd3ef21c8d74f26bd111e693","javascript-function-definition@lisperanto":"() => lisperanto.optionsIsOpen = ko.observable(false)"}

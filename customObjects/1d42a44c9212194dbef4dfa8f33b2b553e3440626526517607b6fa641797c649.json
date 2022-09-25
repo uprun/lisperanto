@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_listOfOpenElements","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"679ab763f47d2df6bf04dcef81bb577da219650f55350dbc98adb7d988931f53","javascript-function-definition@lisperanto":"() => lisperanto.listOfOpenElements = ko.observableArray([])"}

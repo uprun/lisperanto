@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_globalMaxY","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"dfeab0f85b21a0d1e578385ebe12f7465b58f8bfed7977f4375959b9f0a2430a","javascript-function-definition@lisperanto":"() => lisperanto.globalMaxY = ko.observable(screen.height)"}

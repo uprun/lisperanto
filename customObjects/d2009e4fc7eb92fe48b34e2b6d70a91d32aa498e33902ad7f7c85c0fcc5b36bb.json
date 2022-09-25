@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"removeEverything","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"4babe3d8ded92bc8f5bab2db467736d029b8c1b511a343cf7c45874d2776905a","javascript-function-definition@lisperanto":"function()\n{\n    localStorage.clear();\n    location.reload();\n}"}

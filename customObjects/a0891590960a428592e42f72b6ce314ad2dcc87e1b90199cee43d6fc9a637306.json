@@ -1,1 +1,0 @@
-﻿{"name@lisperanto":"define_globalOffsetY","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","previous-version@lisperanto":"d1e47ea94a08a319d32d6af107bcbdb3451542c9bb153e4a8937d8dc4f17b38b","javascript-function-definition@lisperanto":"() => lisperanto.globalOffsetY = ko.observable(0.0)"}

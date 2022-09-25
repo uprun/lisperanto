@@ -1,4 +1,4 @@
-﻿// Version hash: 2f03816a9add68d814fa2e94ded5ef03c354400a50a7e420cae4d7960e339d70
+﻿// Version hash: 7c3982ea24600fe7ad1df7a4688fe7352b45ef4e14ef28502cc68760231b5440
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -29,23 +29,6 @@ lisperanto.migrate_all_function_to_storage_async = async function()
                 continue;
             }
             expected_object["programming-language@lisperanto"] = "javascript";
-
-            const headers_only = lisperanto.clone(expected_object);
-            const initial_hash = await lisperanto.calculate_hash_promise(headers_only);
-            if (!(initial_hash in lisperanto.customObjects))
-            {
-                await lisperanto.create_object_with_hash_async(headers_only);
-            }
-            const latest_version_hash = lisperanto.find_latest_version(initial_hash);
-            const latest_object = lisperanto.customObjects[latest_version_hash];
-            if( "previous-version@lisperanto" in latest_object)
-            {
-                expected_object["previous-version@lisperanto"] = latest_object["previous-version@lisperanto"];
-            }
-            else
-            {
-                expected_object["previous-version@lisperanto"] = latest_version_hash;
-            }
 
             expected_object["javascript-function-definition@lisperanto"] = function_definition;
             const present = await lisperanto.equal_exists_async(expected_object);
