@@ -1,4 +1,4 @@
-﻿// Version hash: 3e995d6707fdc346adba40d21795ec588b8f0ad02418a3c49caf40be244ff307
+﻿// Version hash: b4a8a4044b4b31e13bc393cfaad45f1ff7c31c37ba2d6aa12516ae5381d2c036
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -6,7 +6,7 @@ if(typeof(lisperanto) === 'undefined')
 
 lisperanto.operationsPush_async = async function(some)
 {
-    lisperanto.operations.push(some);
+    //lisperanto.operations.push(some);
     const key = some["id_to"] ;
     const value = lisperanto.customObjects[key];
 

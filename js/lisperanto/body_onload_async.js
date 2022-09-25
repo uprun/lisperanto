@@ -1,4 +1,4 @@
-﻿// Version hash: f789e44a140764410cc795bd227d6bff397c1e38c30b784d47e47a8f911a136f
+﻿// Version hash: 25422bbe2453cf3db214f6d86254196d7b5f9bde159c4de63203a27d2b03bd6c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -10,6 +10,8 @@ lisperanto.body_onload_async = async function()
     
     lisperanto.loadFromStorage();
     lisperanto.loadCustomObjectsFromServer();
+
+    lisperanto.load_operations_from_server();
     lisperanto.backgroundApplySaved();
     lisperanto.restore_RDF_predicates_array();
     lisperanto.defineTimerForFunctions();

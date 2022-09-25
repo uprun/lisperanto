@@ -138,5 +138,26 @@ namespace lisperanto.Controllers
                 };
             }
         }
+
+        public class OperationResult
+        {
+            public string Key {get; set;}
+            public string Value {get; set;}
+        }
+
+        [HttpGet]
+        public OperationResult GetOperation(string key)
+        {
+            string target_path = Path.Combine(Directory.GetCurrentDirectory(), "operations", $"{key}.json");
+
+            using(StreamReader stream_reader = new StreamReader(target_path))
+            {
+                return new OperationResult
+                {
+                    Key = key,
+                    Value = stream_reader.ReadToEnd()
+                };
+            }
+        }
     }
 }

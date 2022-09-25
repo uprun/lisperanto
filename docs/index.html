@@ -151,6 +151,7 @@
             <div style="margin-right: 0.3rem; cursor: auto;">
                 <span 
                     class="webpad-color-orange"
+                    spellcheck="false"
                     data-bind="
                         text: $data,
                         click: $root.stopPropagation,
@@ -164,6 +165,7 @@
                 onclick="lisperanto.stopPropagation()"
                 onkeyup="lisperanto.editorKeyUp(event)"
                 onkeydown="lisperanto.editorKeyDown_async()"
+                spellcheck="false"
                 data-bind="
                     text: $parent[$data],
                     event: 

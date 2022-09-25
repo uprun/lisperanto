@@ -144,7 +144,7 @@ lisperanto.backgroundApplySaved = function()
 {
     var background = localStorage["backgroundColor"] || "#000000";
     lisperanto.backgroundColor(background);
-};// Version hash: f789e44a140764410cc795bd227d6bff397c1e38c30b784d47e47a8f911a136f
+};// Version hash: 25422bbe2453cf3db214f6d86254196d7b5f9bde159c4de63203a27d2b03bd6c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -156,6 +156,8 @@ lisperanto.body_onload_async = async function()
     
     lisperanto.loadFromStorage();
     lisperanto.loadCustomObjectsFromServer();
+
+    lisperanto.load_operations_from_server();
     lisperanto.backgroundApplySaved();
     lisperanto.restore_RDF_predicates_array();
     lisperanto.defineTimerForFunctions();
@@ -563,7 +565,7 @@ lisperanto.create_json_entry_from_object = function(obj)
         }
     }
     return new_obj;
-};// Version hash: a9e85de5c53a033ed4c7731d738bd18709ddfd2ce04c3275defb0b21d2bc6e23
+};// Version hash: 2b24fd7a1d1068cfc89301b32101c7897e3f66e0fa1252787758628635f8a134
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -674,7 +676,7 @@ lisperanto.create_RDF_predicate_async = async function(predicate_name)
         }
     );
     return toAdd.id;
-};// Version hash: bef6da2af2afd992a827e35ee5efbd1d83bd9c8f06c03ee6aaed1ae55e3fb01c
+};// Version hash: 6b7ad9506b962f9d0bc371dc478d7900de3b7bd6483af3fd4f01942a3c3590be
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -694,11 +696,10 @@ lisperanto.create_wrapper_for_canvas_async = async function(value)
     wrapper_for_canvas["id"] = ko.observable(await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]()));
     wrapper_for_canvas["wrapped_one"].subscribe(async () => 
         {
-            
+            const new_hash = await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]());
             const previous_hash = wrapper_for_canvas["id"]();
             lisperanto.mapOfOpenElements[new_hash] = lisperanto.mapOfOpenElements[previous_hash];
             delete lisperanto.mapOfOpenElements[previous_hash];
-            const new_hash = await lisperanto.calculate_hash_promise(wrapper_for_canvas["wrapped_one"]());
             return wrapper_for_canvas["id"](new_hash);
         });
 
@@ -791,13 +792,14 @@ lisperanto.define_filtered_rdf_predicates_Array = () =>
         return filtered;
     });
 
-};// Version hash: d7c52308fea2f1bab14c75131e24df933035235090cac8f8bd025bf299e0be40
+};// Version hash: fb4710f60d419e19754dda932aff4732a09f694956119e34d7ad53b21bab9957
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
 lisperanto.define_filteredSearch = () => {
+
     lisperanto.filteredSearch = ko.computed(
         function()
         {
@@ -805,13 +807,31 @@ lisperanto.define_filteredSearch = () => {
             var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
             var filtered = [];
             const availableKeys = Object.keys(lisperanto.customObjects);
-    
+
             const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
                 {
                     const has_new_version = key in lisperanto.has_new_version_map;
-                    return has_new_version == false;
+                    if(has_new_version)
+                        return false;
+
+                    const obj = lisperanto.customObjects[key];
+                    var name = "";
+                    if("name@lisperanto" in obj)
+                    {
+                        name = obj["name@lisperanto"];
+
+                    }
+                    if(name in lisperanto["lookup_by_name"])
+                    {
+                        const latest_operation_key = lisperanto.lookup_by_name[name];
+                        const latest_operation = lisperanto.operations[latest_operation_key];
+                        if (latest_operation.id_to !== key)
+                            return false;
+                        
+                    }
+                    return true;
                 });
-    
+
             const mapped = ko.utils.arrayMap(non_statements, function(key) {
                 const obj = lisperanto.customObjects[key];
                 var name = "";
@@ -819,54 +839,88 @@ lisperanto.define_filteredSearch = () => {
                 {
                     name = obj["name@lisperanto"];
                 }
-    
+
                 if( "name" in obj )
                 {
                     name = obj["name"]
                 }
-    
+
                 if(name === "")
                 {
                     name = "no-name " + obj.id;
                 }
-                
+
                 var toReturn = {
                     id: key,
                     text: name,
                     full_text: JSON.stringify(obj).toLowerCase()
+
                 };
+
     
+
                 toReturn["search_index_text"] = toReturn.text.toLowerCase().indexOf(searchQuery);
+
                 toReturn["search_index_full_text"] = toReturn.full_text.indexOf(searchQuery);
+
                 return toReturn;
+
                 
+
             });
+
     
+
             if(searchQuery === "")
+
             {
+
                 filtered = mapped;
+
             }
+
             else
+
             {
+
                 filtered = ko.utils.arrayFilter(mapped, function(item)
+
                 {
+
                     return item["search_index_text"] >= 0 || item["search_index_full_text"]  >= 0;
+
                 });
+
             }
+
     
+
             filtered = filtered.map(element => {
+
                 const index = element["search_index_full_text"];
+
                 if (searchQuery !== "" && element["search_index_text"] < 0 &&  index >= 0)
+
                 {
+
                     const new_text = element.full_text.substring(index - 5, index + searchQuery.length + 5);
+
                     element.text = element.text + "  ..." + new_text;
+
                 }
+
                 return element;
+
             });
+
     
+
             return filtered;
+
         }
+
     );
+
 };// Version hash: 21ff728288f24b6aab9bf3b5c85de9071db46143e255ed30913e6d2106ebe9af
 if(typeof(lisperanto) === 'undefined')
 {
@@ -961,7 +1015,7 @@ if(typeof(lisperanto) === 'undefined')
 	lisperanto = {};
 }
 
-lisperanto.define_menuWasAlreadyOpen = () => lisperanto.menuWasAlreadyOpen = ko.observable(false);// Version hash: 424964ca609900d2725a7ac0f4caaf00170d6f514df43fdfac4f4884c65dfede
+lisperanto.define_menuWasAlreadyOpen = () => lisperanto.menuWasAlreadyOpen = ko.observable(false);// Version hash: fd523bb3973d60dde5f52e8c6b697fd1b549784fe3a7d45978f26e49bf0e74d0
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -974,6 +1028,12 @@ lisperanto.define_objects = function()
     lisperanto.has_new_version_map = {};
     lisperanto.mapOfOpenElements = {};
     lisperanto.desiredOffset = {x: 0, y: 0};
+
+
+
+    lisperanto["lookup_by_name"] = {};
+
+    lisperanto["operations"] = {};
 };// Version hash: 878ad3896c8e8a9e0ada7c15dfbbf9b32c50d9e0c209d429ea5f189edc8ec7af
 if(typeof(lisperanto) === 'undefined')
 {
@@ -1504,6 +1564,89 @@ lisperanto.json_key_oncontextmenu = function(obj, parent)
     lisperanto.canvasOmniBox.left(lisperanto.desiredOffset.x);
     lisperanto.canvasOmniBox.top(lisperanto.desiredOffset.y);
     return false;
+};// Version hash: c2365a9ec611fa2d59aff24fe619eba1a857427a7aa5482eefca3800fca16e5b
+if(typeof(lisperanto) === 'undefined')
+{
+	lisperanto = {};
+}
+
+lisperanto.load_operations_from_server = function()
+
+{
+
+
+
+    if ( !("lookup_by_name" in lisperanto))
+    {
+        lisperanto["lookup_by_name"] = {};
+
+    }
+
+
+    if ( !("operations" in lisperanto))
+    {
+        lisperanto["operations"] = {};
+
+    }
+
+    $.get('Home/ListOfOperations', function(data, status){
+        for(var k in data)
+        {
+            const key = data[k];
+            console.log(k);
+            if( !(key in lisperanto.operations))
+            {
+                $.get("Home/GetOperation", {key: key})
+                    .done(function(data_obj)
+                    {
+                        console.log(data_obj)
+                        var parsed = JSON.parse(data_obj.value);
+
+
+
+                        lisperanto.operations[data_obj.key] = parsed;
+
+                        if (("id_from" in parsed) && ("id_to" in parsed))
+
+                        {
+                            const id_from = parsed["id_from"];
+                            const id_to = parsed["id_to"];
+                            lisperanto.has_new_version_map[id_from] = id_to;
+                        }
+
+                        else
+                        {
+                            if (("id_to" in parsed))
+                            {
+                                const id_to = parsed["id_to"];
+                                const obj = lisperanto.customObjects[id_to];
+                                if (("name@lisperanto" in obj))
+                                {
+                                    const name = obj["name@lisperanto"];
+                                    if (name in lisperanto["lookup_by_name"])
+                                    {
+                                        const latest_key = lisperanto["lookup_by_name"][name];
+                                        if(data_obj.key > latest_key )
+                                        {
+                                            lisperanto["lookup_by_name"][name] = data_obj.key;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lisperanto["lookup_by_name"][name] = data_obj.key;
+                                    }
+                                }
+
+
+                            }
+                        }
+
+                        //lisperanto.customObjects[data_obj.hash] = parsed;
+                        lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
+                    });
+            }
+        }
+      });
 };// Version hash: 559d0b3b32ef0af03bd11ac007c181c33bbd18ec11c1b46a549f20ec6ba95774
 if(typeof(lisperanto) === 'undefined')
 {
@@ -1907,7 +2050,7 @@ lisperanto.openElement_async = async function(obj)
         console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
     }
     console.log("finished openElement");
-};// Version hash: 3e995d6707fdc346adba40d21795ec588b8f0ad02418a3c49caf40be244ff307
+};// Version hash: b4a8a4044b4b31e13bc393cfaad45f1ff7c31c37ba2d6aa12516ae5381d2c036
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1915,7 +2058,7 @@ if(typeof(lisperanto) === 'undefined')
 
 lisperanto.operationsPush_async = async function(some)
 {
-    lisperanto.operations.push(some);
+    //lisperanto.operations.push(some);
     const key = some["id_to"] ;
     const value = lisperanto.customObjects[key];
 

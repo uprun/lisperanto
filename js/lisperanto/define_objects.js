@@ -1,4 +1,4 @@
-﻿// Version hash: 424964ca609900d2725a7ac0f4caaf00170d6f514df43fdfac4f4884c65dfede
+﻿// Version hash: fd523bb3973d60dde5f52e8c6b697fd1b549784fe3a7d45978f26e49bf0e74d0
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -11,4 +11,10 @@ lisperanto.define_objects = function()
     lisperanto.has_new_version_map = {};
     lisperanto.mapOfOpenElements = {};
     lisperanto.desiredOffset = {x: 0, y: 0};
+
+
+
+    lisperanto["lookup_by_name"] = {};
+
+    lisperanto["operations"] = {};
 };
