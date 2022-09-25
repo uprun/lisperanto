@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"omniBoxClick","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function()\r\n{\r\n    event.stopPropagation();\r\n}"}

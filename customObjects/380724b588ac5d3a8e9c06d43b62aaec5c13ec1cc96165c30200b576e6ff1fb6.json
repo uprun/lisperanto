@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"defineTimerForFunctions","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function()\r\n{\r\n    lisperanto.timerForFunctions = setInterval(lisperanto.moveElementsOnCanvasIteration, 30);\r\n}"}

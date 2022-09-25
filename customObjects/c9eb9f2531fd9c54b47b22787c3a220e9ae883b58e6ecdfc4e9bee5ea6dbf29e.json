@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_globalMaxX","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"() => lisperanto.globalMaxX = ko.observable(screen.width)"}

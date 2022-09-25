@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"changeBackground","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function() \n{\n    var background = \"#333333\";\n    lisperanto.backgroundColor(background);\n    localStorage[\"backgroundColor\"] = background;\n    event.stopPropagation();\n}"}

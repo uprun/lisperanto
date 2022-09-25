@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"epsilonEqual","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function(a, b, e = 0.00001 )\r\n{\r\n    var result = Math.abs(a-b) < e;\r\n    return result;\r\n}"}

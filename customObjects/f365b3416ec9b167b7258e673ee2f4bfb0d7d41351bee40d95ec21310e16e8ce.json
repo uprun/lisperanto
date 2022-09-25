@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"toggleOptions","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function() \n{\n    event.stopPropagation();\n    lisperanto.optionsIsOpen(!lisperanto.optionsIsOpen());\n    lisperanto.optionsWasAlreadyOpen(true);\n}"}

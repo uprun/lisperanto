@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_globalOffsetX","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"() => lisperanto.globalOffsetX = ko.observable(0.0)"}

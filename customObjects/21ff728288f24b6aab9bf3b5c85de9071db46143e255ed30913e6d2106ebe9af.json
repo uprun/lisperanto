@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_focusedObj","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"() => lisperanto.focusedObj = ko.observable({})"}

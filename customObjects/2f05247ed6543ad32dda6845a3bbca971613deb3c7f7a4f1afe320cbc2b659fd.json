@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"normalizeVector","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function(point)\r\n{\r\n    var newLength = Math.sqrt(lisperanto.vectorLengthSquared(point));\r\n    point.x /= newLength;\r\n    point.y /= newLength;\r\n    return point;\r\n}"}

@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"vectorLength","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function(v)\r\n{\r\n    var result = Math.sqrt(lisperanto.vectorLengthSquared(v));\r\n    return result;\r\n}"}

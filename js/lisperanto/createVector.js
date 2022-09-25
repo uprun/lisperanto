@@ -1,4 +1,4 @@
-﻿// Version hash: 356c0a06cec9de80b3c7ab39128d1227ec04daf6d47754c01e8e5f2cf5045cc7
+﻿// Version hash: 120b94bad4b4b6d1a5c8d179efa4b723ce50b1a8fb7fd6c67e4ff3e584838a18
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};

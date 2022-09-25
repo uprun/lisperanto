@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"showMenu","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function()\n{\n    if(!lisperanto.optionsIsOpen())\n    {\n        lisperanto.toggleOptions();\n    }\n}"}

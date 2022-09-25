@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"createVector","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function(a, b)\r\n{\r\n    var result = {\r\n        x: b.x - a.x,\r\n        y: b.y - a.y\r\n    };\r\n    return result;\r\n}"}

@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"define_body_is_dragged","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"() => lisperanto.body_is_dragged = ko.observable(false)"}

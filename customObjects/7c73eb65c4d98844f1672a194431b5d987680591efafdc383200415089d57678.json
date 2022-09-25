@@ -1,0 +1,1 @@
+﻿{"name@lisperanto":"vectorLengthSquared","type@lisperanto":"function","module@lisperanto":"lisperanto","programming-language@lisperanto":"javascript","javascript-function-definition@lisperanto":"function(point)\r\n{\r\n    return point.x * point.x + point.y * point.y;\r\n}"}
