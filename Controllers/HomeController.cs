@@ -109,5 +109,26 @@ namespace lisperanto.Controllers
             var files = Directory.GetFiles(directory_path).OrderBy(path => path).Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
             return files;
         }
+
+        public class CustomObjectResult
+        {
+            public string Hash {get; set;}
+            public string Value {get; set;}
+        }
+
+        [HttpGet]
+        public CustomObjectResult GetCustomObject(string hash)
+        {
+            string target_path = Path.Combine(Directory.GetCurrentDirectory(), "customObjects", $"{hash}.json");
+
+            using(StreamReader stream_reader = new StreamReader(target_path))
+            {
+                return new CustomObjectResult
+                {
+                    Hash = hash,
+                    Value = stream_reader.ReadToEnd()
+                };
+            }
+        }
     }
 }

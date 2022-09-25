@@ -1497,7 +1497,7 @@ lisperanto.json_key_oncontextmenu = function(obj, parent)
     lisperanto.canvasOmniBox.left(lisperanto.desiredOffset.x);
     lisperanto.canvasOmniBox.top(lisperanto.desiredOffset.y);
     return false;
-};// Version hash: 496b01aac300ba1908f20b32fa8957ca13b6a07df2500c3d5c158f501db64a8b
+};// Version hash: b060863a17a952136e42ca8cdc52bdbee5b49e12573de84534ff713836f0651b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1506,7 +1506,22 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.loadCustomObjectsFromServer = function()
 {
     $.get('Home/ListOfCustomObjects', function(data, status){
-        console.log(data);
+        for(var k in data)
+        {
+            const hash = data[k];
+            console.log(k);
+            if( !(hash in lisperanto.customObjects))
+            {
+                $.get("Home/GetCustomObject", {hash: hash})
+                    .done(function(data_obj)
+                    {
+                        console.log(data_obj)
+                        var parsed = JSON.parse(data_obj.value);
+                        lisperanto.customObjects[data_obj.hash] = parsed;
+                        lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
+                    });
+            }
+        }
       });
 };// Version hash: d1cd4f7938530bff8531b0eb62ad6ccdd807162105acf9eaf4c0021a56762c7a
 if(typeof(lisperanto) === 'undefined')
