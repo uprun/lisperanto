@@ -110,6 +110,14 @@ namespace lisperanto.Controllers
             return files;
         }
 
+        [HttpGet]
+        public async Task<string[]> ListOfOperations()
+        {
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "operations");
+            var files = Directory.GetFiles(directory_path).OrderBy(path => path).Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
+            return files;
+        }
+
         public class CustomObjectResult
         {
             public string Hash {get; set;}
