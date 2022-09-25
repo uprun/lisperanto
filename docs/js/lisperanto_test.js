@@ -1,4 +1,4 @@
-// Version hash: 922167480bc3e9a0076354110ca36091a4498ae927fb7ad1cc13d678a22cbdc0
+// Version hash: 1087f7f57e549531cdce9f1bd6396c13f950fb87ee61e3664029259aea4d6120
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -8,7 +8,7 @@ lisperanto.activate_replace_json_key = function()
 {
     lisperanto.activeOperation("replace-existing-json-key");
     $("#" + lisperanto.canvasOmniBox.id ).focus();
-};// Version hash: 7480f9ed8011de722b6674e539afd3ef6609a388f00777b53534ac751dacb560
+};// Version hash: bfc4528eac8d9a3975d87dfc80ff6527c97e63349bbe6af4b9086d51f2d3919e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -19,7 +19,7 @@ lisperanto.add_existing_RDF_predicate_to_json_from_omnibox = async function(obj)
     event.stopPropagation();
     await lisperanto.add_statement_key_to_json_entry_by_name(obj.text);
     lisperanto.hideOmniBox();
-};// Version hash: d5fd5d4814eecd49c690d1123c46d0680feb588065b0bac012278f8ba31d4eb7
+};// Version hash: 4024a3b4e6fe6c1574c7345d42345e60aebe9a25b4c54a20769ee3194f8849ef
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -32,7 +32,7 @@ lisperanto.add_statement_key_to_json_entry_by_name = async function(statement_ke
     lisperanto.focusedObj().wrapped_one(created_copy);
     lisperanto.hideOmniBox();
     return created_copy;
-};// Version hash: bd8a87247b9e0cb6ab3fb621a6c0365be12e1e6ce708296a15d4ca87b8800ee6
+};// Version hash: 515eae0f95e2be014bc668e8af709d01abc8831733014e718063c5e2fc3b1bee
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -53,7 +53,7 @@ lisperanto.add_statement_key_to_json_entry = async function()
     lisperanto.hideOmniBox();
     lisperanto.open_OmniBox_for_adding_text_value_to_json_entry(wrapper);
     return created_copy;
-};// Version hash: b5cd5bfa5a33deaa0faa16fbd984c7a3be78de2967a5aae20098f347bee006e5
+};// Version hash: c3e4438faa2f3b96c8b49e3adeda80a548b54306c9f92777b87403fa44f29ee0
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -77,7 +77,7 @@ lisperanto.add_text_value_to_json_entry_async = async function()
     await lisperanto.operationsPush_async(operation);
     lisperanto.hideOmniBox();
     await lisperanto.open_OmniBox_for_adding_statement_to_json_entry_async(wrapper);
-};// Version hash: f6c59fb2e8da851afb7977bdae6dc1d5eeb072151c55e8e210cf78d0db0b7b50
+};// Version hash: 9be9357841f8d6c0e8241b9d546bb344e4167312b55c8d2b688a3ad7f021d995
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -94,7 +94,7 @@ lisperanto.add_to_be_added_key_to_json_async = async function (predicateName, ob
     };
     await lisperanto.operationsPush_async(operation);
     return created_copy;
-};// Version hash: 0e404d814766efaa29b538dd62d4b17d0a1313bb4244a00d9cffc168ec7edc2e
+};// Version hash: d747077a9d8a02bb35262b86c1e20fb0c5c390726b3ad0112845dba1545720e2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -112,7 +112,7 @@ lisperanto.alignOffset = function(point)
     }
     point = lisperanto.normalizeVector(point);
     return point;
-};// Version hash: 9dfc897f322a115384302085cf39a579151982b3897939bfda08f3c89c2677ea
+};// Version hash: 8b5fb6b9b059714a7562219300e38476e2a389a8efaaa3fce1336907c42d76b4
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -134,7 +134,7 @@ lisperanto.applyMovement = function (deltaY, deltaX)
     newOffsetX = Math.max(newOffsetX, min_X);
     lisperanto.globalOffsetX(newOffsetX);
     //console.log({x: newOffsetX, min_X: min_X, y: newOffsetY, min_Y: min_Y});
-};// Version hash: e1b8930a8b59daec2636e7a28dc21f37dd846c8f2b4f182e1242ee5e41668784
+};// Version hash: 1e6bc74346755c8b44b1183ccf599a2bd6db10e25d8ee269404b3ecb47506633
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -144,7 +144,7 @@ lisperanto.backgroundApplySaved = function()
 {
     var background = localStorage["backgroundColor"] || "#000000";
     lisperanto.backgroundColor(background);
-};// Version hash: f473f7b64492a7c28467fb385a1675ebdff69acd2d475853c0aabe0bef5a1e32
+};// Version hash: f789e44a140764410cc795bd227d6bff397c1e38c30b784d47e47a8f911a136f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -155,6 +155,7 @@ lisperanto.body_onload_async = async function()
     lisperanto.main_initialization(); // initialization
     
     lisperanto.loadFromStorage();
+    lisperanto.loadCustomObjectsFromServer();
     lisperanto.backgroundApplySaved();
     lisperanto.restore_RDF_predicates_array();
     lisperanto.defineTimerForFunctions();
@@ -166,7 +167,7 @@ lisperanto.body_onload_async = async function()
     // this is for getting new version from text to storage
 
     await lisperanto.migrate_all_function_to_storage_async();
-};// Version hash: 25ed1b8e6188caaabdb4e0969d42268b2c976ff3c49620fad293a8738d94a620
+};// Version hash: c3abc317d99b0dc49723f862b0e7e5ad6bdab6688d36f1675a689799979925eb
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -177,7 +178,7 @@ lisperanto.body_onmousedown = function()
     //console.log(event);
     lisperanto.body_is_dragged(true);
     lisperanto.total_movement_while_body_drag(0)
-};// Version hash: 1a0dd5b7535b036c51910d6960d3d29e41ecb242d3d9a173c7f35fa0e3cb80e8
+};// Version hash: df45448180dadfa8772c676793394eadf2e9b0b13b9ccb5416afd88455c246f1
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -195,7 +196,7 @@ lisperanto.body_onmousemove = function()
         lisperanto.applyMovement(0,0);
         lisperanto.total_movement_while_body_drag(lisperanto.total_movement_while_body_drag() + Math.abs(deltaX) + Math.abs(deltaY));
     }
-};// Version hash: 1f7992b14a66b5a932d07249f09bba34611b2b80095cc99b596b9ecdcfc06673
+};// Version hash: d4c0d506b346fc6a672211f8b79c0f32d40739cc4f3ba67496b8ae5ae560c079
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -204,7 +205,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.body_onmouseout = function()
 {
     lisperanto.body_is_dragged(false);
-};// Version hash: 36ce602446a81bb8acf5d99920e061ad5806408f53a7f2a2141b166458ceddd8
+};// Version hash: c08561f1d5ce9985cb3337ddbf71ee816ea9cc560110b7222112e67bdaedbc9c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -214,7 +215,7 @@ lisperanto.body_onmouseup = function()
 {
     //console.log(event);
     lisperanto.body_is_dragged(false);
-};// Version hash: 83cd780380c4bfdb671bfda270679e1c48a76097da3f321001a877a08c166bc7
+};// Version hash: 4892b5a9b7a93abb7dc264585680bc73bac93e2de411054aef6675a89efba10c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -251,7 +252,7 @@ lisperanto.bodyKeyDown = function( data, event)
 
     return true;
 
-};// Version hash: 8af7f0050dea0c4bf8213ffe1da9c68c08aae6088ce4f9bec4a5c43f4c78399a
+};// Version hash: fcb75995b858cb0faf96b9ffd1c559701e396ec0af2e81844993a75001c0d758
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -262,7 +263,7 @@ lisperanto.bodyKeyUp = function( data, event)
 
     return true;
 
-};// Version hash: db469ba25354771d54c0690a864f258b4450b2156ebdd7179d2382f7fc42575a
+};// Version hash: 5df30aa8594ea63738fc740a4b56f924d2a26a0ebd2e0bda1fbb5fc3e415106a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -292,7 +293,7 @@ lisperanto.bodyOnClick = function(e)
     }
 
     lisperanto.showOmniBox();
-};// Version hash: 4d0cbed65c8f809951e214f489efbdb25ce61f2644f7a0d10eb8912cfd0142bd
+};// Version hash: 74fae67206eddbfc2c4894052a44b6d244d89b159f94a2640753ebba7ed49bd5
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -302,7 +303,7 @@ lisperanto.bodyOnPointerMove = function()
 {
     //console.log(event);
 
-};// Version hash: 0fbd7dc2dd2bd20c631c4de247e11dcda6b644aed826b02b13fbaf1a3e71464e
+};// Version hash: 296c8e2164a52381ef330767b1d1533826c4da5d53c82bc3eae902ae00718e3a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -311,7 +312,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.bodyOnTouchEnd = function()
 {
     lisperanto.previosTouch = undefined;
-};// Version hash: a81036f79ea4449558ef891a92c7c34d7d7a53f015b75c6714387f5240ed8f54
+};// Version hash: 797c14f0775fe607a62b439aa20ba31d3ee91deb50c8fec54c87498883615f9a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -333,7 +334,7 @@ lisperanto.bodyOnTouchMove = function()
         }
         lisperanto.previosTouch = {x: clientX, y: clientY};
     }
-};// Version hash: d63c5d526d17455ef49a34c87db0c185bfca6a9963e38ce847e6e7d85a3264ed
+};// Version hash: 6ae21b5d797225371b6f243d367eec26d6398a7e10d03ef4c82b617797b407c7
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -347,7 +348,7 @@ lisperanto.bodyOnWheel = function() {
     lisperanto.applyMovement(deltaY, deltaX);
   
     //scale += event.deltaY * -0.01;
-};// Version hash: 3decd86784a63780b18c722fb0ec855c65e436dce9733e370b99311665befc52
+};// Version hash: 7c5d8a93acfd0b878bfbc10fe881fded275e551976dbdd3e0bc822a49ed22365
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -369,7 +370,7 @@ lisperanto.calculate_hash_promise = function(obj)
             .join('');
         return hashHex;
     });
-};// Version hash: 0abfb4a57770d7ecaa5e03b0334ad884793f4624e6dbb996a148ee7f6e1dfd0f
+};// Version hash: ced913b6a91ad6de80e7a9c46bfd8ba5f00243dff128cc11efc2fe7fe5dc7b20
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -389,7 +390,7 @@ lisperanto.center_omni_box = function () {
             x: delta_x_2,
             y: document.body.offsetHeight / 3
         });
-};// Version hash: 6da9270cb063fb1b99819e42732af6fb17bca80771ada4dd3696bafe53e457f6
+};// Version hash: 88422a96540999c0b66509d0306485263367a633beab795c778ca415cb4953f3
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -401,7 +402,7 @@ lisperanto.changeBackground = function()
     lisperanto.backgroundColor(background);
     localStorage["backgroundColor"] = background;
     event.stopPropagation();
-};// Version hash: 1456ebf30dce3aeb57f41e33b958df70fc3b7740440d0e88ddada58d7133bb65
+};// Version hash: e1ce7166cc52d8f6cad4e22c76a5944ce36d7bce0e10d0c5f32efcd995f4df12
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -413,13 +414,13 @@ lisperanto.changeBackgroundToDefault = function()
     lisperanto.backgroundColor(background);
     localStorage["backgroundColor"] = background;
     event.stopPropagation();
-};// Version hash: e0f234b8a2dbf88a5c8ac953e03726b41bca7f01edabbe1dc6680e554545943c
+};// Version hash: 939c1b1968d7e17a085e72b6861644e0b17e1547eec2be7671c7295ee850258b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.clone = (obj) => JSON.parse(JSON.stringify(obj));// Version hash: 23ce29162dc0ad87b2120282a795d52a16d94a7b305e30a3e6dd1140a577b3be
+lisperanto.clone = (obj) => JSON.parse(JSON.stringify(obj));// Version hash: 38d415cab2b367b662d9b8c659dbdcb2ce83835ec2887d18402bc8ef09672102
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -434,7 +435,7 @@ lisperanto.closeElement = async function(obj)
         lisperanto.listOfOpenElements.remove(wrapper);
         delete lisperanto.mapOfOpenElements[hash];
     }
-};// Version hash: d8551bd1acb3cc7a391d60f1a3c02dfc4b1d695d2320b72d922bcc02eae7af6b
+};// Version hash: 135ee77ae76ca9383c33639c291c89a2aa21998c242752fecbd226db7ad08b42
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -459,7 +460,7 @@ lisperanto.confirm_change_to_json_async = async function(parent)
     await lisperanto.operationsPush_async(operation);
     parent["key_with_changes@lisperanto"]("");
     parent["new_value@lisperanto"]("")
-};// Version hash: d9749bb0758871b052869130c2fae52db8540cf386ab11ba42519f41c11925fb
+};// Version hash: 33c42aa0493766626f387cb2616955779618b33d35a1128e0b8c43bc319e151e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -480,7 +481,7 @@ lisperanto.copy_json_and_add_key_and_value_async = async function(obj, key, valu
     new_obj[key] = value;
     new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
     return await lisperanto.create_object_with_hash_async(new_obj);
-};// Version hash: 8d47d838354a81df636ea2ebbab39012ab46e43f78859f11ab0f3c19110a25c3
+};// Version hash: 3ca173851dead66b197f3b7e43c4644432d62bb0683c69b26407465003b93f62
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -507,7 +508,7 @@ lisperanto.copy_json_and_replace_key = function(obj, old_key, new_key)
     });
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
-};// Version hash: 9cf490b12a8b4ce470997929ff32f64eee2821d05e55a90f2849b1548cfacd16
+};// Version hash: 7a6496aaf26793259544964b83657753db4ca38d7d156136a1d093dbe647abf0
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -530,7 +531,7 @@ lisperanto.copy_json_and_transform_keyholder_async = async function(obj, value)
     new_obj[key] = value;
     new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
     return await lisperanto.create_object_with_hash_async(new_obj);
-};// Version hash: 104df536dc42bf7d3871cfc113c23c5131ec9aa38a2245af289e2b0e9433ae03
+};// Version hash: 55d7f24e8c40c37fa699ce4da142c82cfe790fc65c6f09d8356c398c840c5a1a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -541,7 +542,7 @@ lisperanto.create_and_show_RDF_entry = async function(name)
     var toShow = await lisperanto.create_RDF_Entry(name);
     await lisperanto.openElement_async(toShow);
     lisperanto.hideOmniBox();
-};// Version hash: d19077d176252dcd3a02fe420792f6b5cdb422411a2727192ba2b818d65bb1f2
+};// Version hash: 1bd783bda0c263720adc67afb979695418002f7a3af76648fc3a09d86fd5e9f5
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -562,7 +563,7 @@ lisperanto.create_json_entry_from_object = function(obj)
         }
     }
     return new_obj;
-};// Version hash: 112f3f8f3ca6eae3cf2a2f5c49b4b12a19a542715bc4e993cee9e9bba64a06a6
+};// Version hash: 10470d59c02c49142df6f906906d814183dee1a36d5c01e4d51c0a72f174694d
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -584,7 +585,7 @@ lisperanto.create_object_with_hash_async = async function(original_object)
         await lisperanto.operationsPush_async(operation);
     }
     return original_object;
-};// Version hash: 2a0cb52ccd2e9ea444310f4927a89acc1c6db0ad451b74b1a53adec14067cb83
+};// Version hash: 0ea23d2ce3e806d2ca652e5732a7dbe1f4a1b9a98931ecb71d714acde78ca99d
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -601,7 +602,7 @@ lisperanto.create_object_with_id = function()
 
     lisperanto.customObjects[guid] = toAdd;
     return toAdd;
-};// Version hash: fd892b7748b2a451254c4eaeb71aaf862d5e36eee5fccdf88e431bee6364792f
+};// Version hash: 1339a84999d5af4f9f21cbcdb81425c844d34bd823d262e53d072b93f8f7f85f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -621,7 +622,7 @@ lisperanto.create_plain_json_copy = function(obj)
     });
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
-};// Version hash: c37cd6948ca809812c9a68555245f89501ba3826cb6398979ff42771469e18de
+};// Version hash: ce9d46638f13b3b85447100b56a010b1b9d0f94cfcda0e65977f5f4c507f1bf2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -634,7 +635,7 @@ lisperanto.create_RDF_entry_with_name_from_omnibox = async function()
         return;
 
     await lisperanto.create_and_show_RDF_entry(name);
-};// Version hash: 515ad07457a368e3507cc6a96d3c675ad5a53d372ddeaffc45d4d1010e70e233
+};// Version hash: dcb05f012afb05d8031f513fd18999d81190a7c8605ff961289561227755cf55
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -645,7 +646,7 @@ lisperanto.create_RDF_Entry = async function(name)
     var toAdd = {};
     toAdd["name@lisperanto"] = name;
     return await lisperanto.create_object_with_hash_async(toAdd);
-};// Version hash: 25030f3498cb9f7f444f80993291e7b63d342d5f5fc30b155aef5f5ff4a9de9e
+};// Version hash: 80860d1992c6f789989abffc3c530a3a3e32bdec4879faf36b52a00710b468d2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -666,7 +667,7 @@ lisperanto.create_RDF_predicate_async = async function(predicate_name)
         }
     );
     return toAdd.id;
-};// Version hash: cc747b67416752b15327b3f0913a9c959a054a724c6799dcbca9028b25a42280
+};// Version hash: bef6da2af2afd992a827e35ee5efbd1d83bd9c8f06c03ee6aaed1ae55e3fb01c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -704,7 +705,7 @@ lisperanto.create_wrapper_for_canvas_async = async function(value)
         return wrapper_for_canvas.offsetY() + lisperanto.globalOffsetY();
     });
     return wrapper_for_canvas;
-};// Version hash: 356c0a06cec9de80b3c7ab39128d1227ec04daf6d47754c01e8e5f2cf5045cc7
+};// Version hash: 120b94bad4b4b6d1a5c8d179efa4b723ce50b1a8fb7fd6c67e4ff3e584838a18
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -717,37 +718,37 @@ lisperanto.createVector = function(a, b)
         y: b.y - a.y
     };
     return result;
-};// Version hash: 1399a8b1ac1786dae335020c4189cdbeb729061ac2cba6d715817a76aafd2361
+};// Version hash: d3b3a72a927006aa9ead4b11adf28d283488b99f0be62630da3750f7db89f177
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_activeOperation = () => lisperanto.activeOperation = ko.observable("");// Version hash: b10a2c510dcb0d9317a6615b4f10a5e6670fd4c80dadc2ddc7159c84910f3e64
+lisperanto.define_activeOperation = () => lisperanto.activeOperation = ko.observable("");// Version hash: 136080994379ade002af289371dbfa5827a4c92dfab2e9fe09ae96add9765ea2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_anchorWidth = () => lisperanto.anchorWidth = ko.observable(2 * parseFloat(getComputedStyle(document.documentElement).fontSize));// Version hash: d00754dd7d81451a871e2002b3342f073c0537f0bf155f0edb934561a74e791f
+lisperanto.define_anchorWidth = () => lisperanto.anchorWidth = ko.observable(2 * parseFloat(getComputedStyle(document.documentElement).fontSize));// Version hash: 916b8e8304ecdb152bbd59aa6452ee42c957b71d77e2e195a49a8f124498c872
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_backgroundColor = () => lisperanto.backgroundColor = ko.observable("#000000");// Version hash: 188a26a327f0f1fe31930e6b3509aaa04895da81d0effb448da7e026b2a520fc
+lisperanto.define_backgroundColor = () => lisperanto.backgroundColor = ko.observable("#000000");// Version hash: 6cde43aa1820c9e4ec4bb652af6aa7fb4675c18eae36797729390bb89493ef70
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_body_is_dragged = () => lisperanto.body_is_dragged = ko.observable(false);// Version hash: c072de3335025cbb9541fa8241631f983003e94ab268c051a916d53a9bcb5827
+lisperanto.define_body_is_dragged = () => lisperanto.body_is_dragged = ko.observable(false);// Version hash: 449a749a9f2068c1aa284283981acde847c12ce0a977453b4d8326fe71448bb9
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_canvasOmniBox = () => lisperanto.canvasOmniBox = lisperanto.defineOmniBox();// Version hash: c88cb70046875cbe9477f844f973c6ba1ab6b2e477b032ddb0f6726099faba19
+lisperanto.define_canvasOmniBox = () => lisperanto.canvasOmniBox = lisperanto.defineOmniBox();// Version hash: 9f88afe400f02a52ed415ad5278bb230098f9f132201be962ea4e3a41fb8a9ff
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -783,7 +784,7 @@ lisperanto.define_filtered_rdf_predicates_Array = () =>
         return filtered;
     });
 
-};// Version hash: eb511e57ccfc722eb69e6fba584348ae7b429d5b374536cf9ad4bb7dd337bf11
+};// Version hash: d7c52308fea2f1bab14c75131e24df933035235090cac8f8bd025bf299e0be40
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -859,13 +860,13 @@ lisperanto.define_filteredSearch = () => {
             return filtered;
         }
     );
-};// Version hash: 97bf243e31be386abe6b9fb762a685eb2fff84770c544086e3d2331326f0bf93
+};// Version hash: 21ff728288f24b6aab9bf3b5c85de9071db46143e255ed30913e6d2106ebe9af
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_focusedObj = () => lisperanto.focusedObj = ko.observable({});// Version hash: 8ea6d4f7020d385dc3963206409109e3b299a6f571f9d4a41ed6a82e017c852b
+lisperanto.define_focusedObj = () => lisperanto.focusedObj = ko.observable({});// Version hash: 1c8f27f3640350673a6f86cd41c17e8155e74336c59fe4e9adf358d8ff4db00e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -879,55 +880,55 @@ lisperanto.define_global_offsets = function() {
     lisperanto.define_globalMaxY(); // initialization
     lisperanto.define_globalMinX(); // initialization
     lisperanto.define_globalMinY();
-};// Version hash: d1142e2990c1dc0440bc005864b817888bd6db2fcc0e4ed785c86d75e80375df
+};// Version hash: c9eb9f2531fd9c54b47b22787c3a220e9ae883b58e6ecdfc4e9bee5ea6dbf29e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalMaxX = () => lisperanto.globalMaxX = ko.observable(screen.width);// Version hash: 9bdc16d0a04302375967bf8913999ea6949de1440d29419a900b2d8fac3ccd64
+lisperanto.define_globalMaxX = () => lisperanto.globalMaxX = ko.observable(screen.width);// Version hash: 94a5b755ee9acd97e4bfe1c281ef88c990fec2187aefa6cdffc0d4bef0316dc4
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalMaxY = () => lisperanto.globalMaxY = ko.observable(screen.height);// Version hash: 7d46dc09ef5bbb4ccd63def5fc9a726de3507dca43a7485e8a02101be96443ff
+lisperanto.define_globalMaxY = () => lisperanto.globalMaxY = ko.observable(screen.height);// Version hash: 40217577bf951f2a64ec1b7b3c1e915786d1d5c4226086d94f304aee3b0e5872
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalMinX = () => lisperanto.globalMinX = ko.observable(-screen.width * 2);// Version hash: 66830964e9f374aedb3f92d212f6d611dfeb9b0f3b8f1a6be630cfbc957f5605
+lisperanto.define_globalMinX = () => lisperanto.globalMinX = ko.observable(-screen.width * 2);// Version hash: 64f76ce6b7fe7906f4aa9495766c3f9a421c352011dc078dab72e36c97bb459c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalMinY = () => lisperanto.globalMinY = ko.observable(-screen.height * 2);// Version hash: 32f82708389bdbeb332743cec29ae3d3f88697ded9409db3d000c0c969e49d58
+lisperanto.define_globalMinY = () => lisperanto.globalMinY = ko.observable(-screen.height * 2);// Version hash: eab27d1c1a2aa561e8f3a14edff5e7340dab88757533d20cf37b23551326ce30
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalOffsetX = () => lisperanto.globalOffsetX = ko.observable(0.0);// Version hash: a0891590960a428592e42f72b6ce314ad2dcc87e1b90199cee43d6fc9a637306
+lisperanto.define_globalOffsetX = () => lisperanto.globalOffsetX = ko.observable(0.0);// Version hash: 0aff454d1fbe9917e3a1ea62acc491d673c3b1b4a187463a56c3118dd4b4d071
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalOffsetY = () => lisperanto.globalOffsetY = ko.observable(0.0);// Version hash: 06359931a17e34a3879d27dfe6ff14382bdd4da48ffd7cab6a19f675acffa977
+lisperanto.define_globalOffsetY = () => lisperanto.globalOffsetY = ko.observable(0.0);// Version hash: f9cc22e287506875a9b29f0967013851314359e29320987b55af6f743d84e18b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_globalOffsetZ = () => lisperanto.globalOffsetZ = ko.observable(1.0);// Version hash: 1d42a44c9212194dbef4dfa8f33b2b553e3440626526517607b6fa641797c649
+lisperanto.define_globalOffsetZ = () => lisperanto.globalOffsetZ = ko.observable(1.0);// Version hash: 7af72c9bd300ce2d7b3fe5dd78cfc87f9cd0f2de494db726e771e43dd81ffa5a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_listOfOpenElements = () => lisperanto.listOfOpenElements = ko.observableArray([]);// Version hash: 3f262abe90236ec3a60fa74560abebe737e3173bb0f20662d49513b5ae369e9e
+lisperanto.define_listOfOpenElements = () => lisperanto.listOfOpenElements = ko.observableArray([]);// Version hash: 1c940fd560749a29c06a229bee850cd4504e11360be7d5b7125acf64cd41ff81
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -941,19 +942,19 @@ lisperanto.define_lookups = function()
 
     lisperanto.define_rdf_predicates_Array(); // initialization
     lisperanto.define_filtered_rdf_predicates_Array(); // initialization
-};// Version hash: 950e3a38f34a2883a2a0cf68cdc47e326a6dd7a4fa3f391c79a3a1a5f5934308
+};// Version hash: 0be2bc04087edff79acb24c9c94bc163506f298b8e035041913568fa72b13723
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_menuIsOpen = () => lisperanto.menuIsOpen = ko.observable(false);// Version hash: f394e901e50ca64cd7b6267ebe5deddfad5d4afb733b408d416a2fc7674f9622
+lisperanto.define_menuIsOpen = () => lisperanto.menuIsOpen = ko.observable(false);// Version hash: 54f680f1620b743ff0010670ad1566c063e7dcf020e60468b3d2307d8dab268d
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_menuWasAlreadyOpen = () => lisperanto.menuWasAlreadyOpen = ko.observable(false);// Version hash: 3149a36baa7e67a43bc82fd560489d0e349a150201b49f0d6a26103a4164c38c
+lisperanto.define_menuWasAlreadyOpen = () => lisperanto.menuWasAlreadyOpen = ko.observable(false);// Version hash: 424964ca609900d2725a7ac0f4caaf00170d6f514df43fdfac4f4884c65dfede
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -966,7 +967,7 @@ lisperanto.define_objects = function()
     lisperanto.has_new_version_map = {};
     lisperanto.mapOfOpenElements = {};
     lisperanto.desiredOffset = {x: 0, y: 0};
-};// Version hash: 7ec92c115447d162fe7f2f33d65ad917727abd05c1738d2cd4ad890d44cd5753
+};// Version hash: 878ad3896c8e8a9e0ada7c15dfbbf9b32c50d9e0c209d429ea5f189edc8ec7af
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -976,25 +977,25 @@ lisperanto.define_omniBoxTextInput = () => {
     lisperanto.omniBoxTextInput = ko.observable("");
     lisperanto.omniBoxTextInput
         .extend({ rateLimit: 100 });
-};// Version hash: 1d1fc320ea708ccd28e0f997952ba43efa189d9df38cb577b95fea42022279d4
+};// Version hash: 7e5de4b5949af8bd87504bf0c0febd428a738bf23557a206d4f9b3cd5f800028
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_optionsIsOpen = () => lisperanto.optionsIsOpen = ko.observable(false);// Version hash: 98a5bdd166b071da2d5da7dfa3e9fcf79ad0956af492c3558015901c7042dcda
+lisperanto.define_optionsIsOpen = () => lisperanto.optionsIsOpen = ko.observable(false);// Version hash: be80a9df52135596fd63fd3adfe1a7f8f5fc0c4897a99d7d7367a327b9c0e7fd
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_optionsWasAlreadyOpen = () => lisperanto.optionsWasAlreadyOpen = ko.observable(false);// Version hash: da34150648d3f110353e7bb532b3c0d34a4ad5730da5278c20db7981809a5680
+lisperanto.define_optionsWasAlreadyOpen = () => lisperanto.optionsWasAlreadyOpen = ko.observable(false);// Version hash: 5448d9c8d1f9c8979d92dbde84c39b9f74a50fe08d937c761435871e4d7b5b5f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_rdf_predicates_Array = () => lisperanto.rdf_predicates_Array = ko.observableArray([]);// Version hash: 19e2bf02c539123e09b709ecec9696820fc34c2b802012251a98a485c98e7b48
+lisperanto.define_rdf_predicates_Array = () => lisperanto.rdf_predicates_Array = ko.observableArray([]);// Version hash: ca530581a641133ba20044bf2a4c83586b2c3d86e54d032cf8fb50a2be550f10
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1003,13 +1004,13 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.define_somethingChanged = () => {
     lisperanto.somethingChanged = ko.observable(0);
     lisperanto.somethingChanged.extend({ rateLimit: 100 });
-};// Version hash: 14579e906580eb1bba8f8ea65c72d62ca953019d50a1668c04c4c0ae1962e708
+};// Version hash: 677d74fbd7cfabb44100dc47bbdc3eab37094b57ed0c018ce033771d6db06c43
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.define_total_movement_while_body_drag = () => lisperanto.total_movement_while_body_drag = ko.observable(0);// Version hash: e42fbde32533ae56f6b774bd55903d7c28635139dfff8801c658fbcdfdd44c39
+lisperanto.define_total_movement_while_body_drag = () => lisperanto.total_movement_while_body_drag = ko.observable(0);// Version hash: 14b2cdfe85d81e21e6076da00985506c1fdfd8aad611b208e4d8f5abe5b77951
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1023,7 +1024,7 @@ lisperanto.defineOmniBox = function() {
         id: 'global--popup-omni-box-input' 
     };
     return omniBox;
-};// Version hash: a4d3e769ead7e5fd5a1f6be1a261d8300c67c48755c63d830d9fd5d266c5f6c5
+};// Version hash: 380724b588ac5d3a8e9c06d43b62aaec5c13ec1cc96165c30200b576e6ff1fb6
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1032,7 +1033,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.defineTimerForFunctions = function()
 {
     lisperanto.timerForFunctions = setInterval(lisperanto.moveElementsOnCanvasIteration, 30);
-};// Version hash: faa079ae8fa92ee1b59e5f35ac4d03692d5e67f0ee6e704f54da3562079ba3c3
+};// Version hash: 3cb55c382ae008db3e489b21726565d094d00e20839c04d1ddc119a1620cd91b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1051,7 +1052,7 @@ lisperanto.delete_json_key = function()
     };
     lisperanto.operationsPush(operation);
     lisperanto.hideOmniBox();
-};// Version hash: 3a4a8eb11bcc2c0ee35afa5beb378b9a0a2013233cdd09085e4fa76e9c06154b
+};// Version hash: ea9641e3a1ef6bf1811364fc764924737d71839c2fab942a42342c5ba1e72ac1
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1079,7 +1080,7 @@ lisperanto.doBoxesIntersect = function(firstBox, secondBox)
         return true;
     }
 
-};// Version hash: da666db0c3a01d5e9726d9124eecca38388d4bb5af45f768363416588fd399df
+};// Version hash: 96708d2462c176619f43d161f0762458fbd729fa178c1b81a20ba64a1b868174
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1104,7 +1105,7 @@ lisperanto.editor_on_input = function(key_name, parent)
         parent["key_with_changes@lisperanto"](key_name);
         parent["new_value@lisperanto"](inner_text);
     }
-};// Version hash: 5368f532e6a2baa5481434e7e9c41d738b3abcb09bf5d07d4cf1797fd5e3b99c
+};// Version hash: eeb9fefc515fe0d22e562944ee2e6addd45a3a597e7748411f2ce70526326dbb
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1121,7 +1122,7 @@ lisperanto.editorKeyDown_async = async function()
     }
     //console.log(event);
     return true;
-};// Version hash: a592a68dbd2cfa65823064d741563c57e350d0fefcb8075ecd4d3a7af44e0bc2
+};// Version hash: 5bc87127f310372352cd1f14a1fbc0cb4199c3e491bd4320a84d1f0a69e53577
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1130,7 +1131,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.editorKeyUp = function(event)
 {
     event.stopPropagation();
-};// Version hash: 3652d0bbf887ad0ffa5d0625e239dbf1a12aefc17f30616e41717e2f1c702429
+};// Version hash: 39054453aa68674a568799a3cbbe9fe200098d3f9da86762462796a9beeec8db
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1140,7 +1141,7 @@ lisperanto.epsilonEqual = function(a, b, e = 0.00001 )
 {
     var result = Math.abs(a-b) < e;
     return result;
-};// Version hash: b15136b4f5090b281507cb1721411f7a36a90dd229b4bc0f8d6f1bd896658a76
+};// Version hash: d18d800c471f922d36f3d99ca034e0aace2c1402aa0140a6c6c6f447dea795f7
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1150,7 +1151,7 @@ lisperanto.equal_exists_async = async function(obj)
 {
     const hash = await lisperanto.calculate_hash_promise(obj);
     return hash in lisperanto.customObjects;
-};// Version hash: 14c86dbb6e63c100d97d383c9a04a5954ecc6d518aac6bb468c5e0574e812de2
+};// Version hash: 7691697726a6bfc9b5a10e934a917e2f850216ba8951aca797d5f06d3d7e7213
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1176,7 +1177,7 @@ lisperanto.equal_exists = function(obj)
         return true;
     });
     return result;
-};// Version hash: 335de47ac07204e16ae6a5c86678a199cce3aeea3fcdc7bea32533773cffffdc
+};// Version hash: ed0f8cf55b8e9a15b43dfe0ae7283ca4882b7af6a5457eff35a93eff345d4c10
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1201,7 +1202,7 @@ lisperanto.filloutGlobalOmniBox = function(omniBox, offset)
 
     $("#" + omniBox.id ).focus();
     event && event.stopPropagation();
-};// Version hash: 34d9b61ac4c359165a10872380205008f8bb7462a31a189e6d81bab334289731
+};// Version hash: 37f5177ff2a1d92aee24401ecaa28aa0f85daeff95e7a0701590b877541edc52
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1220,7 +1221,7 @@ lisperanto.filloutOmniBoxDataForFunction = function(query, omniBox, root)
 
     $("#" + omniBox.id ).focus();
     event && event.stopPropagation();
-};// Version hash: 8324b6f94828992ebdf945bd9d61321e1bfb19df033a6635ec5e6f7c2c735a10
+};// Version hash: d42b3a622b5dc20099e78c2c3176f75657aa764ab689ed127b7f946af6ce0ddf
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1236,7 +1237,7 @@ lisperanto.find_latest_version = function(key)
     {
         return key;
     }
-};// Version hash: 3b13c932f2b03d90a892788fb402e9baca0b9f20a9c5b90961e279ce59ea43dc
+};// Version hash: 04319320d442c03938f99a04bd2d5902bd35d55f84c524d4c641f35a6f497914
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1258,7 +1259,7 @@ lisperanto.find_or_create_rdf_predicate_async = async function(predicate)
         return await lisperanto.create_RDF_predicate_async(predicate);
     }
 
-};// Version hash: d1f17bc1e68559a59d67f2c78580d7276950c392e2f3711ed63e5aaf4d414a5c
+};// Version hash: 1ff49b7862d89b0d311680040bd4139b3d3ec4d08c5cd32f9824add62224c8a1
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1285,7 +1286,7 @@ lisperanto.generateCornersOfTheBox = function(box)
         }
     ];
     return result;
-};// Version hash: ad49e764dd4991be9db9cf9f7e16b4cdd060d34a84e580b3879afa572a0d9884
+};// Version hash: 4c2b7218469b25ae97828e35b444830bf78b34741919db1eda64ea8ad9855458
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1299,7 +1300,7 @@ lisperanto.generateVectors = function(point, otherPoints)
         result.push(lisperanto.createVector(point, somePoint));
     }
     return result;
-};// Version hash: 2714556ee96897a36109e8723c14818691e72e75d6f3d913ec23fa15b5970467
+};// Version hash: d4e347929a246f572e464c0761e84dc516cb04a83393816423b22a37affa0ccc
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1332,7 +1333,7 @@ lisperanto.getCurrentDateTimeString = function()
         + seconds
         + timeZoneString;
     return datetime;
-};// Version hash: 6e0a91bbdabe7b843414b9f94d5a45a5d4d8831f13154894d71ac908213856d5
+};// Version hash: cac39f54ef35b0aec8ecb64128fb8105aecfb44c2aa6ea7792debb6b1a31b1a8
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1379,7 +1380,7 @@ lisperanto.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
         }
         return minimalOffset;
     }
-};// Version hash: fe44fcc751a0bdd41823060758db9cd166e97b4852186dcd0955be2bd267ca0d
+};// Version hash: 2e0d9c7a94a4ce64d89d8e33147657da0f29d84ef07fd5403a80cc9cc61e1cd9
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1404,7 +1405,7 @@ lisperanto.getUIBoxOfElement = function(obj, margin = 0.0)
         };
         return toReturn;
     }
-};// Version hash: f5ecd538f9006c8e888636b021cb506f7ad6c91382bbf3e12e2ff904d2c700d3
+};// Version hash: 71142b721515b10ec169ac948391ffd2d6e23ca5890614c1f8fc922c644f8f8f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1420,7 +1421,7 @@ lisperanto.getVectorsFromBox = function(point, box, margin)
     ];
     return result;
     
-};// Version hash: 40b2c946784af798d33e273eae7da96cbc2b7d105fbe0b25913ff2fbdfda957e
+};// Version hash: 3aa2c89fc97029a741ff5e230b0ec9184f30a615427fca87e6dd6ea2424085ec
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1432,7 +1433,7 @@ lisperanto.hideMenu = function()
     {
         lisperanto.toggleMenu();
     }
-};// Version hash: 2b9aca33b2d2c113a22669ffd2c67ea91ee097f3538aed032cc6a97eae51ec45
+};// Version hash: 069dfbe61d18f8273ce85ab479e2f551a777e91d354c2a3d77fa3782798ccc0b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1444,7 +1445,7 @@ lisperanto.hideOmniBox = function()
     lisperanto.focusedObj(undefined);
     lisperanto.activeOperation("");
     lisperanto.omniBoxTextInput("");
-};// Version hash: 995c2c3e142b0bbe951b99908009c6f96211225511cc7715bc1b1747f025bb20
+};// Version hash: 62f26c674fcd1eb70aa74d030bbe9e0f2cc2ee92695f44ef3df68f5f47c0f59f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1456,7 +1457,7 @@ lisperanto.hideOptions = function()
     {
         lisperanto.toggleOptions();
     }
-};// Version hash: 1f64e3733eb166b989315256563f8d7fbc267f0ad8615e890d9ab3bfaf7b884b
+};// Version hash: 23d22e602d46e37a0c67b0a1942bacab1ab12eeecc494d527e072f7a95705bc3
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1470,7 +1471,7 @@ lisperanto.isPointInsideTheBox = function(point, box, margin = 0)
         && point.y >= (box.top - margin)
         && point.y <= (box.top + box.height + margin);
     return result;
-};// Version hash: b6c4639babe0b6b1dd40819b610bbb581b00da936fcde1704d6c9ab1af361732
+};// Version hash: f6b68230e29797ac2e4eb64376ce9737197914afc366b74f012cc77780fa22ac
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1496,7 +1497,18 @@ lisperanto.json_key_oncontextmenu = function(obj, parent)
     lisperanto.canvasOmniBox.left(lisperanto.desiredOffset.x);
     lisperanto.canvasOmniBox.top(lisperanto.desiredOffset.y);
     return false;
-};// Version hash: 3230184f25346d113b61db98397cfad4db9c3f150a350ece581cb0f423e646b0
+};// Version hash: 496b01aac300ba1908f20b32fa8957ca13b6a07df2500c3d5c158f501db64a8b
+if(typeof(lisperanto) === 'undefined')
+{
+	lisperanto = {};
+}
+
+lisperanto.loadCustomObjectsFromServer = function()
+{
+    $.get('Home/ListOfCustomObjects', function(data, status){
+        console.log(data);
+      });
+};// Version hash: d1cd4f7938530bff8531b0eb62ad6ccdd807162105acf9eaf4c0021a56762c7a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1521,7 +1533,7 @@ lisperanto.loadFromStorage = function()
             console.log("Failed to parse: ", {key: keyInner, value: valueInner});
         }
     }
-};// Version hash: 6f1f6f1063c9efab9ca92671fa02fd80c19f6c561ff5f263fafa770b5690d37f
+};// Version hash: 45a101de9f047b719f0d423e861d7ed410a767be941070c47b3d25a5643d74c7
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1554,7 +1566,7 @@ lisperanto.main_initialization = function () {
 
     lisperanto.define_optionsIsOpen(); // initialization
     lisperanto.define_optionsWasAlreadyOpen();
-};// Version hash: 7c3982ea24600fe7ad1df7a4688fe7352b45ef4e14ef28502cc68760231b5440
+};// Version hash: 931b2eb5be52541e88d408e3b2995eaf840a15738259be5bb5da6adadb035528
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1601,7 +1613,7 @@ lisperanto.migrate_all_function_to_storage_async = async function()
             console.log(key_name);
         }
     }
-};// Version hash: fb2a30ffed5385e8f3dba8e9ba55a6004f8ea5b6815a71d951ac399505b1e1cf
+};// Version hash: decf157b4d107cb317083ed535299cd8bfe503b2b8fbde0c2295e1f2906115fe
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1651,7 +1663,7 @@ lisperanto.moveElementsOnCanvasIteration = function()
         }
     }
 
-};// Version hash: a88e01844aea1b7e61952ccdf6d424ded068e2706816102b772fc24e0a307aff
+};// Version hash: 2f05247ed6543ad32dda6845a3bbca971613deb3c7f7a4f1afe320cbc2b659fd
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1663,7 +1675,7 @@ lisperanto.normalizeVector = function(point)
     point.x /= newLength;
     point.y /= newLength;
     return point;
-};// Version hash: 3e2dc3188e682fd8bf8935f27c44e62483a5b6dc3e55354b686703865b713dae
+};// Version hash: 89d2f428a2df4101ea18aac7df7ba98ca7a695d4baa45d33988af248effe1064
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1680,7 +1692,7 @@ lisperanto.omniBoxClick_on_keydown = function()
         }
     }
     return true;
-};// Version hash: 8971e39622bab2434794a4ef9c8890f8e6e8831a218fcfb7b8931f4d687227d2
+};// Version hash: fce3256bc299f386aa10e92ff88b820509d047fd1d1f5ea2f8fb5b92832333cd
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1689,7 +1701,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.omniBoxClick = function()
 {
     event.stopPropagation();
-};// Version hash: bc23131e07b17df711826972afa4a158053b267ee176a2f9ba22b7bf13623ccb
+};// Version hash: 2c681c7a88dbf83449bd4042c1ba7e607d404659d08d020b0e5cd0a36febed11
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1703,7 +1715,7 @@ lisperanto.omniBoxInputKeyDown = function(data, event)
         // here I will need to cycle through available options
     }
     return true;
-};// Version hash: 0cdca10e101c417e8bf3136d8a5df02c8525f0631c28a5da577e9e2b20781b26
+};// Version hash: 9055a4ce3b6963833062b2eaab83a0323990a6d15124e965493591b64a01c814
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1749,7 +1761,7 @@ lisperanto.omniBoxInputKeyPress_async = async function()
         }
     }
     return true;
-};// Version hash: d4472e59cae1319a7338e075051d1273aa7933ab9c4679fb0f21160e6bffbc21
+};// Version hash: bfe5b3368e2c44f0960eb7f1a24e639c212a55b725529004b165733ce22b8022
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1763,7 +1775,7 @@ lisperanto.omniBoxInputKeyUp = function( data, event)
         lisperanto.hideOmniBox();
     }
     event.stopPropagation();
-};// Version hash: 3e4e85c8dd9a4b20b434f5477e82383de896d2c0c13ad92e1e22e6b3ed59484b
+};// Version hash: abfe246c80cb78bf87cf3b25c2042e374a9c8cfbe1feca8f0a2aafe4c93c7721
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1773,7 +1785,7 @@ lisperanto.omniBoxOnWheel = function()
 {
     // i need this to block scroll event, probably
     event.stopPropagation();
-};// Version hash: 70cf16a66f1d1ec560d92ba9806cf93a34b1c42694486fc3a0c2925eab21ca5d
+};// Version hash: e274f9e8c997c862463bff66b8ef9f36a665f6ae8fa14e92f5b5a2d134504b48
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1783,7 +1795,7 @@ lisperanto.omniWheelOnWheelEvent = function()
 {
     // i need this to block scroll event, probably
     event.stopPropagation();
-};// Version hash: f39397ecdb337e7c73fa51657375c3aef6e0f7eabc9a781f56c70dd15ee5bbe7
+};// Version hash: 048342f80cb7bfa18fbc661847be6a40a38eff3c0c29f08897d1fd46e7aa6e93
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1793,7 +1805,7 @@ lisperanto.open_json_entry_from_search_list_async = async function(obj)
 {
     await lisperanto.openElement_async(lisperanto.customObjects[obj.id]);
     lisperanto.hideOmniBox();
-};// Version hash: 4c07612625ab6f1d1002ed6a98be62e13fd85ee5301c9d1cde668a4c7c745293
+};// Version hash: 1533157d6b79f35e462717efbf918652d0db6fe8739b5c37c52367b831b68532
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1807,7 +1819,7 @@ lisperanto.open_OmniBox_for_adding_statement_to_json_entry_async = async functio
 
     const id = await caller.id();
     lisperanto.filloutOmniBoxDataForFunction(`#${id} #add-statement-to-json-entry--`, lisperanto.canvasOmniBox, caller);
-};// Version hash: 396762e033c5d3c872c80f7356884a07a4bb87332f7287be953ef4b967010e7f
+};// Version hash: 8c1e09b95c87a0440ee493d03a81513d5933f770d6ef04820a74cf0b87eebf0e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1822,7 +1834,7 @@ lisperanto.open_OmniBox_for_adding_text_value_to_json_entry = async function(cal
     const id = await caller.id();
 
     lisperanto.filloutOmniBoxDataForFunction(`#${id} #add-text-value-to-json-entry--`, lisperanto.canvasOmniBox, caller);
-};// Version hash: 0ceff1ea007ef9bc75c9eb439e48fe0504572bc06c6abc413c07a86e95930375
+};// Version hash: 8bca7c940e497023a25d3cf83f1d93986eba2b96290fff8a7183cbcfc6b20ebe
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1841,7 +1853,7 @@ lisperanto.open_rdf_value_by_id_on_the_left = function(statement)
     lisperanto.desiredOffset = offset;
     const rdf_entry = lisperanto.customObjects[id];
     lisperanto.openElement(rdf_entry);
-};// Version hash: 65c421e4d2d1b9f113994e0b93bb7ddc8f39966802bd7ef61685bcbde82a0dcf
+};// Version hash: e5fe3532cae87efb2824ad48df925811958475bcd01ef5052e25143e48668bc9
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1873,7 +1885,7 @@ lisperanto.openElement_async = async function(obj)
         console.log("set coordinates to anchor offsetted:" + JSON.stringify({x: newLocalX, y: newLocalY}  ));
     }
     console.log("finished openElement");
-};// Version hash: b76322bf71674f5311dd3c4cd47af32577b999ae32bddfa27697a914e5fc12ee
+};// Version hash: 3e995d6707fdc346adba40d21795ec588b8f0ad02418a3c49caf40be244ff307
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1917,7 +1929,7 @@ lisperanto.operationsPush_async = async function(some)
             value: JSON.stringify(some)
         });
     }
-};// Version hash: d2009e4fc7eb92fe48b34e2b6d70a91d32aa498e33902ad7f7c85c0fcc5b36bb
+};// Version hash: 4cc02f01ff55083e3071be45c665bdc90264ae41e07627c895589d748ec8a0b9
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1927,7 +1939,7 @@ lisperanto.removeEverything = function()
 {
     localStorage.clear();
     location.reload();
-};// Version hash: 9ce03d9c254f5fae87dda82497ba375a777de992182c00d8ad0d1ca0dd976a0a
+};// Version hash: 681a3ae60368e96cd8e5e5c905459c5f81635c209f63641be4edaeba3789df69
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1939,7 +1951,7 @@ lisperanto.replace_existing_json_key_from_omnibox_text_async = async function()
     var new_key_id = await lisperanto.find_or_create_rdf_predicate_async(new_key);
     lisperanto.replace_focused_json_key_with_new(new_key);
     lisperanto.hideOmniBox();
-};// Version hash: 489773c1b6e7d16c1dd84783200c5e8b3477d9193649f11462527d1934a21a35
+};// Version hash: 801f75b503858a1f44a4e71d0de466eae0362a9d6c5be275b70472469bd9212a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1952,7 +1964,7 @@ lisperanto.replace_existing_json_key_from_omnibox = function(obj)
     lisperanto.replace_focused_json_key_with_new(new_key);
     lisperanto.hideOmniBox();
 
-};// Version hash: 1707c2e17e3aced8af13ce610a22bea55bfc98390ba5c61b58057fc0517c7c2d
+};// Version hash: 017bf6319295bc4f36226acbcb2d9ad975fd3ca0105d902268adee42c9d6d16e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1971,7 +1983,7 @@ lisperanto.replace_focused_json_key_with_new = async function(new_key) {
         'time': lisperanto.getCurrentDateTimeString()
     };
     await lisperanto.operationsPush_async(operation);
-};// Version hash: 6b119ba07861ec2243fe4d0c88865820ca1a08e9b9d610934f38f8041a92a43e
+};// Version hash: e5129be716af50a63ae33ce05dbd1ce50541aea8e6674ee993f45606ac0d6288
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1989,7 +2001,7 @@ lisperanto.restore_RDF_predicates_array = function()
             }
         }
     }
-};// Version hash: fc714e837337f9a471d55662627d61dbba352b3ecffb8c7a630a9d5c20ff90e7
+};// Version hash: 96b85289c5163e153f375b42c0baec7f514b141450e2bfb1aac860400b473482
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2001,7 +2013,7 @@ lisperanto.showMenu = function()
     {
         lisperanto.toggleOptions();
     }
-};// Version hash: a3422509458c8f2a9b4ecd6a92cb1a618499aa85a3537cba05dfc3b28bbb9c5d
+};// Version hash: c50e2deb54a57352f8d806292724733fb6f9c8d726e381dd47c6e06f575a0d2f
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2015,7 +2027,7 @@ lisperanto.showOmniBox = function()
         y: event.pageY
     };
     lisperanto.filloutGlobalOmniBox(lisperanto.canvasOmniBox, offset);
-};// Version hash: 5296bcaf6b54cabda6e8452839b71139976e10554b934262f49734f848fba67f
+};// Version hash: 132473f4703f8dbaea26b3e7f5a1431127fe9070f15fc66bab1a9c0861688b2c
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2024,7 +2036,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.stopPropagation = function()
 {
     event.stopPropagation();
-};// Version hash: 235cbf136cd39c18f740290768c1dda243328c51f044b8206906cc9eee443a68
+};// Version hash: 87823d4f3e1d8d780b3c6b9ed9030c8135ff0613b9ce768e370a0fb0bd9877a5
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2052,7 +2064,7 @@ lisperanto.toggleFullScreen = function()
         }
     }
     event.stopPropagation();
-};// Version hash: ee11c805d4bad03d1f8d3c2794abbda936cbd832ed96e91947dea3d55f892734
+};// Version hash: c687e210f27c57a1f5c1542427be69b6570eaaa91c4d630f82c6366cf96d2d72
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2063,7 +2075,7 @@ lisperanto.toggleMenu = function()
     event.stopPropagation();
     lisperanto.menuIsOpen(!lisperanto.menuIsOpen());
     lisperanto.menuWasAlreadyOpen(true);
-};// Version hash: a792a985818a334fd335206397bd977bbc5a65189a2dab03e5b21c7dc1c81770
+};// Version hash: f365b3416ec9b167b7258e673ee2f4bfb0d7d41351bee40d95ec21310e16e8ce
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2074,7 +2086,7 @@ lisperanto.toggleOptions = function()
     event.stopPropagation();
     lisperanto.optionsIsOpen(!lisperanto.optionsIsOpen());
     lisperanto.optionsWasAlreadyOpen(true);
-};// Version hash: 87669851222f1a15444dbea65993c53bb1bc391f31bed86b3d4e968891487dfc
+};// Version hash: 061fa46e59ee2cbb844907e500f126fed3c98080415e5e37908aaed95694a2fe
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2095,7 +2107,7 @@ lisperanto.vectorBetweenBoxes = function(firstBox, secondBox)
     };
     var v = lisperanto.createVector(a, b);
     return v;
-};// Version hash: d3136524874923759b8d261d3840869a52c02a111ebe6c1af055948bd08ac468
+};// Version hash: cf02528fc83549af9cf86471a58e4b0f810af1c4bb4c7bd5a83aa1a6bcb37f5b
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2105,7 +2117,7 @@ lisperanto.vectorLength = function(v)
 {
     var result = Math.sqrt(lisperanto.vectorLengthSquared(v));
     return result;
-};// Version hash: 89217caa8b741581143f010db363805c0988f0a6cbffeaaa3314fe64eef786fb
+};// Version hash: 7c73eb65c4d98844f1672a194431b5d987680591efafdc383200415089d57678
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2114,7 +2126,7 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.vectorLengthSquared = function(point)
 {
     return point.x * point.x + point.y * point.y;
-};// Version hash: e10ebe99bb30d15ec53d09e0685bff65ef0c8933d6e0b6345df755f0de3c1e61
+};// Version hash: fb5872f0afa4b725018da7af7a9a214c3ee0e53020227cae910ca8a6e7540b32
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -2126,7 +2138,7 @@ lisperanto.vectorsAreCoAligned = function(bv, obv)
     var cosAlpha = dp / (lisperanto.vectorLength(bv) * lisperanto.vectorLength(obv));
     var result = lisperanto.epsilonEqual(cosAlpha, 1.0);
     return result;
-};// Version hash: b4f57c042f71592943dbd423c5d36b00fde48ca3de1cc3623209476e9f893d64
+};// Version hash: 00ee6e2b4a386d2fd031438c0f7239041f62a707e97edad085cca7b960a6ea6a
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};

@@ -69,6 +69,7 @@ namespace lisperanto.Controllers
 
         private void GenerateLisperanto()
         {
+            Console.WriteLine(nameof(GenerateLisperanto));
             string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "js", "lisperanto");
             string target_path = Path.Combine(Directory.GetCurrentDirectory(), "docs","js", "lisperanto_test.js");
             var files = Directory.GetFiles(directory_path).OrderBy(path => path);
@@ -76,7 +77,7 @@ namespace lisperanto.Controllers
             {
                 foreach(var path in files)
                 {
-                    Console.WriteLine(path);
+                    //Console.WriteLine(path);
                     using(StreamReader stream_reader = new StreamReader(path))
                     {
                         stream_writer.Write(stream_reader.ReadToEnd());
@@ -99,6 +100,14 @@ namespace lisperanto.Controllers
                 }
             }
             
+        }
+
+        [HttpGet]
+        public async Task<string[]> ListOfCustomObjects()
+        {
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "customObjects");
+            var files = Directory.GetFiles(directory_path).OrderBy(path => path).Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
+            return files;
         }
     }
 }
