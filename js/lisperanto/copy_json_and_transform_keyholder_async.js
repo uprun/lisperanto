@@ -1,4 +1,4 @@
-﻿// Version hash: 7a6496aaf26793259544964b83657753db4ca38d7d156136a1d093dbe647abf0
+﻿// Version hash: 1ce47bb5176da17966ea6ffc57a88b3af5be4a934bbb11b360e7ec553a8b9f43
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -19,6 +19,6 @@ lisperanto.copy_json_and_transform_keyholder_async = async function(obj, value)
     });
     delete new_obj["new-key-holder@lisperanto"];
     new_obj[key] = value;
-    new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
-    return await lisperanto.create_object_with_hash_async(new_obj);
+    const previous_hash = await lisperanto.calculate_hash_promise(obj);
+    return await lisperanto.create_object_with_hash_async(new_obj, previous_hash);
 };

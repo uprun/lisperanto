@@ -460,7 +460,7 @@ lisperanto.confirm_change_to_json_async = async function(parent)
     await lisperanto.operationsPush_async(operation);
     parent["key_with_changes@lisperanto"]("");
     parent["new_value@lisperanto"]("")
-};// Version hash: 33c42aa0493766626f387cb2616955779618b33d35a1128e0b8c43bc319e151e
+};// Version hash: a63242229f79da537a06a3bb32ae24a91bd46ab75d228747f7e5d1bff6e739a2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -479,8 +479,8 @@ lisperanto.copy_json_and_add_key_and_value_async = async function(obj, key, valu
         }
     });
     new_obj[key] = value;
-    new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
-    return await lisperanto.create_object_with_hash_async(new_obj);
+    const previous_hash = await lisperanto.calculate_hash_promise(obj);
+    return await lisperanto.create_object_with_hash_async(new_obj, previous_hash);
 };// Version hash: 3ca173851dead66b197f3b7e43c4644432d62bb0683c69b26407465003b93f62
 if(typeof(lisperanto) === 'undefined')
 {
@@ -508,7 +508,7 @@ lisperanto.copy_json_and_replace_key = function(obj, old_key, new_key)
     });
     new_obj["previous-version@lisperanto"] = obj["id"];
     return new_obj;
-};// Version hash: 7a6496aaf26793259544964b83657753db4ca38d7d156136a1d093dbe647abf0
+};// Version hash: 1ce47bb5176da17966ea6ffc57a88b3af5be4a934bbb11b360e7ec553a8b9f43
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -529,8 +529,8 @@ lisperanto.copy_json_and_transform_keyholder_async = async function(obj, value)
     });
     delete new_obj["new-key-holder@lisperanto"];
     new_obj[key] = value;
-    new_obj["previous-version@lisperanto"] = await lisperanto.calculate_hash_promise(obj);
-    return await lisperanto.create_object_with_hash_async(new_obj);
+    const previous_hash = await lisperanto.calculate_hash_promise(obj);
+    return await lisperanto.create_object_with_hash_async(new_obj, previous_hash);
 };// Version hash: 55d7f24e8c40c37fa699ce4da142c82cfe790fc65c6f09d8356c398c840c5a1a
 if(typeof(lisperanto) === 'undefined')
 {
@@ -563,13 +563,13 @@ lisperanto.create_json_entry_from_object = function(obj)
         }
     }
     return new_obj;
-};// Version hash: 10470d59c02c49142df6f906906d814183dee1a36d5c01e4d51c0a72f174694d
+};// Version hash: a9e85de5c53a033ed4c7731d738bd18709ddfd2ce04c3275defb0b21d2bc6e23
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
-lisperanto.create_object_with_hash_async = async function(original_object)
+lisperanto.create_object_with_hash_async = async function(original_object, previous_hash)
 {
     const hash = await lisperanto.calculate_hash_promise(original_object);
     if ( !(hash in lisperanto.customObjects))
@@ -577,11 +577,18 @@ lisperanto.create_object_with_hash_async = async function(original_object)
         lisperanto.customObjects[hash] = original_object;
         var operation = 
         {
-            operation: "create-initial-version",
-            id_to: hash,
-            'initial-data': lisperanto.clone(original_object),
+
+            operation: "create-initial-version-time-only",
+            id_to: hash,
             'time': lisperanto.getCurrentDateTimeString()
         };
+
+        if (typeof(previous_hash) !== 'undefined')
+        {
+            operation["id_from"] = previous_hash;
+
+        }
+
         await lisperanto.operationsPush_async(operation);
     }
     return original_object;
@@ -1497,7 +1504,7 @@ lisperanto.json_key_oncontextmenu = function(obj, parent)
     lisperanto.canvasOmniBox.left(lisperanto.desiredOffset.x);
     lisperanto.canvasOmniBox.top(lisperanto.desiredOffset.y);
     return false;
-};// Version hash: b060863a17a952136e42ca8cdc52bdbee5b49e12573de84534ff713836f0651b
+};// Version hash: 559d0b3b32ef0af03bd11ac007c181c33bbd18ec11c1b46a549f20ec6ba95774
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
