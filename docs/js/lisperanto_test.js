@@ -336,13 +336,15 @@ lisperanto.bodyOnTouchMove = function()
         }
         lisperanto.previosTouch = {x: clientX, y: clientY};
     }
-};// Version hash: 28adab98b2f515c132beb8efa7149be7cd2c6a348049f0121bd96ae793635da2
+};// Version hash: e78b008eb19600f8ce65520c8f9ce2221b68327379c58299fefdcf6559882b08
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
 lisperanto.bodyOnWheel = function() {
+// really changing to span fixes breaks?
+// yeah if you want correct line-break use span instead of div
 // just test
 
 console.log("42");  
@@ -801,7 +803,7 @@ lisperanto.define_filtered_rdf_predicates_Array = () =>
         return filtered;
     });
 
-};// Version hash: 733858d866bc4fc3f5cc3368130437f3b91b1f614f1214f68051a8a7cd322684
+};// Version hash: 354b72c28cbea5177f30566fd8ff131ce007daac81addaf36ce9e8d987cf703e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -841,6 +843,14 @@ lisperanto.define_filteredSearch = () => {
                     {
                         name = obj["name@lisperanto"];
 
+                    }
+
+                    if(name in lisperanto["lookup_by_name"])
+                    {
+                        var latest_operation_key = lisperanto["lookup_by_name"][name];
+                        var operation = lisperanto.operations[latest_operation_key];
+                        if (operation.id_to != key)
+                            return false;
                     }
 
                     
@@ -1486,6 +1496,52 @@ lisperanto.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
         }
         return minimalOffset;
     }
+};// Version hash: dd2c1c7d37b27b7ee768b195e2a11854c33a1345856c13bf974ae4e87cc7034c
+if(typeof(lisperanto) === 'undefined')
+{
+	lisperanto = {};
+}
+
+lisperanto.GetOperation_on_done = function(data_obj)
+{
+    console.log(data_obj)
+    var parsed = JSON.parse(data_obj.value);
+
+    lisperanto.operations[data_obj.key] = parsed;
+
+    if (("id_from" in parsed) && ("id_to" in parsed))
+    {
+         const id_from = parsed["id_from"];
+         const id_to = parsed["id_to"];
+         lisperanto.has_new_version_map[id_from] = id_to;
+    }
+    else
+    {
+         if (("id_to" in parsed))
+         {
+             const id_to = parsed["id_to"];
+             const obj = lisperanto.customObjects[id_to];
+             if (("name@lisperanto" in obj))
+             {
+                 const name = obj["name@lisperanto"];
+                 if (name in lisperanto["lookup_by_name"])
+                 {
+                     const latest_key = lisperanto["lookup_by_name"][name];
+                     if(data_obj.key > latest_key )
+                     {
+                          lisperanto["lookup_by_name"][name] = data_obj.key;
+                     }
+                 }
+                 else
+                 {
+                      lisperanto["lookup_by_name"][name] = data_obj.key;
+                 }
+              }
+          }
+     }
+
+     //lisperanto.customObjects[data_obj.hash] = parsed;
+     lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
 };// Version hash: 2e0d9c7a94a4ce64d89d8e33147657da0f29d84ef07fd5403a80cc9cc61e1cd9
 if(typeof(lisperanto) === 'undefined')
 {
@@ -1603,29 +1659,22 @@ lisperanto.json_key_oncontextmenu = function(obj, parent)
     lisperanto.canvasOmniBox.left(lisperanto.desiredOffset.x);
     lisperanto.canvasOmniBox.top(lisperanto.desiredOffset.y);
     return false;
-};// Version hash: c2365a9ec611fa2d59aff24fe619eba1a857427a7aa5482eefca3800fca16e5b
+};// Version hash: 850e58eaa38604ed49afdb79bc519002068c2846bf52ebb92d64836bcd66af5d
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
 lisperanto.load_operations_from_server = function()
-
 {
-
-
-
     if ( !("lookup_by_name" in lisperanto))
     {
         lisperanto["lookup_by_name"] = {};
-
     }
-
 
     if ( !("operations" in lisperanto))
     {
         lisperanto["operations"] = {};
-
     }
 
     $.get('Home/ListOfOperations', function(data, status){
@@ -1636,53 +1685,7 @@ lisperanto.load_operations_from_server = function()
             if( !(key in lisperanto.operations))
             {
                 $.get("Home/GetOperation", {key: key})
-                    .done(function(data_obj)
-                    {
-                        console.log(data_obj)
-                        var parsed = JSON.parse(data_obj.value);
-
-
-
-                        lisperanto.operations[data_obj.key] = parsed;
-
-                        if (("id_from" in parsed) && ("id_to" in parsed))
-
-                        {
-                            const id_from = parsed["id_from"];
-                            const id_to = parsed["id_to"];
-                            lisperanto.has_new_version_map[id_from] = id_to;
-                        }
-
-                        else
-                        {
-                            if (("id_to" in parsed))
-                            {
-                                const id_to = parsed["id_to"];
-                                const obj = lisperanto.customObjects[id_to];
-                                if (("name@lisperanto" in obj))
-                                {
-                                    const name = obj["name@lisperanto"];
-                                    if (name in lisperanto["lookup_by_name"])
-                                    {
-                                        const latest_key = lisperanto["lookup_by_name"][name];
-                                        if(data_obj.key > latest_key )
-                                        {
-                                            lisperanto["lookup_by_name"][name] = data_obj.key;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        lisperanto["lookup_by_name"][name] = data_obj.key;
-                                    }
-                                }
-
-
-                            }
-                        }
-
-                        //lisperanto.customObjects[data_obj.hash] = parsed;
-                        lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);
-                    });
+                .done(data_obj => lisperanto.GetOperation_on_done(data_obj));
             }
         }
       });

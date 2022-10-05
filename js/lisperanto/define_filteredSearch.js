@@ -1,4 +1,4 @@
-﻿// Version hash: 733858d866bc4fc3f5cc3368130437f3b91b1f614f1214f68051a8a7cd322684
+﻿// Version hash: 354b72c28cbea5177f30566fd8ff131ce007daac81addaf36ce9e8d987cf703e
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -38,6 +38,14 @@ lisperanto.define_filteredSearch = () => {
                     {
                         name = obj["name@lisperanto"];
 
+                    }
+
+                    if(name in lisperanto["lookup_by_name"])
+                    {
+                        var latest_operation_key = lisperanto["lookup_by_name"][name];
+                        var operation = lisperanto.operations[latest_operation_key];
+                        if (operation.id_to != key)
+                            return false;
                     }
 
                     
