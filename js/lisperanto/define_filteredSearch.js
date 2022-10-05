@@ -1,4 +1,4 @@
-﻿// Version hash: fb4710f60d419e19754dda932aff4732a09f694956119e34d7ad53b21bab9957
+﻿// Version hash: 733858d866bc4fc3f5cc3368130437f3b91b1f614f1214f68051a8a7cd322684
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -7,16 +7,28 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.define_filteredSearch = () => {
 
     lisperanto.filteredSearch = ko.computed(
+
         function()
+
         {
+
             var changeOccured = lisperanto.somethingChanged();
+
             var searchQuery = lisperanto.omniBoxTextInput().trim().toLowerCase();
+
             var filtered = [];
+
             const availableKeys = Object.keys(lisperanto.customObjects);
 
+    
+
             const non_statements = ko.utils.arrayFilter(availableKeys, function(key)
+
                 {
+
+
                     const has_new_version = key in lisperanto.has_new_version_map;
+
                     if(has_new_version)
                         return false;
 
@@ -27,38 +39,56 @@ lisperanto.define_filteredSearch = () => {
                         name = obj["name@lisperanto"];
 
                     }
-                    if(name in lisperanto["lookup_by_name"])
-                    {
-                        const latest_operation_key = lisperanto.lookup_by_name[name];
-                        const latest_operation = lisperanto.operations[latest_operation_key];
-                        if (latest_operation.id_to !== key)
-                            return false;
-                        
-                    }
+
+                    
                     return true;
+
                 });
 
+    
+
             const mapped = ko.utils.arrayMap(non_statements, function(key) {
+
                 const obj = lisperanto.customObjects[key];
+
                 var name = "";
+
                 if("name@lisperanto" in obj)
+
                 {
+
                     name = obj["name@lisperanto"];
+
                 }
+
+    
 
                 if( "name" in obj )
+
                 {
+
                     name = obj["name"]
+
                 }
+
+    
 
                 if(name === "")
+
                 {
+
                     name = "no-name " + obj.id;
+
                 }
 
+                
+
                 var toReturn = {
+
                     id: key,
+
                     text: name,
+
                     full_text: JSON.stringify(obj).toLowerCase()
 
                 };
