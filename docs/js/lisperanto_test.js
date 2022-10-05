@@ -803,7 +803,7 @@ lisperanto.define_filtered_rdf_predicates_Array = () =>
         return filtered;
     });
 
-};// Version hash: 354b72c28cbea5177f30566fd8ff131ce007daac81addaf36ce9e8d987cf703e
+};// Version hash: 47052baf5f128c6b355fbb1a81bd81443a78eeecf746ae8e17769024517d7242
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -847,6 +847,9 @@ lisperanto.define_filteredSearch = () => {
 
                     if(name in lisperanto["lookup_by_name"])
                     {
+                        // so last time I decided that I need comments
+
+                        // this is for case when I have manual edits from regular editor
                         var latest_operation_key = lisperanto["lookup_by_name"][name];
                         var operation = lisperanto.operations[latest_operation_key];
                         if (operation.id_to != key)
@@ -1496,7 +1499,7 @@ lisperanto.getMinimalOffsetForBox = function(firstBox, secondBox, margin)
         }
         return minimalOffset;
     }
-};// Version hash: dd2c1c7d37b27b7ee768b195e2a11854c33a1345856c13bf974ae4e87cc7034c
+};// Version hash: 690cd308d0217444164b956805e5994f1fd022e0798854cac5b8f8136abedb42
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -1515,8 +1518,7 @@ lisperanto.GetOperation_on_done = function(data_obj)
          const id_to = parsed["id_to"];
          lisperanto.has_new_version_map[id_from] = id_to;
     }
-    else
-    {
+    
          if (("id_to" in parsed))
          {
              const id_to = parsed["id_to"];
@@ -1538,7 +1540,7 @@ lisperanto.GetOperation_on_done = function(data_obj)
                  }
               }
           }
-     }
+     
 
      //lisperanto.customObjects[data_obj.hash] = parsed;
      lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);

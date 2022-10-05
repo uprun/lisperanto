@@ -1,4 +1,4 @@
-﻿// Version hash: dd2c1c7d37b27b7ee768b195e2a11854c33a1345856c13bf974ae4e87cc7034c
+﻿// Version hash: 690cd308d0217444164b956805e5994f1fd022e0798854cac5b8f8136abedb42
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -17,8 +17,7 @@ lisperanto.GetOperation_on_done = function(data_obj)
          const id_to = parsed["id_to"];
          lisperanto.has_new_version_map[id_from] = id_to;
     }
-    else
-    {
+    
          if (("id_to" in parsed))
          {
              const id_to = parsed["id_to"];
@@ -40,7 +39,7 @@ lisperanto.GetOperation_on_done = function(data_obj)
                  }
               }
           }
-     }
+     
 
      //lisperanto.customObjects[data_obj.hash] = parsed;
      lisperanto.somethingChanged(lisperanto.somethingChanged() + 1);

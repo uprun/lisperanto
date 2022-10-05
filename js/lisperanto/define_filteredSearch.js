@@ -1,4 +1,4 @@
-﻿// Version hash: 354b72c28cbea5177f30566fd8ff131ce007daac81addaf36ce9e8d987cf703e
+﻿// Version hash: 47052baf5f128c6b355fbb1a81bd81443a78eeecf746ae8e17769024517d7242
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -42,6 +42,9 @@ lisperanto.define_filteredSearch = () => {
 
                     if(name in lisperanto["lookup_by_name"])
                     {
+                        // so last time I decided that I need comments
+
+                        // this is for case when I have manual edits from regular editor
                         var latest_operation_key = lisperanto["lookup_by_name"][name];
                         var operation = lisperanto.operations[latest_operation_key];
                         if (operation.id_to != key)

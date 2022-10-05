@@ -2,3 +2,5 @@ functions more than 30 lines are hard to read
 scopes more than 10 lines hard to balance manually , I mean parentheses {}
 better to have some preset that creates function from full name like "lisperanto.GetOperation_on_done"
 and I need tabbulate functionality I mean Tab and Shift+Tab
+oh yeah I need ability to edit all files
+and I need history of edits, like save events from editor
