@@ -1,10 +1,12 @@
-﻿// Version hash: 28adab98b2f515c132beb8efa7149be7cd2c6a348049f0121bd96ae793635da2
+﻿// Version hash: e78b008eb19600f8ce65520c8f9ce2221b68327379c58299fefdcf6559882b08
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
 lisperanto.bodyOnWheel = function() {
+// really changing to span fixes breaks?
+// yeah if you want correct line-break use span instead of div
 // just test
 
 console.log("42");  

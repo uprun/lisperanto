@@ -336,13 +336,15 @@ lisperanto.bodyOnTouchMove = function()
         }
         lisperanto.previosTouch = {x: clientX, y: clientY};
     }
-};// Version hash: 73ca0b42112060e59588e88b65241b1845a80e0e50867a55e0c406ec5fe4de7c
+};// Version hash: 28adab98b2f515c132beb8efa7149be7cd2c6a348049f0121bd96ae793635da2
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
 }
 
 lisperanto.bodyOnWheel = function() {
+// just test
+
 console.log("42");  
 
     event.preventDefault();
