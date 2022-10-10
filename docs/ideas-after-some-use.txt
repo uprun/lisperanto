@@ -8,3 +8,4 @@ and I need history of edits, like save events from editor
 2022-10-10
 I need commands "create a function"
 I need snapshots so I can remove failed version
+ough yes, I often use functionality to move expression into a function or a variable
