@@ -4,3 +4,7 @@ better to have some preset that creates function from full name like "lisperanto
 and I need tabbulate functionality I mean Tab and Shift+Tab
 oh yeah I need ability to edit all files
 and I need history of edits, like save events from editor
+
+2022-10-10
+I need commands "create a function"
+I need snapshots so I can remove failed version
