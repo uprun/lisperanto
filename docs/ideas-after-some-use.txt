@@ -7,5 +7,6 @@ and I need history of edits, like save events from editor
 
 2022-10-10
 I need commands "create a function"
-I need snapshots so I can remove failed version
+I need snapshots so I can remove failed version [done] on 2022-10-10 23:49 (+3)
 ough yes, I often use functionality to move expression into a function or a variable
+// the simplest idea must win or in other words do not overengineer 

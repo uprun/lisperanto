@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
 
 namespace lisperanto.Controllers
 {
@@ -18,10 +19,12 @@ namespace lisperanto.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            Response.Redirect("/index.html");
-            GenerateLisperanto();
+
+            
+            var new_page = await GenerateLisperanto();
+            Response.Redirect(new_page);
             return View();
         }
 
@@ -67,13 +70,16 @@ namespace lisperanto.Controllers
             {}
         }
 
-        private void GenerateLisperanto()
+        private async Task<string> GenerateLisperanto()
         {
             Console.WriteLine(nameof(GenerateLisperanto));
             string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "js", "lisperanto");
-            string target_path = Path.Combine(Directory.GetCurrentDirectory(), "docs","js", "lisperanto_test.js");
+            
             var files = Directory.GetFiles(directory_path).OrderBy(path => path);
-            using(StreamWriter stream_writer = new StreamWriter(target_path))
+            MemoryStream in_memory_stream = new MemoryStream();
+            string file_name;
+            string string_hash = "";
+            using (StreamWriter stream_writer = new StreamWriter(in_memory_stream))
             {
                 foreach(var path in files)
                 {
@@ -83,9 +89,48 @@ namespace lisperanto.Controllers
                         stream_writer.Write(stream_reader.ReadToEnd());
                     }
                 }
-            }
-            
+                var just_copy = new MemoryStream();
+                in_memory_stream.WriteTo(just_copy);
+                
+                using (SHA256 sha256Hash = SHA256.Create())
+                {
+                    var hash = await sha256Hash.ComputeHashAsync(just_copy);
+                    string_hash = String.Join("", hash.Select(h => h.ToString("x2")));
+                }
 
+                file_name = $"lisperanto_{string_hash}.js";
+
+                var target_path = Path.Combine(Directory.GetCurrentDirectory(), "docs","js", file_name );
+
+                using(StreamWriter actual_writer = new StreamWriter(target_path))
+                {
+                    in_memory_stream.WriteTo(actual_writer.BaseStream);
+                    actual_writer.Flush();
+                }
+            }
+
+            string index_path = Path.Combine(Directory.GetCurrentDirectory(), "docs", "index.html");
+            string resulted_name = $"index_{string_hash}.html";
+            string new_index_path = Path.Combine(Directory.GetCurrentDirectory(), "docs", resulted_name);
+            using(StreamReader reader = new StreamReader(index_path))
+            using(StreamWriter writer = new StreamWriter(new_index_path))
+            {
+                int watch_dog = 5_000;
+                while(reader.EndOfStream == false && watch_dog > 0)
+                {
+                    watch_dog--;
+                    string line = reader.ReadLine();
+                    if (line.Contains("<lisperanto.latest.version/>"))
+                    {
+                        line = line.Replace("<lisperanto.latest.version/>", 
+                            $"<script src=\"js/{file_name}\" asp-append-version=\"true\"></script>");
+                    }
+                    writer.WriteLine(line);
+                }
+                
+            }
+
+            return resulted_name;
         }
 
         [HttpPost]

@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lisperanto</title>
+    <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="css/webpad.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+</head>
+<body 
+    class="lisperanto-main-body" 
+    style="background-color: #000000; " 
+    onwheel="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnWheel()"
+    onpointermove="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnPointerMove()"
+    ontouchmove="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchMove()"
+    ontouchend="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    ontouchcancel="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    ontouchleave="typeof(lisperanto) !== 'undefined' && lisperanto.bodyOnTouchEnd()"
+    onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmousedown()"
+    onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmouseup()"
+    onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmousemove()"
+    onmouseout="typeof(lisperanto) !== 'undefined' && lisperanto.body_onmouseout()"
+    onresize="typeof(lisperanto) !== 'undefined' && lisperanto.applyMovement(0,0)"
+    onload="typeof(lisperanto) !== 'undefined' && lisperanto.body_onload_async()"
+    data-bind=
+        "click: $root.bodyOnClick,
+        event: 
+            {
+                keydown: $root.bodyKeyDown,
+                keyup: $root.bodyKeyUp,
+            },
+        css:
+            {
+                'background-grabbing': $root.body_is_dragged(),
+                'background-hover': !$root.body_is_dragged()
+            },
+        style: 
+            { 
+                background: $root.backgroundColor(),
+            }">
+
+    <script type="text/html" id="contextual-omni-box-template">
+        <div class="contextual-omni-box" 
+            id="contextual-omni-box"
+            onwheel="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxOnWheel()"
+            onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onkeyup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onkeydown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            data-bind="
+                visible: visible,
+                click: $root.omniBoxClick,
+                style: 
+                    { 
+                        left: $root.globalOffsetX() + left(), 
+                        top: $root.globalOffsetY() + top()
+                    }">
+            <div class="webpad-sky-frame diagonal-stripes-background">
+                <div 
+                    data-bind="if:
+                        $root.activeOperation() === 'global-omni-box-activated'
+                        || $root.activeOperation() === 'add-statement-key-to-json-entry'
+                        || $root.activeOperation() === 'add-text-value-to-json-entry'
+                        || $root.activeOperation() === 'replace-existing-json-key' ">
+                    <input 
+                        style="font-size: 1.2rem; margin: 0.2em;" 
+                        class="omni-box-input" 
+                        placeholder="type something here" 
+                        onkeypress="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxInputKeyPress_async()"
+                        onkeydown="typeof(lisperanto) !== 'undefined' && lisperanto.omniBoxClick_on_keydown()"
+                        data-bind="
+                            textInput: $root.omniBoxTextInput,
+                            attr: 
+                                { 
+                                    id: id
+                                }, 
+                            event: 
+                                {
+                                    keydown: $root.omniBoxInputKeyDown,
+                                    keyup: $root.omniBoxInputKeyUp,
+                                }" />
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_statement_key_to_json_entry">
+                            add 
+                    </div>
+                </div>
+                <div 
+                    data-bind="if: $root.activeOperation() === 'add-text-value-to-json-entry'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.add_text_value_to_json_entry_async">
+                            add text
+                    </div>
+                </div>
+
+                <div 
+                    data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.replace_existing_json_key_from_omnibox_text_async">
+                            replace
+                    </div>
+                </div>
+
+                <div 
+                    data-bind="if: $root.activeOperation() === 'global-omni-box-activated' && $root.omniBoxTextInput().trim().length != 0">
+                    <div style="font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind="click: $root.create_RDF_entry_with_name_from_omnibox">
+                            add [ctrl + &#9166;] [cmnd + &#9166;]
+                    </div>
+                </div>
+                
+                <div class="omnibox-options">
+                    <div data-bind="if: $root.activeOperation() === 'focused-on-existing-json-key' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.delete_json_key">
+                            delete
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'focused-on-existing-json-key' ">
+                        <div style="font-size: 1.2rem; margin: 0.2em;" data-bind="click: $root.activate_replace_json_key">
+                            replace
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'global-omni-box-activated'">
+                        <div data-bind="foreach: $root.filteredSearch">
+                            <div data-bind="text: $data.text, click: $root.open_json_entry_from_search_list_async"></div>
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'add-statement-key-to-json-entry'">
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.add_existing_RDF_predicate_to_json_from_omnibox"></div>
+                        </div>
+                    </div>
+                    <div data-bind="if: $root.activeOperation() === 'replace-existing-json-key'">
+                        <div data-bind="foreach: $root.filtered_rdf_predicates_Array">
+                            <div data-bind="text: $data.text, click: $root.replace_existing_json_key_from_omnibox"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="json-key-value-statement-template">
+        <div style="font-size: 0.8rem;" >
+            <div style="margin-right: 0.3rem; cursor: auto;">
+                <span 
+                    class="webpad-color-orange"
+                    spellcheck="false"
+                    data-bind="
+                        text: $data,
+                        click: $root.stopPropagation,
+                        event:
+                        {
+                            contextmenu: () => lisperanto.json_key_oncontextmenu($data, $parents[1])
+                        }"></span><span class="webpad-color-orange">:</span>
+            </div>
+            <div style="margin-left: 1rem;">
+                <span style="outline: 0px solid transparent; white-space: break-spaces; display: block; cursor: auto;" class=""
+                onclick="lisperanto.stopPropagation()"
+                onkeyup="lisperanto.editorKeyUp(event)"
+                onkeydown="lisperanto.editorKeyDown_async()"
+                spellcheck="false"
+                data-bind="
+                    text: $parent[$data],
+                    event: 
+                        {
+                            input: () => $root.editor_on_input($data, $parents[1]),
+                        },
+                    css:
+                    {
+                        'my-function-name': $parents[1]['key_with_changes@lisperanto']() == '' || $parents[1]['key_with_changes@lisperanto']() == $data
+                    },
+                    attr:
+                    {
+                        'contenteditable': $parents[1]['key_with_changes@lisperanto']() == '' || $parents[1]['key_with_changes@lisperanto']() == $data
+                    }
+                    "></span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="json-entry-template">
+        <div class="lisperanto-function-definition lisperanto-rdf">
+            <div data-bind="template: { name: 'json-key-value-statement-template', foreach: Object.keys($data) }">
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="ui-element-template">
+        <div class="lisperanto-ui-element"
+            onmousedown="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmouseup="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            onmousemove="typeof(lisperanto) !== 'undefined' && lisperanto.stopPropagation()"
+            data-bind="
+                style: 
+                { 
+                    left: inWorldOffsetX(), 
+                    top: inWorldOffsetY()
+                },
+                attr: 
+                {
+                    id: $data.id
+                }">
+                <!-- ko template: { name: 'json-entry-template', data: $data.wrapped_one()} -->
+                <!-- /ko -->
+                <!-- ko if: $data["key_with_changes@lisperanto"]() == ""-->
+                    <!-- ko ifnot: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+                    <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                        data-bind=" 
+                            click: () => $root.open_OmniBox_for_adding_statement_to_json_entry_async($data), 
+                            attr: {id: 'add-statement-to-json-entry--'}">
+                            + statement
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: ("new-key-holder@lisperanto" in $data.wrapped_one()) -->
+                    <div>
+                        <span 
+                            class="webpad-color-orange"
+                            data-bind="
+                                text: $data.wrapped_one()['new-key-holder@lisperanto']"></span>
+                        <span class="webpad-color-orange">:</span>
+                        <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                            data-bind=" 
+                                click: () => $root.open_OmniBox_for_adding_text_value_to_json_entry($data), 
+                                attr: {id: 'add-text-value-to-json-entry--'}">
+                                + text value
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                <!-- /ko -->
+                <!-- ko if: $data["key_with_changes@lisperanto"]() != "" 
+                    && $data["new_value@lisperanto"]() 
+                        != $data.wrapped_one()[$data["key_with_changes@lisperanto"]()] -->
+                <div style="margin:0.5rem; font-size: 1rem;" class="lisperanto-div-button webpad-color-purple" 
+                    data-bind=" 
+                        click: () => $root.confirm_change_to_json_async($data)">
+                        confirm change  [ctrl + &#9166;] [cmnd + &#9166;]
+                </div>
+                <!-- /ko -->
+        </div>
+    </script>
+
+    <div 
+        class="webpad-menu-absolute-position webpad-menu-animate-left" 
+        style="display: none; cursor: auto;" 
+        data-bind="
+            visible:  $root.menuWasAlreadyOpen(),
+            css: { 
+                'webpad-menu-animate-show-from-left': $root.menuIsOpen(),
+                'webpad-menu-animate-fade-back': !$root.menuIsOpen()
+            },
+            click: $root.stopPropagation
+            ">
+        <div class="w3-row webpad-sky-frame">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
+                    : information
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
+                    : information
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleMenu">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close menu"/> 
+                    </span>
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12">
+                <div class="text-left" style="padding-left: 0.5rem;">
+                    <div class="webpad-color-coral" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is a spatial canvas for programming.
+                    </div>
+                    <div class="webpad-color-purple" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is a spatial canvas for knowledge.
+                    </div>
+                    <div class="webpad-color-light-pink" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is a spatial canvas for ideas.
+                    </div>
+                    <div class="webpad-color-blue" style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto is created by Oleksandr Kryvonos, a developer from Odesa, Ukraine &#127482;&#127462;
+                    </div>
+                    <div 
+                        class="webpad-color-purple" 
+                        style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        feel free to e-mail me: <a 
+                            href="mailto:oleksandr.kryvonos.ods.ua@gmail.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onclick="lisperanto.stopPropagation(event)"
+                            >oleksandr.kryvonos.ods.ua@gmail.com</a>
+                    </div>
+                    <div class="webpad-color-green"
+                        style="margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">
+                        Lisperanto was inspired by Smalltalk and Lisp.
+                    </div>
+                    <div
+                        class="lisperanto-patreon">
+                        <a 
+                            href="https://www.patreon.com/o_kryvonos" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onclick="lisperanto.stopPropagation(event)"
+                            >
+                            Support on Patreon
+                        </a>
+
+                    </div>
+
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                        <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                                Source code information:
+                        </span>
+                    </div>
+                    <div class="w3-col w3-container s12 m12 l12" style="margin-left: 1rem; margin-top: 0.5rem;" >
+                        <div class="webpad-color-light-pink" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                            <a href="https://github.com/uprun/lisperanto" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                onclick="lisperanto.stopPropagation(event)"
+                                >https://github.com/uprun/lisperanto</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div 
+        class="webpad-options-absolute-position webpad-options-animate-right" 
+        style="display: none; cursor: auto;" 
+        data-bind="
+            visible:  $root.optionsWasAlreadyOpen(),
+            css: { 
+                'webpad-options-animate-show-from-right': $root.optionsIsOpen(),
+                'webpad-options-animate-fade-back': !$root.optionsIsOpen()
+            },
+            click: $root.stopPropagation">
+        <div class="w3-row webpad-sky-frame">
+            <div class="w3-col w3-container s12 m12 l12">
+                <span class="webpad-color-yellow" style="font-size: 1.5rem; margin-left: 0.5rem;">
+                    Lisperanto
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-small-screen" style="font-size: 1.3rem;">
+                    : options
+                </span>
+                <span class="webpad-color-blue webpad-hide-on-large-screen" style="font-size: 1rem;">
+                    : options
+                </span>
+                <div style="float: right;" class=" webpad-button-no-border webpad-golden-frame" data-bind="click: $root.toggleOptions">
+                    <span style="font-size: 2rem;">
+                        <img src="svg/times-close-menu.svg" class="webpad-edit-pencil" alt="close options"/> 
+                    </span>
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Background:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div style="font-size: 1.4rem; background: #333" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-coral" 
+                        data-bind="click: $root.changeBackground">
+                        graphite
+                </div>
+                <div style="font-size: 1.4rem; background: #000" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                        data-bind="click: $root.changeBackgroundToDefault">
+                        darkness
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Other:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem;">
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    onclick="typeof(lisperanto) !== 'undefined' && lisperanto.removeEverything()">
+                    Reset
+                </div>
+                <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+                    onclick="typeof(lisperanto) !== 'undefined' && lisperanto.toggleFullScreen()">
+                    f - FullScreen
+                </div>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 0.5rem; margin-top: 0.5rem;" >
+                <span class="webpad-color-blue" tyle="font-size: 1.4rem;" >
+                        Navigation:
+                </span>
+            </div>
+            <div class="w3-col w3-container s12 m12 l12" style="margin-left: 2rem;">
+                <div class="webpad-color-coral">
+                    Use [Tab] key to autocomplete.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="lisperanto-global-container" >
+        <div class="dotted-background" 
+            style="width: 240rem; height: 240rem; position: absolute; left:0; top: 0;"
+            data-bind="
+                style:
+                {
+                    width: lisperanto.globalMaxX() - lisperanto.globalMinX(),
+                    height: lisperanto.globalMaxY() - lisperanto.globalMinY(),
+                    left: lisperanto.globalOffsetX(),
+                    top: lisperanto.globalOffsetY(),
+                    transform: () => 'translate(' + (-lisperanto.globalMaxX()) + 'px, ' + (-lisperanto.globalMaxY()) + 'px)'
+                }">
+
+        </div>
+
+        <!-- ko foreach: $root.listOfOpenElements -->
+            <!-- ko template: { name: 'ui-element-template', data: $data } -->
+            <!-- /ko -->
+        <!-- /ko -->
+
+        
+        <!-- ko template: { name: 'contextual-omni-box-template', data: $root.canvasOmniBox } -->
+        <!-- /ko -->
+    </div>
+    <div class="text-center lisperanto-tool-bar">
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.toggleMenu">
+            <span style="font-size: 1rem; vertical-align: middle;">
+                <img src="svg/bars.svg" class="webpad-edit-pencil" alt="toggle menu"/> 
+            </span>
+            i - info
+        </div>
+        <div style="margin:0.5em; font-size: 1rem;" class="webpad-button-no-border webpad-button-paddings webpad-golden-frame webpad-color-purple" 
+            data-bind="click: $root.toggleOptions">
+            <span style="font-size: 1rem; vertical-align: middle;">
+                <img src="svg/cogwheel.svg" class="webpad-edit-pencil" alt="toggle options"/> 
+            </span>
+            o - options
+        </div>
+        
+    </div>
+
+    <div style="margin:0.5em; font-size: 1rem; position: absolute; bottom: 0.3rem; right: 1rem; " class="webpad-button-no-border webpad-button-paddings webpad-color-purple" >
+        designed &#127912; and made &#127959;&#65039; in Ukraine &#127482;&#127462;
+    </div>
+    <script src="lib/jquery/dist/jquery.min.js"></script>
+    <script src="lib/knockoutjs/3.5.1/Content/Scripts/knockout-3.5.1.js" asp-append-version="true"></script>
+    <script src="js/lisperanto_e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.js" asp-append-version="true"></script>
+</body>
+</html>
