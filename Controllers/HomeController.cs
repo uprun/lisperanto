@@ -91,7 +91,8 @@ namespace lisperanto.Controllers
                 }
                 var just_copy = new MemoryStream();
                 in_memory_stream.WriteTo(just_copy);
-                
+                Console.WriteLine($"{just_copy.Position} {just_copy.Length}");
+                just_copy.Seek(0, SeekOrigin.Begin);
                 using (SHA256 sha256Hash = SHA256.Create())
                 {
                     var hash = await sha256Hash.ComputeHashAsync(just_copy);

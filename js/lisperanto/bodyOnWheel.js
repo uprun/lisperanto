@@ -1,4 +1,4 @@
-﻿// Version hash: e78b008eb19600f8ce65520c8f9ce2221b68327379c58299fefdcf6559882b08
+﻿// Version hash: 1fa23292e1022dc0b7730f8ee7a122a580d941868318b720995ebc23ca7ab2fb
 if(typeof(lisperanto) === 'undefined')
 {
 	lisperanto = {};
@@ -7,9 +7,8 @@ if(typeof(lisperanto) === 'undefined')
 lisperanto.bodyOnWheel = function() {
 // really changing to span fixes breaks?
 // yeah if you want correct line-break use span instead of div
-// just test
-
-console.log("42");  
+// just test  
+// what if there is more text?
 
     event.preventDefault();
     const deltaY = event.deltaY;
@@ -19,8 +18,5 @@ console.log("42");
   
     //scale += event.deltaY * -0.01;
 
-
-
-    console.log('body_on_wheel');
 
 };
